@@ -7,7 +7,7 @@
 #' @param y_sz font size for y axis text
 #' @param legend_position char indicating legend_position such as "none"
 #' @return a theme that can be used for ggplot plot objects
-#' @importFrom ggplot2 theme_bw theme_set theme_update element_text element_blank
+#' @import ggplot2
 #' @export
 theme_sebms <- function(title_sz = 24, 
   x_title_sz = 16, y_title_sz = 16, 
@@ -31,7 +31,9 @@ theme_sebms <- function(title_sz = 24,
     panel.grid.minor.y = element_blank(),
     panel.grid.major.y = element_line(size = 0.5, colour = "grey"),
     panel.background = element_rect(size = 0.5),
+    panel.border = element_rect(color = "grey"),
     strip.background = element_blank(),
+    strip.text.x = element_text(size = 22),
     legend.position = legend_position
   )
   
@@ -57,7 +59,7 @@ sebms_precip_plot <- function(df, my_place) {
     filter(place == my_place) %>%
     arrange(month, period.name)
   
-  col_palette <- c("#9BBB59", "#C0504D")
+  #col_palette <- sebms_palette
   #http://colorbrewer2.org/#type=diverging&scheme=RdYlGn&n=5
   #col_palette <- c("#a6d96a", "#d7191c")
   
@@ -66,27 +68,25 @@ sebms_precip_plot <- function(df, my_place) {
       x = reorder(month.name, month), 
       y = nb, 
       fill = reorder(period.name, period))) + 
-  #  facet_grid(. ~ place) +
-    facet_wrap(~ place, ncol = 1) +
     geom_bar(stat = "identity", position = "dodge", width = .7) + 
-    scale_fill_manual(values = col_palette) + 
-    guides(fill = FALSE) + 
-    ylim(0, 250) + 
-    ylab("Nederbörd (mm)") + 
-    xlab("") + 
-  #  ggtitle(nb$place) + 
+    facet_wrap(~ place, ncol = 1) +
+    #guides(fill = "none") + 
+    scale_y_continuous(expand = c(0,0), limits = c(0,250)) +
+    scale_fill_manual(values = rev(sebms_palette)) + 
+    labs(x = NULL, y = "Nederbörd (mm)") +
+    #  ggtitle(nb$place) + 
     theme_sebms() +
-    theme(strip.background = element_blank()) +
-    theme(panel.border = element_rect(color = "grey"))
+    theme(strip.background = element_blank(),
+          panel.border = element_rect(color = "grey"))
   
-  return (g)
+  return(g)
 }
 
 #' Plot temperatures
 #' @import dplyr
 #' @import ggplot2
 #' @noRd
-sebms_temp_plot <- function(my_place, df) {
+sebms_temp_plot <- function(df, my_place) {
   
   if (missing(df))
     df <- sebms_data_temp_2015
@@ -103,26 +103,22 @@ sebms_temp_plot <- function(my_place, df) {
   # "#D73027" "#FC8D59" "#FEE08B" "#FFFFBF" "#D9EF8B" "#91CF60" "#1A9850"
   
   #col_pal_temp <- c("#D73027", "#1A9850")
-  col_pal_temp <- c("#C0504D", "#9BBB59")
+  #col_pal_temp <- sebms_palette
   
   g <- 
     ggplot(temp, aes(x = reorder(month.name, month), 
       y = temp, group = Period, linetype = Period, 
       colour = Period)) + 
-    ylab("Temperatur (°C)") + 
-    xlab("") + 
-    facet_wrap(~ place, ncol = 1) +
     geom_line(stat = "identity", size = 1) +
+    facet_wrap(~ place, ncol = 1) +
     scale_linetype_manual(values = c("dashed", "solid")) +
-    scale_color_manual(values = col_pal_temp) + 
-    ylim(0,25) + 
+    scale_color_manual(values = sebms_palette) + 
+    scale_y_continuous(expand = c(0,0), limits = c(0,25)) +
+    #coord_cartesian(expand = F, ylim = c(0,25), xlim = c(0,NA)) +
+    labs(x = NULL, y = "Temperatur (°C)") + 
   #  ggtitle(temp$place) + 
-    theme_sebms() + #title_sz = 32, x_title_sz = 22, 
+    theme_sebms()  #title_sz = 32, x_title_sz = 22, 
       #y_title_sz = 24, y_sz = 28, legend_position = "none") +
-    theme(legend.position = "none", 
-      #    strip.text.x = element_text(size = 22)
-          strip.background = element_blank(),
-          panel.border = element_rect(color = "grey"))
     #guide_legend(label.position = "none")
   
   g

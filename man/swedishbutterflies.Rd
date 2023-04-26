@@ -3,9 +3,5 @@
 \docType{package}
 \name{swedishbutterflies}
 \alias{swedishbutterflies}
-\alias{swedishbutterflies-package}
 \title{swedishbutterflies}
-\description{
-swedishbutterflies
-}
 \keyword{package}

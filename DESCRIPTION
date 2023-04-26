@@ -1,9 +1,10 @@
 Package: swedishbutterflies
 Title: Swedish Butterfly Monitoring Programme Tools
-Version: 0.1.7
+Version: 0.2.0
 Authors@R: c(
     person("Markus", "Skyttner", email = "markus.skyttner@nrm.se", role = c("aut", "cre")),
     person("Lars", "Pettersson", role = c("aut"))
+    person("Georg", "Andersson", role = c("aut"))
     )
 Description: Provides tools for working with data from the Swedish Butterfly Monitoring scheme.
 Depends: R (>= 3.4.1)
@@ -32,13 +33,13 @@ Imports: ggplot2,
     leaflet,
     rappdirs,
     config, 
-    ggplot2 (>= 3.0.0),
+    ggplot2 (>= 3.4.0),
     ggthemes,
     grid,
     magick,
     RColorBrewer,
     cowplot
-RoxygenNote: 6.1.0
+RoxygenNote: 7.2.3
 Suggests: knitr,
     rmarkdown,
     testthat

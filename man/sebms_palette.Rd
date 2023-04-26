@@ -4,7 +4,9 @@
 \name{sebms_palette}
 \alias{sebms_palette}
 \title{Palette used in plots}
-\format{An object of class \code{character} of length 2.}
+\format{
+An object of class \code{character} of length 2.
+}
 \usage{
 sebms_palette
 }

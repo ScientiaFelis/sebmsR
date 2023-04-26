@@ -6,6 +6,11 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/rekonstrukt/swedishbutterflies/issues)
 * [The commit log](https://github.com/rekonstrukt/swedishbutterflies/commits/master)
 
+# v 0.2.0
+
+* Redo the plot functions to conform to the look in the Butterfly report.
+
+
 # v 0.1.7
 
 * Fix issue #16 (use winslashes in path to config file when on "win" platform)

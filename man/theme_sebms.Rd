@@ -4,8 +4,14 @@
 \alias{theme_sebms}
 \title{Theme for Swedish Butterfly Monitoring scheme for use in ggplot}
 \usage{
-theme_sebms(title_sz = 24, x_title_sz = 16, y_title_sz = 16,
-  x_sz = 20, y_sz = 20, legend_position)
+theme_sebms(
+  title_sz = 24,
+  x_title_sz = 16,
+  y_title_sz = 16,
+  x_sz = 20,
+  y_sz = 20,
+  legend_position = "none"
+)
 }
 \arguments{
 \item{title_sz}{font size for title}

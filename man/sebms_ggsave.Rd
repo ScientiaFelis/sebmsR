@@ -4,8 +4,7 @@
 \alias{sebms_ggsave}
 \title{Saves a ggplot object as a PNG file, resizing using pixel dimensions and a text scaling factor}
 \usage{
-sebms_ggsave(plot, width = 800, height = 500, text.factor = 1,
-  filename)
+sebms_ggsave(plot, width = 800, height = 500, text.factor = 1, filename)
 }
 \arguments{
 \item{plot}{a ggplot object}

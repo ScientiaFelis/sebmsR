@@ -11,12 +11,11 @@
 #' @export
 theme_sebms <- function(title_sz = 24, 
   x_title_sz = 16, y_title_sz = 16, 
-  x_sz = 20, y_sz = 20, legend_position) 
+  x_sz = 20, y_sz = 20, legend_position = "none") 
 {
   
-  theme_sb <- theme_set(theme_bw())
-
-  theme_sb <- theme_update(
+  theme_sb <- theme_bw() +
+    theme(
     plot.title = element_text(size = 24, face = "bold", 
       margin = margin(0, 0, 25, 0)),
     axis.text.x = element_text(size = x_sz, 
@@ -32,25 +31,23 @@ theme_sebms <- function(title_sz = 24,
     panel.grid.minor.y = element_blank(),
     panel.grid.major.y = element_line(size = 0.5, colour = "grey"),
     panel.background = element_rect(size = 0.5),
-    strip.background = element_blank()
+    strip.background = element_blank(),
+    legend.position = legend_position
   )
   
-  if (!missing(legend_position))
-    theme_sb <- theme_update(legend.position = legend_position)
-  
-  return (theme_sb)
+  return(theme_sb)
 }
 
 #' Palette used in plots
 #' @return vector of color hex codes
 #' @export
-sebms_palette <- c("#9BBB59", "#C0504D")
+sebms_palette <- c("#BE4B48", "#9BBB59") #"#C0504D", 
 
 #' Plot precipitation for 2015
 #' @import dplyr
 #' @import ggplot2
 #' @noRd
-sebms_precip_plot <- function(my_place, df) {
+sebms_precip_plot <- function(df, my_place) {
   
   if (missing(df))
     df <- sebms_data_precip_2015

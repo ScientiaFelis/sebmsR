@@ -10,8 +10,8 @@
 #' @import ggplot2
 #' @export
 theme_sebms <- function(title_sz = 24, 
-  x_title_sz = 16, y_title_sz = 16, 
-  x_sz = 20, y_sz = 20, legend_position = "none") 
+  x_title_sz = 12, y_title_sz = 12, 
+  x_sz = 10, y_sz = 12, legend_position = "none") 
 {
   
   theme_sb <- theme_bw() +
@@ -19,13 +19,13 @@ theme_sebms <- function(title_sz = 24,
     plot.title = element_text(size = 24, face = "bold", 
       margin = margin(0, 0, 25, 0)),
     axis.text.x = element_text(size = x_sz, 
-      margin = margin(10, 0, 0, 0)),
+      margin = margin(5, 0, 0, 0)),
     axis.text.y = element_text(size = y_sz, 
-      margin = margin(0, 10, 0, 0)),
+      margin = margin(0, 7, 0, 0)),
     axis.title.x = element_text(size = x_title_sz, face = "bold", 
       margin = margin(0, 20, 0, 0), angle = 90),
     axis.title.y = element_text(size = y_title_sz, face = "bold", 
-      margin = margin(0, 20, 0, 0), angle = 90),
+      margin = margin(0, 15, 0, 0), angle = 90),
     panel.grid.minor.x = element_blank(),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.y = element_blank(),
@@ -33,7 +33,7 @@ theme_sebms <- function(title_sz = 24,
     panel.background = element_rect(size = 0.5),
     panel.border = element_rect(color = "grey"),
     strip.background = element_blank(),
-    strip.text.x = element_text(size = 22),
+    strip.text.x = element_text(size = 20),
     legend.position = legend_position
   )
   

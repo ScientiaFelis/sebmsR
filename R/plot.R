@@ -156,11 +156,11 @@ sebms_precip_temp_plot <- function(filter_cities, df_precip, df_temp) {
   if (missing(df_temp))
     df_temp <- sebms_data_temp_2015
   
-  save_pplot <- function(g, fn, w = 5, h = 3.5) {
+  save_pplot <- function(g, fn, w = 14, h = 10) {
     ggsave(
       filename = fn, 
       plot = g, device = "png", 
-      width = w, height = h)
+      width = w, height = h, units = "cm")
   }
   
   tempfile_png <- function(prefix) {

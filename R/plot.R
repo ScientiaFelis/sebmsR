@@ -203,15 +203,15 @@ sebms_precip_temp_plot <- function(filter_cities, df_precip, df_temp) {
 #' @param filename the path to the output file
 #' @importFrom ggplot2 ggsave
 #' @export
-sebms_ggsave <- function(plot, width = 800, height = 500, 
-  text.factor = 1, filename) 
+sebms_ggsave <- function(plot, width = 9.25, height = 12.67, 
+  text.factor = 3, filename) 
 {
   dpi <- text.factor * 100
-  width.calc <- width / dpi
-  height.calc <- height / dpi
-  
+  # width.calc <- width / dpi
+  # height.calc <- height / dpi
+  # 
   ggsave(device = "png", filename = filename, plot = plot,
-    dpi = dpi, width = width.calc, height = height.calc, units = 'in')
+    dpi = dpi, width = width.calc, height = height.calc, units = 'cm')
 }
 
 

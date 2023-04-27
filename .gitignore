@@ -9,3 +9,4 @@ sites.csv
 sites.txt
 vignettes/.build.timestamp
 vignettes/sebms-intro.R
+*.png

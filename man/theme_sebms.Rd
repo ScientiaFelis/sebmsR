@@ -9,8 +9,9 @@ theme_sebms(
   x_title_sz = 12,
   y_title_sz = 12,
   x_sz = 10,
-  y_sz = 12,
-  legend_position = "none"
+  y_sz = 10,
+  legend_position = "none",
+  fontfamily = "Arial"
 )
 }
 \arguments{

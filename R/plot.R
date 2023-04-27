@@ -11,11 +11,12 @@
 #' @export
 theme_sebms <- function(title_sz = 24, 
   x_title_sz = 12, y_title_sz = 12, 
-  x_sz = 10, y_sz = 12, legend_position = "none") 
+  x_sz = 10, y_sz = 10, legend_position = "none", fontfamily = "Arial") 
 {
   
   theme_sb <- theme_bw() +
     theme(
+      text = element_text(family = fontfamily),
     plot.title = element_text(size = 24, face = "bold", 
       margin = margin(0, 0, 25, 0)),
     axis.text.x = element_text(size = x_sz, 
@@ -31,9 +32,9 @@ theme_sebms <- function(title_sz = 24,
     panel.grid.minor.y = element_blank(),
     panel.grid.major.y = element_line(size = 0.5, colour = "grey"),
     panel.background = element_rect(size = 0.5),
-    panel.border = element_rect(color = "grey"),
+    panel.border = element_rect(color = "black"),
     strip.background = element_blank(),
-    strip.text.x = element_text(size = 20),
+    strip.text.x = element_text(size = 14),
     legend.position = legend_position
   )
   
@@ -56,28 +57,31 @@ sebms_precip_plot <- function(df, my_place) {
   
   nb <- 
     df %>% 
-    filter(place == my_place) %>%
+    filter(place %in% my_place) %>%
     arrange(month, period.name)
   
   #col_palette <- sebms_palette
   #http://colorbrewer2.org/#type=diverging&scheme=RdYlGn&n=5
   #col_palette <- c("#a6d96a", "#d7191c")
-  
-  g <- 
-    ggplot(nb, aes(
+  # x_tick <- c(0, unique(nb$month)+0.5)
+  # len <- length(x_tick)
+  # br <- c(sort(unique(nb$month)), x_tick)
+  # lab <- c(sort(unique(nb$month.name)), rep(c(""), len))
+  # 
+  g <- nb %>% 
+    ggplot(aes(
       x = reorder(month.name, month), 
       y = nb, 
       fill = reorder(period.name, period))) + 
     geom_bar(stat = "identity", position = "dodge", width = .7) + 
     facet_wrap(~ place, ncol = 1) +
     #guides(fill = "none") + 
+    #scale_x_continuous(breaks = br, labels = lab) +
     scale_y_continuous(expand = c(0,0), limits = c(0,250)) +
     scale_fill_manual(values = rev(sebms_palette)) + 
     labs(x = NULL, y = "Nederbörd (mm)") +
     #  ggtitle(nb$place) + 
-    theme_sebms() +
-    theme(strip.background = element_blank(),
-          panel.border = element_rect(color = "grey"))
+    theme_sebms()
   
   return(g)
 }
@@ -93,7 +97,7 @@ sebms_temp_plot <- function(df, my_place) {
   
   temp <- 
     df %>% 
-    filter(place == my_place) %>% 
+    filter(place %in% my_place) %>% 
     rename(Period = period.name)
   
   #library(RColorBrewer)

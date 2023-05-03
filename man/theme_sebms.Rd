@@ -6,10 +6,10 @@
 \usage{
 theme_sebms(
   title_sz = 24,
-  x_title_sz = 12,
-  y_title_sz = 12,
-  x_sz = 10,
-  y_sz = 10,
+  x_title_sz = 14,
+  y_title_sz = 14,
+  x_sz = 12,
+  y_sz = 12,
   legend_position = "none",
   fontfamily = "Arial"
 )

@@ -10,33 +10,33 @@
 #' @import ggplot2
 #' @export
 theme_sebms <- function(title_sz = 24, 
-  x_title_sz = 14, y_title_sz = 14, 
-  x_sz = 12, y_sz = 12, legend_position = "none", fontfamily = "Arial") 
+                        x_title_sz = 14, y_title_sz = 14, 
+                        x_sz = 12, y_sz = 12, legend_position = "none", fontfamily = "Arial") 
 {
   
   theme_sb <- theme_bw() +
     theme(
       text = element_text(family = fontfamily),
-    plot.title = element_text(size = 24, face = "bold", 
-      margin = margin(0, 0, 25, 0)),
-    axis.text.x = element_text(size = x_sz, 
-      margin = margin(5, 0, 0, 0)),
-    axis.text.y = element_text(size = y_sz, 
-      margin = margin(0, 7, 0, 0)),
-    axis.title.x = element_text(size = x_title_sz, face = "bold", 
-      margin = margin(0, 20, 0, 0), angle = 90),
-    axis.title.y = element_text(size = y_title_sz, face = "bold", 
-      margin = margin(0, 15, 0, 0), angle = 90),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.grid.major.y = element_line(size = 0.5, colour = "grey"),
-    panel.background = element_rect(size = 0.5),
-    panel.border = element_rect(color = "black"),
-    strip.background = element_blank(),
-    strip.text.x = element_text(size = 16),
-    legend.position = legend_position
-  )
+      plot.title = element_text(size = 24, face = "bold", 
+                                margin = margin(0, 0, 25, 0)),
+      axis.text.x = element_text(size = x_sz, 
+                                 margin = margin(5, 0, 0, 0)),
+      axis.text.y = element_text(size = y_sz, 
+                                 margin = margin(0, 7, 0, 0)),
+      axis.title.x = element_text(size = x_title_sz, face = "bold", 
+                                  margin = margin(0, 20, 0, 0), angle = 90),
+      axis.title.y = element_text(size = y_title_sz, face = "bold", 
+                                  margin = margin(0, 15, 0, 0), angle = 90),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      panel.grid.major.y = element_line(size = 0.5, colour = "grey"),
+      panel.background = element_rect(size = 0.5),
+      panel.border = element_rect(color = "black"),
+      strip.background = element_blank(),
+      strip.text.x = element_text(size = 16),
+      legend.position = legend_position
+    )
   
   return(theme_sb)
 }
@@ -48,26 +48,26 @@ sebms_palette <- c("#BE4B48", "#9BBB59") #"#C0504D",
 
 #' Extract Station names and id
 #' 
-#' @import jsonlite
+#' @importFrom jsonlite fromJSON
 #' @noRd
 
 sebms_station <- function(my_place = NA, tempstat = TRUE) {
   
   if(tempstat){
-  if(!unique(is.na(my_place))){
-    
-    stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
-      filter(str_detect(name, my_place)) %>% 
-      select(name, id, latitude, longitude) %>% 
-      mutate(id = str_squish(id))
-    
-  }else {
-    my_place <- c("Stock.*Obs.*len$|^Lund$|Visby.*Flyg|Umeå.*Flyg")
-    stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
-      filter(str_detect(name, my_place)) %>% 
-      select(name, id, latitude, longitude) %>% 
-      mutate(id = str_squish(id))
-  }
+    if(!unique(is.na(my_place))){
+      
+      stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
+        filter(str_detect(name, my_place)) %>% 
+        select(name, id, latitude, longitude) %>% 
+        mutate(id = str_squish(id))
+      
+    }else {
+      my_place <- c("Stock.*Obs.*len$|^Lund$|Visby.*Flyg|Umeå.*Flyg")
+      stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
+        filter(str_detect(name, my_place)) %>% 
+        select(name, id, latitude, longitude) %>% 
+        mutate(id = str_squish(id))
+    }
   }else{
     if(!unique(is.na(my_place))){
       
@@ -119,17 +119,17 @@ sebms_precip_plot <- function(my_place) {
   # br <- c(sort(unique(nb$month)), x_tick)
   # lab <- c(sort(unique(nb$month.name)), rep(c(""), len))
   # 
-precipplot <- function(df)
+  precipplot <- function(df)
   {ggplot(data = df, aes(x = reorder(month, monthnr), y = nb, fill = forcats::fct_rev(period))) + 
-    geom_bar(stat = "identity", position = "dodge", width = .7) + 
-    facet_wrap(~ name, ncol = 1) +
-    #scale_x_continuous(breaks = br, labels = lab) +
-    scale_y_continuous(expand = c(0,0), limits = c(0,250)) +
-    scale_fill_manual(values = rev(sebms_palette)) + 
-    labs(x = NULL, y = "Nederbörd (mm)") +
-    theme_sebms()
-    }
-
+      geom_bar(stat = "identity", position = "dodge", width = .7) + 
+      facet_wrap(~ name, ncol = 1) +
+      #scale_x_continuous(breaks = br, labels = lab) +
+      scale_y_continuous(expand = c(0,0), limits = c(0,250)) +
+      scale_fill_manual(values = rev(sebms_palette)) + 
+      labs(x = NULL, y = "Nederbörd (mm)") +
+      theme_sebms()
+  }
+  
   p <- precip %>% 
     group_by(id) %>% 
     nest() %>%  
@@ -196,8 +196,8 @@ sebms_temp_plot <- function(my_place = NA) {
     nest() %>%  
     mutate(plots = map(data, tempplot))
   
-g$plots  
-
+  g$plots  
+  
 }
 
 
@@ -324,30 +324,30 @@ sebms_precip_temp_plot <- function(filter_cities, df_precip, df_temp) {
 #' @export
 #' 
 sebms_specieslist_cum_plots <- function() {
-
+  
   n <- nrow(sebms_data_specieslist_cum)
   col_palette <- sebms_palette
-
+  
   s1 <- 
     sebms_data_specieslist_cum %>% 
     filter(count >= 200)
   #  slice(1 : floor(n/2))
-
+  
   s2 <- 
     sebms_data_specieslist_cum %>% 
     filter(count < 200)
   #  slice(-c(1 : floor(n/2)))
-
+  
   p1 <- 
     ggplot(data = s1, 
-    aes(x = reorder(name, count), y = count)) +
+           aes(x = reorder(name, count), y = count)) +
     geom_bar(stat='identity', color = col_palette[1], 
-       fill = col_palette[1], width = 0.5) +
+             fill = col_palette[1], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
     xlab("") + ylab("") +
     ggtitle("Antal individer (n >= 200)") +
     scale_y_continuous(breaks = c(1000 * 1:12), labels = c(1000 * 1:11, ""),
-       position = "top", limits = c(0, 12000), expand = c(0, 0)) +
+                       position = "top", limits = c(0, 12000), expand = c(0, 0)) +
     theme_sebms() +
     theme(
       panel.grid.major.x = element_line(color = "darkgray"),
@@ -358,16 +358,16 @@ sebms_specieslist_cum_plots <- function() {
       axis.line = element_line(color = "darkgray"),
       plot.title = element_text(hjust = 0.5)) +
     coord_flip()
-
+  
   p2 <- 
     ggplot(data = s2, 
-    aes(x = reorder(name, count), y = count)) +
+           aes(x = reorder(name, count), y = count)) +
     geom_bar(stat='identity', color = col_palette[1], fill = col_palette[1], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
     xlab("") + ylab("") +
     ggtitle("Antal individer (n < 200)") +
     scale_y_continuous(breaks = c(20 * 1:11), labels = c(20 * 1:10, ""),
-       position = "top", limits = c(0, 210), expand = c(0, 0)) +
+                       position = "top", limits = c(0, 210), expand = c(0, 0)) +
     theme_sebms() +
     theme(panel.grid.major.x = element_line(color = "darkgray"),
           panel.grid.major.y = element_blank(),
@@ -379,7 +379,7 @@ sebms_specieslist_cum_plots <- function() {
     coord_flip()
   
   res <- list(p1 = p1, p2 = p2)
-    
+  
 }
 
 #' Species histo plot
@@ -388,7 +388,7 @@ sebms_specieslist_cum_plots <- function() {
 #' @export
 #' 
 sebms_species_histo_plot <- function() {
-
+  
   col_palette <- sebms_palette
   
   df <- 
@@ -397,24 +397,24 @@ sebms_species_histo_plot <- function() {
     summarise(count = sum(sumval))
   
   p <- ggplot(data = df, 
-  aes(x = vecka, y = count)) +
-  geom_bar(stat = 'identity', color = col_palette[1], fill = col_palette[1], width = 0.5) +
-  xlab("") + ylab("") +
-  scale_y_continuous(breaks = c(10 * 1:10), limits = c(0, 100), expand = c(0, 0)) +
-  scale_x_continuous(
-    minor_breaks = c(14:42), 
-    breaks = c(13, 18, 22, 26, 31, 35, 40), 
-    labels = c("april", "maj", "juni", "juli", "augusti", "september", "oktober"),
-    limits = c(12, 42), expand = c(0, 0), 
-    sec.axis = sec_axis( ~ ., breaks = c(12:42), 
-      labels = c("", paste0("", c(13:41)), ""))) +
-  theme_sebms() +
-  theme(panel.grid.major.y = element_line(color = "gray"),
-        panel.grid.minor.x = element_line(color = "gray"),
-        panel.grid.major.x = element_line(color = "gray40"),
-        axis.ticks.x = element_line(color = "gray5"),
-        axis.line = element_line(color = "gray5"),
-        plot.title = element_text(hjust = 0.5))
+              aes(x = vecka, y = count)) +
+    geom_bar(stat = 'identity', color = col_palette[1], fill = col_palette[1], width = 0.5) +
+    xlab("") + ylab("") +
+    scale_y_continuous(breaks = c(10 * 1:10), limits = c(0, 100), expand = c(0, 0)) +
+    scale_x_continuous(
+      minor_breaks = c(14:42), 
+      breaks = c(13, 18, 22, 26, 31, 35, 40), 
+      labels = c("april", "maj", "juni", "juli", "augusti", "september", "oktober"),
+      limits = c(12, 42), expand = c(0, 0), 
+      sec.axis = sec_axis( ~ ., breaks = c(12:42), 
+                           labels = c("", paste0("", c(13:41)), ""))) +
+    theme_sebms() +
+    theme(panel.grid.major.y = element_line(color = "gray"),
+          panel.grid.minor.x = element_line(color = "gray"),
+          panel.grid.major.x = element_line(color = "gray40"),
+          axis.ticks.x = element_line(color = "gray5"),
+          axis.line = element_line(color = "gray5"),
+          plot.title = element_text(hjust = 0.5))
   
   return (p)
 }
@@ -428,7 +428,7 @@ sebms_species_histo_plot <- function() {
 #' @export
 #' 
 sebms_species_histo_plot_orig <- function() {
-
+  
   df <- 
     sebms_data_species_histo %>%
     group_by(artnamn, vecka) %>%
@@ -447,13 +447,13 @@ sebms_species_histo_plot_orig <- function() {
       "oktober", "november", "december")
     
     if_else(is.na(lag(w)) | !month(ymd("2015-01-01") + weeks(lag(w))) == month(ymd("2015-01-01") + weeks(w)), 
-      paste0(sprintf("%2i", w), "\n", se_months[month(ymd("2015-01-01") + weeks(w))]), 
-      paste(w))
+            paste0(sprintf("%2i", w), "\n", se_months[month(ymd("2015-01-01") + weeks(w))]), 
+            paste(w))
   }
   
   p <- 
     ggplot(data = df, 
-    aes(x = vecka, y = count)) +
+           aes(x = vecka, y = count)) +
     geom_bar(stat = 'identity', color = col_palette[1], fill = col_palette[1], width = 0.5) +
     xlab("") + ylab("") +
     scale_y_continuous(limits = c(0, max(10, df$count)), expand = c(0, 0.6)) +
@@ -469,11 +469,11 @@ sebms_species_histo_plot_orig <- function() {
     #annotate("text", x = 12, y = 0, label = "Vecka", size = 4) + 
     theme_sebms() +
     theme(panel.grid.major.y = element_line(color = "gray"),
-         # panel.grid.minor.x = element_line(color = "gray"),
-         # panel.grid.major.x = element_line(color = "gray40"),
+          # panel.grid.minor.x = element_line(color = "gray"),
+          # panel.grid.major.x = element_line(color = "gray40"),
           axis.ticks.x = element_line(color = "gray5"),
           axis.ticks.length = unit(0, "cm"),
-        #  axis.text.x = element_text(hjust = 0),
+          #  axis.text.x = element_text(hjust = 0),
           axis.line = element_line(color = "gray5"),
           plot.title = element_text(hjust = 0.5))
   
@@ -491,10 +491,10 @@ sebms_species_histo_plot_orig <- function() {
 #' @export
 #' 
 sebms_species_per_site_sitetype_plot <- function() {
-
+  
   b <- seq(1, 50, by = 5)
   l <- paste0(b, "-", b + 4)
-
+  
   sebms_spss <- 
     sebms_data_species_per_site_sitetype %>%
     mutate(
@@ -504,23 +504,23 @@ sebms_species_per_site_sitetype_plot <- function() {
     summarize(site_count = n_distinct(id)) %>%
     arrange(-desc(sortorder)) %>%
     dplyr::select(interval, sortorder, sitetype, site_count)
-
+  
   col_palette <- sebms_palette
   
   #sbm_spss$sitetype <- factor(sbm_spss$sitetype)
   
   ggplot(data = sebms_spss, aes(x = reorder(interval, sortorder), 
-    y = site_count, fill = sitetype)) +
-  geom_bar(aes(fill = sitetype), stat = "identity", 
-    position = position_dodge(), width = 0.7) +
-  xlab("Antal olika arter på lokalen") + ylab("Antal lokaler") +
-  scale_y_continuous(breaks = c(10 * 1:10), limits = c(0, 100), expand = c(0, 0)) +
-  scale_fill_manual("Metod", values = c("P" = col_palette[1], "T" = col_palette[2])) +
-  theme_sebms() +
-  theme(panel.grid.major.y = element_line(color = "gray"),
-        panel.grid.minor.x = element_line(color = "gray"),
-        axis.ticks.x = element_blank(),
-        axis.line = element_line(color = "gray5"),
-        plot.title = element_text(hjust = 0.5))
-
+                                y = site_count, fill = sitetype)) +
+    geom_bar(aes(fill = sitetype), stat = "identity", 
+             position = position_dodge(), width = 0.7) +
+    xlab("Antal olika arter på lokalen") + ylab("Antal lokaler") +
+    scale_y_continuous(breaks = c(10 * 1:10), limits = c(0, 100), expand = c(0, 0)) +
+    scale_fill_manual("Metod", values = c("P" = col_palette[1], "T" = col_palette[2])) +
+    theme_sebms() +
+    theme(panel.grid.major.y = element_line(color = "gray"),
+          panel.grid.minor.x = element_line(color = "gray"),
+          axis.ticks.x = element_blank(),
+          axis.line = element_line(color = "gray5"),
+          plot.title = element_text(hjust = 0.5))
+  
 }

@@ -192,7 +192,6 @@ sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.25, text.fact
   dpi <- text.factor * 100
   width.calc <- width #/ dpi
   height.calc <- height # / dpi
-  # TODO: fix so it save with name 'temp' or 'precip'
   ggsave(filename = paste0(filename, weathervar, ".png"), plot = plot,
          device = "png", dpi = dpi, width = width.calc, height = height.calc, units = 'cm')
 }

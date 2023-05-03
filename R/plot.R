@@ -87,18 +87,59 @@ sebms_precip_plot <- function(df, my_place) {
 }
 
 #' Plot temperatures
-#' @import dplyr
+#' @import dplyr 
+#' @import stringr
+#' @import lubridate
 #' @import ggplot2
 #' @noRd
-sebms_temp_plot <- function(df, my_place) {
+sebms_temp_plot <- function(my_place = NA) {
   
-  if (missing(df))
-    df <- sebms_data_temp_2015
+  # This is to create the internal normal temperature and precipitation
+  # norm_temp <-   read_xlsx("R/smhi/Normal-temp-1991-2020.xlsx", sheet = 2, skip = 3) %>%
+  #     select(name = Station, id = Klimatnr, latitud = Latitud, longitud = Longitud, jan:dec) %>%
+  #   pivot_longer(cols = jan:dec, names_to = "month", values_to = "temp") %>%
+  #   mutate(monthnr = month(mdy(paste0(month,"01/22"))), period = "1") %>%
+  #   filter(monthnr %in% 4:9)
+  # norm_precip <-   read_xlsx("R/smhi/Normal-nbd-1991-2020.xlsx", sheet = 2, skip = 3) %>%
+  #     select(name = Station, id = Klimatnr, latitud = Latitud, longitud = Longitud, jan:dec) %>%
+  #   pivot_longer(cols = jan:dec, names_to = "month", values_to = "nb") %>%
+  #   mutate(monthnr = month(mdy(paste0(month,"01/22"))), period = "1") %>%
+  #   filter(monthnr %in% 4:9)
+  # 
+  # use_data(norm_temp, norm_precip, internal = TRUE, overwrite = T)
+
+  if(!unique(is.na(my_place))){
+    
+    stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
+      filter(str_detect(name, my_place)) %>% 
+      select(name, id, latitude, longitude) %>% 
+      mutate(id = str_squish(id))
+    
+  }else {
+    my_place <- c("Stock.*Brom.*plats$|^Lund$|Visby.*Flyg|Umeå.*Flyg")
+    stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
+      filter(str_detect(name, my_place)) %>% 
+      select(name, id, latitude, longitude) %>% 
+      mutate(id = str_squish(id))
+  }
   
-  temp <- 
-    df %>% 
-    filter(place %in% my_place) %>% 
-    rename(Period = period.name)
+  #  read.csv2("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/78400/period/corrected-archive/data.csv", skip = 9)
+  
+  temp <- stations[2] %>% 
+    pull() %>% 
+    set_names() %>% # To keep the id-names of the list
+    map(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",.x,"/period/corrected-archive/data.csv")), skip = 12)) %>% 
+    map(~rename_with(.x, ~c("FrDate", "ToDate", "month", "temp", "Delete", "Delete2", "Delete3"))) %>% # Set column names 
+    bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
+    as_tibble() %>% 
+    select(!starts_with("Delete")) %>% # Remove the columns we do not need
+    filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())),
+           month(ymd(paste(month, "01", sep = "-"))) %in% 4:9) %>% ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
+    left_join(stations, by = "id") %>%
+    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd(paste(month, "01", sep = "-")), label = T, abbr = T), temp = as.numeric(temp), monthnr = month(ymd_hms(FrDate)), period = "2") %>% 
+    bind_rows(norm_temp %>% filter(id %in% c(stations[2] %>% pull(id)))) %>% 
+    mutate(name = str_remove(name, " .*|-.*"))
+  
   
   #library(RColorBrewer)
   # BFB8AF D6D2C4 ADCAB8 B9D3DC E9C4C7 9C6114 000080

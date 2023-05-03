@@ -146,36 +146,8 @@ precipplot <- function(df)
 #' @noRd
 sebms_temp_plot <- function(my_place = NA) {
   
-  # This is to create the internal normal temperature and precipitation
-  # norm_temp <-   read_xlsx("R/smhi/Normal-temp-1991-2020.xlsx", sheet = 2, skip = 3) %>%
-  #     select(name = Station, id = Klimatnr, latitud = Latitud, longitud = Longitud, jan:dec) %>%
-  #   pivot_longer(cols = jan:dec, names_to = "month", values_to = "temp") %>%
-  #   mutate(monthnr = month(mdy(paste0(month,"01/22"))), period = "1") %>%
-  #   filter(monthnr %in% 4:9)
-  # norm_precip <-   read_xlsx("R/smhi/Normal-nbd-1991-2020.xlsx", sheet = 2, skip = 3) %>%
-  #     select(name = Station, id = Klimatnr, latitud = Latitud, longitud = Longitud, jan:dec) %>%
-  #   pivot_longer(cols = jan:dec, names_to = "month", values_to = "nb") %>%
-  #   mutate(monthnr = month(mdy(paste0(month,"01/22"))), period = "1") %>%
-  #   filter(monthnr %in% 4:9)
-  # 
-  # use_data(norm_temp, norm_precip, internal = TRUE, overwrite = T)
-
-  if(!unique(is.na(my_place))){
-    
-    stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
-      filter(str_detect(name, my_place)) %>% 
-      select(name, id, latitude, longitude) %>% 
-      mutate(id = str_squish(id))
-    
-  }else {
-    my_place <- c("Stock.*Brom.*plats$|^Lund$|Visby.*Flyg|Umeå.*Flyg")
-    stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
-      filter(str_detect(name, my_place)) %>% 
-      select(name, id, latitude, longitude) %>% 
-      mutate(id = str_squish(id))
-  }
-  
-  #  read.csv2("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/78400/period/corrected-archive/data.csv", skip = 9)
+ 
+  stations <- sebms_station(my_place = my_place)
   
   temp <- stations[2] %>% 
     pull() %>% 

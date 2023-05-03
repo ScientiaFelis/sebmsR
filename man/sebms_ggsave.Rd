@@ -4,18 +4,27 @@
 \alias{sebms_ggsave}
 \title{Saves a ggplot object as a PNG file, resizing using pixel dimensions and a text scaling factor}
 \usage{
-sebms_ggsave(plot, width = 9.25, height = 12.67, text.factor = 3, filename)
+sebms_ggsave(
+  plot,
+  filename,
+  width = 12.67,
+  height = 9.25,
+  text.factor = 3,
+  weathervar = "Temp"
+)
 }
 \arguments{
 \item{plot}{a ggplot object}
+
+\item{filename}{the path to the output file}
 
 \item{width}{pixel width}
 
 \item{height}{pixel height}
 
-\item{text.factor}{text scaling factor (default is 1)}
+\item{text.factor}{text scaling factor (default is 3)}
 
-\item{filename}{the path to the output file}
+\item{weathervar}{which weather variable it shoulld put in the name; 'Temp' or 'Precip'}
 }
 \description{
 Saves a ggplot object as a PNG file, resizing using pixel dimensions and a text scaling factor

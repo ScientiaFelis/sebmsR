@@ -150,24 +150,73 @@ sebms_temp_plot <- function(my_place = NA) {
   #col_pal_temp <- c("#D73027", "#1A9850")
   #col_pal_temp <- sebms_palette
   
-  g <- 
-    ggplot(temp, aes(x = reorder(month.name, month), 
-      y = temp, group = Period, linetype = Period, 
-      colour = Period)) + 
-    geom_line(stat = "identity", size = 1) +
-    facet_wrap(~ place, ncol = 1) +
-    scale_linetype_manual(values = c("dashed", "solid")) +
-    scale_color_manual(values = sebms_palette) + 
-    scale_y_continuous(expand = c(0,0), limits = c(0,25)) +
-    #coord_cartesian(expand = F, ylim = c(0,25), xlim = c(0,NA)) +
-    labs(x = NULL, y = "Temperatur (°C)") + 
-  #  ggtitle(temp$place) + 
-    theme_sebms()  #title_sz = 32, x_title_sz = 22, 
-      #y_title_sz = 24, y_sz = 28, legend_position = "none") +
+  tempplot <- function(df)
+  {ggplot(data = df, aes(x = reorder(month, monthnr), 
+                         y = temp, group = period, linetype = period, 
+                         colour = period)) + 
+      geom_line(stat = "identity", linewidth = 1) +
+      facet_wrap(~ name, ncol = 1) +
+      scale_linetype_manual(values = c("dashed", "solid")) +
+      scale_color_manual(values = sebms_palette) + 
+      scale_y_continuous(expand = c(0,0), limits = c(0,25)) +
+      #coord_cartesian(expand = F, ylim = c(0,25), xlim = c(0,NA)) +
+      labs(x = NULL, y = "Temperatur (°C)") + 
+      #  ggtitle(temp$place) + 
+      theme_sebms()  #title_sz = 32, x_title_sz = 22, 
+    #y_title_sz = 24, y_sz = 28, legend_position = "none") +
     #guide_legend(label.position = "none")
+  }
   
-  g
+  g <- temp %>% 
+    group_by(id) %>% 
+    nest() %>%  
+    mutate(plots = map(data, tempplot))
+  
+g$plots  
+
 }
+
+
+#' Saves a ggplot object as a PNG file, resizing using pixel dimensions and a text scaling factor
+#' 
+#' @param plot a ggplot object
+#' @param filename the path to the output file
+#' @param width pixel width
+#' @param height pixel height
+#' @param text.factor text scaling factor (default is 3)
+#' @param weathervar which weather variable it shoulld put in the name; 'Temp' or 'Precip'
+#' @importFrom ggplot2 ggsave
+#' @export
+sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.25, text.factor = 3, weathervar = "Temp") 
+{
+  dpi <- text.factor * 100
+  width.calc <- width #/ dpi
+  height.calc <- height # / dpi
+  # TODO: fix so it save with name 'temp' or 'precip'
+  ggsave(filename = paste0(filename, weathervar, ".png"), plot = plot,
+         device = "png", dpi = dpi, width = width.calc, height = height.calc, units = 'cm')
+}
+
+#' Creates png Figures  of Temperature and Precipitation for each Site
+#' 
+#' @param my_place the places you want weather data pngs from (default to Umeå, Stockholm, Visby, Lund)
+#' @return a png file
+#' @import ggplot2
+#' @importFrom purrr map map2
+#' @import dplyr
+#' @export
+
+sebms_precip_temp_png <- function(my_place = NA) {
+  # TODO: make it create temperature and precipitation plots
+  
+  plots <- sebms_temp_plot(my_place) 
+  
+  if(is.na(my_place)) 
+    my_place <- c("Stockholm","Lund", "Visby","Umeå")
+  
+  map2(plots, my_place, sebms_ggsave)
+}
+
 
 #' Plot of temperature and precipitation data for 2015
 #' 
@@ -194,7 +243,7 @@ sebms_precip_temp_plot <- function(filter_cities, df_precip, df_temp) {
   
   if (missing(filter_cities))
     filter_cities <- c("Umeå", "Stockholm", "Visby", "Lund")
-
+  
   if (missing(df_precip))
     df_precip <- sebms_data_precip_2015
   
@@ -210,9 +259,9 @@ sebms_precip_temp_plot <- function(filter_cities, df_precip, df_temp) {
   
   tempfile_png <- function(prefix) {
     file.path(dirname(tempdir()), 
-      paste0(prefix, basename(tempfile(fileext = ".png"))))
+              paste0(prefix, basename(tempfile(fileext = ".png"))))
   }
-
+  
   fn_temp <- map_chr(rep("temp-", length(filter_cities)), tempfile_png)
   tplots <- map(filter_cities, function(x) sebms_temp_plot(df_temp, x))
   map2(tplots, fn_temp, save_pplot)
@@ -235,25 +284,9 @@ sebms_precip_temp_plot <- function(filter_cities, df_precip, df_temp) {
   
 }
 
-#' Saves a ggplot object as a PNG file, resizing using pixel dimensions and a text scaling factor
-#' 
-#' @param plot a ggplot object
-#' @param width pixel width
-#' @param height pixel height
-#' @param text.factor text scaling factor (default is 1)
-#' @param filename the path to the output file
-#' @importFrom ggplot2 ggsave
-#' @export
-sebms_ggsave <- function(plot, width = 9.25, height = 12.67, 
-  text.factor = 3, filename) 
-{
-  dpi <- text.factor * 100
-   width.calc <- width #/ dpi
-   height.calc <- height # / dpi
-  # 
-  ggsave(device = "png", filename = filename, plot = plot,
-    dpi = dpi, width = width.calc, height = height.calc, units = 'cm')
-}
+
+
+
 
 
 #' Cumulative specielist plots

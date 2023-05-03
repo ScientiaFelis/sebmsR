@@ -83,15 +83,25 @@ sebms_station <- function(my_place = NA, tempstat = TRUE) {
         select(name, id, latitude, longitude) %>% 
         mutate(id = str_squish(id))
     }  
-    }
- return(stations)
+  }
+  return(stations)
 }
 
 #' Plot precipitation for 2015
 #' @import dplyr
+#' @import purrr
+#' @import stringr
 #' @import ggplot2
 #' @noRd
-sebms_precip_plot <- function(my_place) {
+sebms_precip_plot <- function(my_place = NA, year = lubridate::year(lubridate::today())-1) {
+  
+  
+  
+  if(year == lubridate::year(lubridate::today()) & lubridate::month(lubridate::today()) < 11){
+    cat("THERE IS NO PRECIPITATION DATA FOR THIS YEAR YET!\n")
+    cat("You have to wait until NOVEMBER.\n\n")
+    return()
+  }
   
   stations <- sebms_station(my_place = my_place, tempstat = FALSE)
   
@@ -103,8 +113,9 @@ sebms_precip_plot <- function(my_place) {
     bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
     as_tibble() %>% 
     select(!starts_with("Delete")) %>% # Remove the columns we do not need
-    filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())),
-           month(ymd(paste(month, "01", sep = "-"))) %in% 4:9) %>% ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
+    filter(lubridate::year(FrDate) == year,
+           # filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())), ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
+           month(ymd(paste(month, "01", sep = "-"))) %in% 4:9) %>% 
     left_join(stations, by = "id") %>%
     transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd(paste(month, "01", sep = "-")), label = T, abbr = T), nb = as.numeric(nb), monthnr = month(ymd_hms(FrDate)), period = "2") %>% 
     bind_rows(norm_precip %>% filter(id %in% c(stations[2] %>% pull(id)))) %>% 
@@ -141,12 +152,18 @@ sebms_precip_plot <- function(my_place) {
 #' Plot temperatures
 #' @import dplyr 
 #' @import stringr
-#' @import lubridate
+#' @import purrr
 #' @import ggplot2
 #' @noRd
-sebms_temp_plot <- function(my_place = NA) {
+sebms_temp_plot <- function(my_place = NA, year = lubridate::year(lubridate::today())-1) {
   
- 
+  
+  if(year == lubridate::year(lubridate::today()) & lubridate::month(lubridate::today()) < 11){
+    cat("THERE IS NO TEMPERATURE DATA FOR THIS YEAR YET!\n")
+    cat("You have to wait until NOVEMBER.\n\n")
+    return()
+  }
+  
   stations <- sebms_station(my_place = my_place)
   
   temp <- stations[2] %>% 
@@ -157,8 +174,9 @@ sebms_temp_plot <- function(my_place = NA) {
     bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
     as_tibble() %>% 
     select(!starts_with("Delete")) %>% # Remove the columns we do not need
-    filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())),
-           month(ymd(paste(month, "01", sep = "-"))) %in% 4:9) %>% ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
+    filter(lubridate::year(FrDate) == year,
+           #filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())), ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
+           month(ymd(paste(month, "01", sep = "-"))) %in% 4:9) %>% 
     left_join(stations, by = "id") %>%
     transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd(paste(month, "01", sep = "-")), label = T, abbr = T), temp = as.numeric(temp), monthnr = month(ymd_hms(FrDate)), period = "2") %>% 
     bind_rows(norm_temp %>% filter(id %in% c(stations[2] %>% pull(id)))) %>% 
@@ -223,24 +241,23 @@ sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.25, text.fact
 #' Creates png Figures  of Temperature and Precipitation for each Site
 #' 
 #' @param my_place the places you want weather data pngs from (default to Umeå, Stockholm, Visby, Lund)
-#' @return a png file
+#' @return png files with temperature and precipitation
 #' @import ggplot2
 #' @importFrom purrr map map2
 #' @import dplyr
 #' @export
 
-sebms_weather_png <- function(my_place = NA) {
+sebms_weather_png <- function(my_place = NA, year = lubridate::year(lubridate::today())-1) {
   # TODO: make it create both temperature and precipitation plots
   
-  plotst <- sebms_temp_plot(my_place) 
-  plotsp <- sebms_precip_plot(my_place) 
+  plotst <- sebms_temp_plot(my_place = my_place, year = year) 
+  plotsp <- sebms_precip_plot(my_place = my_place, year = year) 
   
   if(is.na(my_place)) 
     my_place <- c("Lund","Stockholm", "Umeå","Visby")
   
-  map2(plotst, my_place, sebms_ggsave)
-  map2(plotsp, my_place, sebms_ggsave, weathervar = "Precip")
-  
+  try(map2(plotst, my_place, sebms_ggsave), silent = T)
+  try(map2(plotsp, my_place, sebms_ggsave, weathervar = "Precip"), silent = T)
 }
 
 

@@ -4,13 +4,16 @@
 \alias{sebms_weather_png}
 \title{Creates png Figures  of Temperature and Precipitation for each Site}
 \usage{
-sebms_weather_png(my_place = NA)
+sebms_weather_png(
+  my_place = NA,
+  year = lubridate::year(lubridate::today()) - 1
+)
 }
 \arguments{
 \item{my_place}{the places you want weather data pngs from (default to Umeå, Stockholm, Visby, Lund)}
 }
 \value{
-a png file
+png files with temperature and precipitation
 }
 \description{
 Creates png Figures  of Temperature and Precipitation for each Site

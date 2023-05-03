@@ -1,6 +1,6 @@
 Package: swedishbutterflies
 Title: Swedish Butterfly Monitoring Programme Tools
-Version: 0.2.0
+Version: 0.4.0
 Authors@R: c(
     person("Markus", "Skyttner", email = "markus.skyttner@nrm.se", role = c("aut", "cre")),
     person("Lars", "Pettersson", role = c("aut"))
@@ -19,8 +19,10 @@ Imports: ggplot2,
     rasterVis,
     sp,
     dplyr,
+    stringr,
     magick,
     purrr,
+    forcats,
     rstudioapi,
     tibble,
     jsonlite,

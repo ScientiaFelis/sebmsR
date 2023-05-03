@@ -6,6 +6,17 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/rekonstrukt/swedishbutterflies/issues)
 * [The commit log](https://github.com/rekonstrukt/swedishbutterflies/commits/master)
 
+# v 0.4.0
+
+* New function to get station names fro both temperature and precipitation data.
+* Make the functions work better together.
+* Function `sebms_weather_png()` make pngs for temp and precip figures.
+* Possible to chose year
+
+# v 0.3.0
+
+* Recode the plot functions to produce png's and download weather data from SMHI
+
 # v 0.2.0
 
 * Redo the plot functions to conform to the look in the Butterfly report.

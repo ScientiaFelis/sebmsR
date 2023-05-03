@@ -46,19 +46,70 @@ theme_sebms <- function(title_sz = 24,
 #' @export
 sebms_palette <- c("#BE4B48", "#9BBB59") #"#C0504D", 
 
+#' Extract Station names and id
+#' 
+#' @import jsonlite
+#' @noRd
+
+sebms_station <- function(my_place = NA, tempstat = TRUE) {
+  
+  if(tempstat){
+  if(!unique(is.na(my_place))){
+    
+    stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
+      filter(str_detect(name, my_place)) %>% 
+      select(name, id, latitude, longitude) %>% 
+      mutate(id = str_squish(id))
+    
+  }else {
+    my_place <- c("Stock.*Obs.*len$|^Lund$|Visby.*Flyg|Umeå.*Flyg")
+    stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
+      filter(str_detect(name, my_place)) %>% 
+      select(name, id, latitude, longitude) %>% 
+      mutate(id = str_squish(id))
+  }
+  }else{
+    if(!unique(is.na(my_place))){
+      
+      stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
+        filter(str_detect(name, my_place)) %>% 
+        select(name, id, latitude, longitude) %>% 
+        mutate(id = str_squish(id))
+      
+    }else {
+      my_place <- c("Stock.*Observ.*len$|^Lund$|Visby.*Flyg|Umeå-Röbäck")
+      stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
+        filter(str_detect(name, my_place)) %>% 
+        select(name, id, latitude, longitude) %>% 
+        mutate(id = str_squish(id))
+    }  
+    }
+ return(stations)
+}
+
 #' Plot precipitation for 2015
 #' @import dplyr
 #' @import ggplot2
 #' @noRd
-sebms_precip_plot <- function(df, my_place) {
+sebms_precip_plot <- function(my_place) {
   
-  if (missing(df))
-    df <- sebms_data_precip_2015
+  stations <- sebms_station(my_place = my_place, tempstat = FALSE)
   
-  nb <- 
-    df %>% 
-    filter(place %in% my_place) %>%
-    arrange(month, period.name)
+  precip <- stations[2] %>% 
+    pull() %>% 
+    set_names() %>% # To keep the id-names of the list
+    map(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/23/station/",.x,"/period/corrected-archive/data.csv")), skip = 12)) %>% 
+    map(~rename_with(.x, ~c("FrDate", "ToDate", "month", "nb", "Delete", "Delete2", "Delete3"))) %>% # Set column names 
+    bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
+    as_tibble() %>% 
+    select(!starts_with("Delete")) %>% # Remove the columns we do not need
+    filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())),
+           month(ymd(paste(month, "01", sep = "-"))) %in% 4:9) %>% ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
+    left_join(stations, by = "id") %>%
+    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd(paste(month, "01", sep = "-")), label = T, abbr = T), nb = as.numeric(nb), monthnr = month(ymd_hms(FrDate)), period = "2") %>% 
+    bind_rows(norm_precip %>% filter(id %in% c(stations[2] %>% pull(id)))) %>% 
+    mutate(name = str_remove(name, " .*|-.*"))
+  
   
   #col_palette <- sebms_palette
   #http://colorbrewer2.org/#type=diverging&scheme=RdYlGn&n=5
@@ -68,22 +119,23 @@ sebms_precip_plot <- function(df, my_place) {
   # br <- c(sort(unique(nb$month)), x_tick)
   # lab <- c(sort(unique(nb$month.name)), rep(c(""), len))
   # 
-  g <- nb %>% 
-    ggplot(aes(
-      x = reorder(month.name, month), 
-      y = nb, 
-      fill = reorder(period.name, period))) + 
+precipplot <- function(df)
+  {ggplot(data = df, aes(x = reorder(month, monthnr), y = nb, fill = forcats::fct_rev(period))) + 
     geom_bar(stat = "identity", position = "dodge", width = .7) + 
-    facet_wrap(~ place, ncol = 1) +
-    #guides(fill = "none") + 
+    facet_wrap(~ name, ncol = 1) +
     #scale_x_continuous(breaks = br, labels = lab) +
     scale_y_continuous(expand = c(0,0), limits = c(0,250)) +
     scale_fill_manual(values = rev(sebms_palette)) + 
     labs(x = NULL, y = "Nederbörd (mm)") +
-    #  ggtitle(nb$place) + 
     theme_sebms()
+    }
+
+  p <- precip %>% 
+    group_by(id) %>% 
+    nest() %>%  
+    mutate(plots = map(data, precipplot))
   
-  return(g)
+  p$plots
 }
 
 #' Plot temperatures

@@ -229,17 +229,22 @@ sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.25, text.fact
 #' @import dplyr
 #' @export
 
-sebms_precip_temp_png <- function(my_place = NA) {
-  # TODO: make it create temperature and precipitation plots
+sebms_weather_png <- function(my_place = NA) {
+  # TODO: make it create both temperature and precipitation plots
   
-  plots <- sebms_temp_plot(my_place) 
+  plotst <- sebms_temp_plot(my_place) 
+  plotsp <- sebms_precip_plot(my_place) 
   
   if(is.na(my_place)) 
-    my_place <- c("Stockholm","Lund", "Visby","Umeå")
+    my_place <- c("Lund","Stockholm", "Umeå","Visby")
   
-  map2(plots, my_place, sebms_ggsave)
+  map2(plotst, my_place, sebms_ggsave)
+  map2(plotsp, my_place, sebms_ggsave, weathervar = "Precip")
+  
 }
 
+
+# TODO FIX THE FUNCTION BELOW THAT PRODUCE A FIGURE IN THE RMD 
 
 #' Plot of temperature and precipitation data for 2015
 #' 
@@ -273,7 +278,7 @@ sebms_precip_temp_plot <- function(filter_cities, df_precip, df_temp) {
   if (missing(df_temp))
     df_temp <- sebms_data_temp_2015
   
-  save_pplot <- function(g, fn, w = 14, h = 10) {
+  save_pplot <- function(g, fn, w = 24, h = 18) {
     ggsave(
       filename = fn, 
       plot = g, device = "png", 

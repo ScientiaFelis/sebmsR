@@ -6,6 +6,11 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/rekonstrukt/swedishbutterflies/issues)
 * [The commit log](https://github.com/rekonstrukt/swedishbutterflies/commits/master)
 
+# v 0.4.1
+
+* Change station from Visby flygplats to Visby
+* Change place for `year` variable in `sebms_weather_png()` so it now comes first. Now it is enough to write for example `sebms_weather_png(2021)`
+
 # v 0.4.0
 
 * New function to get station names fro both temperature and precipitation data.

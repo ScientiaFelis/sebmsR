@@ -5,8 +5,8 @@
 \title{Creates png Figures  of Temperature and Precipitation for each Site}
 \usage{
 sebms_weather_png(
-  my_place = NA,
-  year = lubridate::year(lubridate::today()) - 1
+  year = lubridate::year(lubridate::today()) - 1,
+  my_place = NA
 )
 }
 \arguments{

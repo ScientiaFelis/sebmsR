@@ -247,8 +247,7 @@ sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.25, text.fact
 #' @import dplyr
 #' @export
 
-sebms_weather_png <- function(my_place = NA, year = lubridate::year(lubridate::today())-1) {
-  # TODO: make it create both temperature and precipitation plots
+sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_place = NA) {
   
   plotst <- sebms_temp_plot(my_place = my_place, year = year) 
   plotsp <- sebms_precip_plot(my_place = my_place, year = year) 

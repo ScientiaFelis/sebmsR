@@ -54,30 +54,30 @@ sebms_palette <- c("#BE4B48", "#9BBB59") #"#C0504D",
 sebms_station <- function(my_place = NA, tempstat = TRUE) {
   
   if(tempstat){
-    if(!unique(is.na(my_place))){
+    if(unique(is.na(my_place))){
       
+      my_place <- c("Stock.*Obs.*len$|^Lund$|Visby.*Flyg|Umeå.*Flyg")
       stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
         filter(str_detect(name, my_place)) %>% 
         select(name, id, latitude, longitude) %>% 
         mutate(id = str_squish(id))
       
     }else {
-      my_place <- c("Stock.*Obs.*len$|^Lund$|Visby.*Flyg|Umeå.*Flyg")
       stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
         filter(str_detect(name, my_place)) %>% 
         select(name, id, latitude, longitude) %>% 
         mutate(id = str_squish(id))
     }
   }else{
-    if(!unique(is.na(my_place))){
-      
+    if(unique(is.na(my_place))){
+      my_place <- c("Stock.*Observ.*len$|^Lund$|Visby$|Umeå-Röbäck")
       stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
         filter(str_detect(name, my_place)) %>% 
         select(name, id, latitude, longitude) %>% 
         mutate(id = str_squish(id))
       
     }else {
-      my_place <- c("Stock.*Observ.*len$|^Lund$|Visby.*Flyg|Umeå-Röbäck")
+      
       stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
         filter(str_detect(name, my_place)) %>% 
         select(name, id, latitude, longitude) %>% 

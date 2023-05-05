@@ -323,8 +323,9 @@ sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.25, text.fact
 
 #' Creates png Figures  of Temperature and Precipitation for each Site
 #' 
+#' @param year from what year you want the temp and precipitation to be
 #' @param my_place the places you want weather data pngs from (default to Umeå, Stockholm, Visby, Lund)
-#' @return png files with temperature and precipitation
+#' @return png files with temperature and precipitation figures
 #' @import ggplot2
 #' @importFrom purrr map map2
 #' @import dplyr
@@ -332,10 +333,12 @@ sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.25, text.fact
 
 sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_place = NA) {
   
-  plotst <- sebms_temp_plot(my_place = my_place, year = year) 
-  plotsp <- sebms_precip_plot(my_place = my_place, year = year) 
+  plotst <- sebms_temp_data(my_place = my_place, year = year) %>% 
+    sebms_tempplot()
+  plotsp <- sebms_precip_data(my_place = my_place, year = year) %>% 
+    sebms_precipplot()
   
-  if(is.na(my_place)) 
+  if(unique(is.na(my_place))) 
     my_place <- c("Lund","Stockholm", "Umeå","Visby")
   
   try(map2(plotst, my_place, sebms_ggsave), silent = T)

@@ -229,7 +229,7 @@ sebms_palette <- c("#BE4B48", "#9BBB59") #"#C0504D",
 #' @import purrr
 #' 
 #' @noRd
-sebms_precipplot <- function(precip) {
+sebms_precipplot <- function(precip, colours = sebms_palette) {
   
   #library(RColorBrewer)
   # BFB8AF D6D2C4 ADCAB8 B9D3DC E9C4C7 9C6114 000080
@@ -255,7 +255,7 @@ sebms_precipplot <- function(precip) {
       facet_wrap(~ name, ncol = 1) +
       #scale_x_continuous(breaks = br, labels = lab) +
       scale_y_continuous(expand = c(0,0), limits = c(0,250)) +
-      scale_fill_manual(values = rev(sebms_palette)) + 
+      scale_fill_manual(values = rev(colours)) + 
       labs(x = NULL, y = "Nederbörd (mm)") +
       theme_sebms()
     
@@ -278,7 +278,7 @@ sebms_precipplot <- function(precip) {
 #' @import purrr
 #' 
 #' @noRd
-sebms_tempplot <- function(temp){
+sebms_tempplot <- function(temp, colours = sebms_palette){
   
   plotfunct <- function(df)
   {ggplot(data = df, aes(x = reorder(month, monthnr), 
@@ -287,7 +287,7 @@ sebms_tempplot <- function(temp){
       geom_line(stat = "identity", linewidth = 1) +
       facet_wrap(~ name, ncol = 1) +
       scale_linetype_manual(values = c("dashed", "solid")) +
-      scale_color_manual(values = sebms_palette) + 
+      scale_color_manual(values = colours) + 
       scale_y_continuous(expand = c(0,0), limits = c(0,25)) +
       #coord_cartesian(expand = F, ylim = c(0,25), xlim = c(0,NA)) +
       labs(x = NULL, y = "Temperatur (°C)") + 
@@ -330,18 +330,27 @@ sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.25, text.fact
 #' 
 #' @param year from what year you want the temp and precipitation to be
 #' @param my_place the places you want weather data pngs from (default to Umeå, Stockholm, Visby, Lund)
+#' @param savepng logical, should the figures be saved as pngs. They are always shown in plot window
+#' @param colours add your own colours to separate the year data from the normal values (1991-2020)
+#'
 #' @return png files with temperature and precipitation figures
 #' @import ggplot2
 #' @importFrom purrr map map2
 #' @import dplyr
 #' @export
 
-sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_place = NA, savepng = TRUE) {
+sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_place = NA, savepng = TRUE, colours = sebms_palette) {
+ 
+  if(length(colours) != 2) {
+    cat("GIVE TWO COLOURS")
+    cat("For example; colours = c('#BE4B48', '#9BBB59')")
+    return()
+  }
   
   plotst <- sebms_temp_data(my_place = my_place, year = year) %>% 
-    sebms_tempplot()
+    sebms_tempplot(colours = colours)
   plotsp <- sebms_precip_data(my_place = my_place, year = year) %>% 
-    sebms_precipplot()
+    sebms_precipplot(colours = colours)
   
   if(savepng) {
     

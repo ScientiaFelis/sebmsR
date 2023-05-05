@@ -6,14 +6,17 @@
 \usage{
 sebms_weather_png(
   year = lubridate::year(lubridate::today()) - 1,
-  my_place = NA
+  my_place = NA,
+  savepng = TRUE
 )
 }
 \arguments{
+\item{year}{from what year you want the temp and precipitation to be}
+
 \item{my_place}{the places you want weather data pngs from (default to Umeå, Stockholm, Visby, Lund)}
 }
 \value{
-png files with temperature and precipitation
+png files with temperature and precipitation figures
 }
 \description{
 Creates png Figures  of Temperature and Precipitation for each Site

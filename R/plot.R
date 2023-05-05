@@ -336,18 +336,23 @@ sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.25, text.fact
 #' @import dplyr
 #' @export
 
-sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_place = NA) {
+sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_place = NA, savepng = TRUE) {
   
   plotst <- sebms_temp_data(my_place = my_place, year = year) %>% 
     sebms_tempplot()
   plotsp <- sebms_precip_data(my_place = my_place, year = year) %>% 
     sebms_precipplot()
   
-  if(unique(is.na(my_place))) 
-    my_place <- c("Lund","Stockholm", "Umeå","Visby")
+  if(savepng) {
+    
+    if(unique(is.na(my_place))) # This is the default station names
+      my_place <- c("Lund","Stockholm", "Umeå","Visby")
+    
+    try(map2(plotst, my_place, sebms_ggsave), silent = T)
+    try(map2(plotsp, my_place, sebms_ggsave, weathervar = "Precip"), silent = T)
+  }
   
-  try(map2(plotst, my_place, sebms_ggsave), silent = T)
-  try(map2(plotsp, my_place, sebms_ggsave, weathervar = "Precip"), silent = T)
+  list(plotst, plotsp)
 }
 
 

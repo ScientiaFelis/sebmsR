@@ -49,6 +49,8 @@ sebms_palette <- c("#BE4B48", "#9BBB59") #"#C0504D",
 #' Extract Station names and id
 #' 
 #' @importFrom jsonlite fromJSON
+#' @import dplyr
+#' @import stringr
 #' @noRd
 
 sebms_default_station <- function(my_place, tempstat = TRUE) {
@@ -76,7 +78,9 @@ sebms_default_station <- function(my_place, tempstat = TRUE) {
 #' 
 #' This takes the given list by users and match only one station to the possible with similar names
 #' 
-#' 
+#' @importFrom jsonlite fromJSON
+#' @import dplyr
+#' @import stringr
 #' @noRd
 sebms_user_station <- function(my_place) {
   #TODO: Fix the my_place to be able to be a list of names. This have to be translated to regex that sorts out a single station per name. 
@@ -92,36 +96,19 @@ sebms_user_station <- function(my_place) {
     select(name, id, latitude, longitude) %>% 
     mutate(id = str_squish(id))
   
-  stations <- stations %>% 
-    pull(id) %>% 
-    set_names() %>% # To keep the id-names of the list
-    map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/23/station/",.x,"/period/corrected-archive/data.csv")), skip = 12))) %>% 
-    map(possibly(~rename_with(.x, ~c("FrDate", "Delete", "Delete2", "Delete3", "Delete4", "Delete5", "Delete6")))) %>% # Set column names 
-    bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
-    as_tibble() %>% 
-    select(!starts_with("Delete")) %>% # Remove the columns we do not need
-    filter(lubridate::year(ymd_hms(FrDate)) == year,
-           # filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())), ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
-           month(ymd_hms(FrDate)) %in% 4:9) %>% 
-    left_join(stations, by = "id") %>%
-    mutate(name = str_remove(name, " .*|-.*")) %>% 
-    group_by(name) %>% 
-    distinct(id, .keep_all = TRUE) %>% 
-    slice(n()) %>% 
-    select(-FrDate)
-  
   return(stations)
 }
 
 
 
-#' Plot precipitation for 2015
+#' Download and Filter out Data from SMHI
 #' @import dplyr
 #' @import purrr
+#' @import lubridate
 #' @import stringr
 #' @import ggplot2
 #' @noRd
-sebms_precip_plot <- function(my_place = NA, year = lubridate::year(lubridate::today())-1) {
+sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::today())-1) {
   
   
   

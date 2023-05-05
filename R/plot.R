@@ -41,10 +41,7 @@ theme_sebms <- function(title_sz = 24,
   return(theme_sb)
 }
 
-#' Palette used in plots
-#' @return vector of color hex codes
-#' @export
-sebms_palette <- c("#BE4B48", "#9BBB59") #"#C0504D", 
+
 
 #' Extract Station names and id
 #' 
@@ -100,8 +97,7 @@ sebms_user_station <- function(my_place) {
 }
 
 
-
-#' Download and Filter out Data from SMHI
+#' Download and Filter out Precipitation Data from SMHI
 #' @import dplyr
 #' @import purrr
 #' @import lubridate
@@ -160,46 +156,7 @@ sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::t
   return(precip)
 }
 
-#col_palette <- sebms_palette
-#http://colorbrewer2.org/#type=diverging&scheme=RdYlGn&n=5
-#col_palette <- c("#a6d96a", "#d7191c")
-# x_tick <- c(0, unique(nb$month)+0.5)
-# len <- length(x_tick)
-# br <- c(sort(unique(nb$month)), x_tick)
-# lab <- c(sort(unique(nb$month.name)), rep(c(""), len))
-# 
-
-#' Make a ggplot from Precipitation Data
-#' 
-#' This takes a dataframe from sebms_precip_data and makes a precipitation figure from that 
-#' 
-#' @import ggplot2
-#' @import dplyr
-#' @import purrr
-#' 
-#' @noRd
-sebms_precipplot <- function(precip) {
-  
-  plotfunc <- function(df){
-    ggplot(data = df, aes(x = reorder(month, monthnr), y = nb, fill = forcats::fct_rev(period))) + 
-      geom_bar(stat = "identity", position = "dodge", width = .7) + 
-      facet_wrap(~ name, ncol = 1) +
-      #scale_x_continuous(breaks = br, labels = lab) +
-      scale_y_continuous(expand = c(0,0), limits = c(0,250)) +
-      scale_fill_manual(values = rev(sebms_palette)) + 
-      labs(x = NULL, y = "Nederbörd (mm)") +
-      theme_sebms()
-    
-  }
-  p <- precip %>% 
-    group_by(id) %>% 
-    nest() %>%  
-    mutate(plots = map(data, plotfunc))
-  
-  p$plots
-}
-
-#' Plot temperatures
+#' Download and Filter out Temperature Data from SMHI
 #' @import dplyr 
 #' @import stringr
 #' @import lubridate
@@ -255,14 +212,62 @@ sebms_temp_data <- function(my_place = NA, year = lubridate::year(lubridate::tod
   
   return(temp) 
 }
-#library(RColorBrewer)
-# BFB8AF D6D2C4 ADCAB8 B9D3DC E9C4C7 9C6114 000080
-#RColorBrewer::brewer.pal(7, "RdYlGn")
-#RColorBrewer::display.brewer.pal(7, "RdYlGn")
-# "#D73027" "#FC8D59" "#FEE08B" "#FFFFBF" "#D9EF8B" "#91CF60" "#1A9850"
 
-#col_pal_temp <- c("#D73027", "#1A9850")
-#col_pal_temp <- sebms_palette
+
+#' Palette used in plots
+#' @return vector of color hex codes
+#' @export
+sebms_palette <- c("#BE4B48", "#9BBB59") #"#C0504D", 
+
+
+#' Make a ggplot from Precipitation Data
+#' 
+#' This takes a dataframe from sebms_precip_data and makes a precipitation figure from that 
+#' 
+#' @import ggplot2
+#' @import dplyr
+#' @import purrr
+#' 
+#' @noRd
+sebms_precipplot <- function(precip) {
+  
+  #library(RColorBrewer)
+  # BFB8AF D6D2C4 ADCAB8 B9D3DC E9C4C7 9C6114 000080
+  #RColorBrewer::brewer.pal(7, "RdYlGn")
+  #RColorBrewer::display.brewer.pal(7, "RdYlGn")
+  # "#D73027" "#FC8D59" "#FEE08B" "#FFFFBF" "#D9EF8B" "#91CF60" "#1A9850"
+  
+  #col_pal_temp <- c("#D73027", "#1A9850")
+  #col_pal_temp <- sebms_palette
+  
+  #col_palette <- sebms_palette
+  #http://colorbrewer2.org/#type=diverging&scheme=RdYlGn&n=5
+  #col_palette <- c("#a6d96a", "#d7191c")
+  # x_tick <- c(0, unique(nb$month)+0.5)
+  # len <- length(x_tick)
+  # br <- c(sort(unique(nb$month)), x_tick)
+  # lab <- c(sort(unique(nb$month.name)), rep(c(""), len))
+  # 
+  
+  plotfunc <- function(df){
+    ggplot(data = df, aes(x = reorder(month, monthnr), y = nb, fill = forcats::fct_rev(period))) + 
+      geom_bar(stat = "identity", position = "dodge", width = .7) + 
+      facet_wrap(~ name, ncol = 1) +
+      #scale_x_continuous(breaks = br, labels = lab) +
+      scale_y_continuous(expand = c(0,0), limits = c(0,250)) +
+      scale_fill_manual(values = rev(sebms_palette)) + 
+      labs(x = NULL, y = "Nederbörd (mm)") +
+      theme_sebms()
+    
+  }
+  p <- precip %>% 
+    group_by(id) %>% 
+    nest() %>%  
+    mutate(plots = map(data, plotfunc))
+  
+  p$plots
+}
+
 
 #' Make a ggplot from Temperature Data
 #' 

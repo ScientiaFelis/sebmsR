@@ -53,37 +53,31 @@ sebms_palette <- c("#BE4B48", "#9BBB59") #"#C0504D",
 
 sebms_station <- function(my_place = NA, tempstat = TRUE) {
   
-  if(tempstat){
-    if(unique(is.na(my_place))){
-      
+  if(unique(is.na(my_place))){
+    
+    if(tempstat){
       my_place <- c("Stock.*Obs.*len$|^Lund$|Visby.*Flyg|Umeå.*Flyg")
       stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
         filter(str_detect(name, my_place)) %>% 
         select(name, id, latitude, longitude) %>% 
         mutate(id = str_squish(id))
       
-    }else {
-      stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
-        filter(str_detect(name, my_place)) %>% 
-        select(name, id, latitude, longitude) %>% 
-        mutate(id = str_squish(id))
-    }
-  }else{
-    if(unique(is.na(my_place))){
+      
+    }else{
       my_place <- c("Stock.*Observ.*len$|^Lund$|Visby$|Umeå-Röbäck")
       stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
         filter(str_detect(name, my_place)) %>% 
         select(name, id, latitude, longitude) %>% 
         mutate(id = str_squish(id))
       
-    }else {
-      
-      stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
-        filter(str_detect(name, my_place)) %>% 
-        select(name, id, latitude, longitude) %>% 
-        mutate(id = str_squish(id))
-    }  
-  }
+    }
+  }else{
+    stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
+      filter(str_detect(name, my_place)) %>% 
+      select(name, id, latitude, longitude) %>% 
+      mutate(id = str_squish(id))
+  }  
+  
   return(stations)
 }
 
@@ -95,7 +89,11 @@ sebms_station <- function(my_place = NA, tempstat = TRUE) {
 #' @noRd
 sebms_precip_plot <- function(my_place = NA, year = lubridate::year(lubridate::today())-1) {
   
-  
+  #TODO: Fix the my_place to be able to be a list of names. This have to be translated to regex that sorts out a single station per name. 
+  #IDEA: Perhaps the name list to station name can be based on data
+        ## 1. Get all stations with the name in the list e.g. Visby.
+        ## 2. Then take out the station with most recent data, e.g. from present year
+        ## 3. If there are several from present year, take the first one.
   
   if(year == lubridate::year(lubridate::today()) & lubridate::month(lubridate::today()) < 11){
     cat("THERE IS NO PRECIPITATION DATA FOR THIS YEAR YET!\n")

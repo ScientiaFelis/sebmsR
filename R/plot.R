@@ -196,22 +196,26 @@ sebms_temp_plot <- function(my_place = NA, year = lubridate::year(lubridate::tod
     return()
   }
   
-  stations <- sebms_default_station(my_place = my_place)
+  if(unique(is.na(my_place))){
+    stations <- sebms_default_station(my_place, tempstat = TRUE)
+  }else{
+    stations <- sebms_user_station(my_place)
+  }
   
-  temp <- stations[2] %>% 
-    pull() %>% 
+  temp <- stations %>% 
+    pull(id) %>% 
     set_names() %>% # To keep the id-names of the list
     map(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",.x,"/period/corrected-archive/data.csv")), skip = 12)) %>% 
     map(~rename_with(.x, ~c("FrDate", "ToDate", "month", "temp", "Delete", "Delete2", "Delete3"))) %>% # Set column names 
     bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
     as_tibble() %>% 
     select(!starts_with("Delete")) %>% # Remove the columns we do not need
-    filter(lubridate::year(FrDate) == year,
+    filter(lubridate::year(ymd_hms(FrDate)) == year,
            #filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())), ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
-           month(ymd(paste(month, "01", sep = "-"))) %in% 4:9) %>% 
+           month(ymd_hms(FrDate)) %in% 4:9) %>% 
     left_join(stations, by = "id") %>%
-    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd(paste(month, "01", sep = "-")), label = T, abbr = T), temp = as.numeric(temp), monthnr = month(ymd_hms(FrDate)), period = "2") %>% 
-    bind_rows(norm_temp %>% filter(id %in% c(stations[2] %>% pull(id)))) %>% 
+    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd_hms(FrDate), label = T, abbr = T), temp = as.numeric(temp), monthnr = month(ymd_hms(FrDate)), period = "2") %>% 
+    bind_rows(norm_temp %>% filter(id %in% c(stations %>% distinct(id) %>% pull(id)))) %>% 
     mutate(name = str_remove(name, " .*|-.*"))
   
   

@@ -127,7 +127,13 @@ sebms_precip_plot <- function(my_place = NA, year = lubridate::year(lubridate::t
   
   if(year == lubridate::year(lubridate::today()) & lubridate::month(lubridate::today()) < 11){
     cat("THERE IS NO PRECIPITATION DATA FOR THIS YEAR YET!\n")
-    cat("You have to wait until NOVEMBER.\n\n")
+    cat("You have to wait until at least NOVEMBER.\n\n")
+    return()
+  }
+  
+  if(year > lubridate::year(lubridate::today())){
+    cat("YOU ARE WAY AHEAD OF YOURSELF!")
+    cat("Chose a year that is not in the future.")
     return()
   }
   
@@ -192,10 +198,15 @@ sebms_temp_plot <- function(my_place = NA, year = lubridate::year(lubridate::tod
   
   if(year == lubridate::year(lubridate::today()) & lubridate::month(lubridate::today()) < 11){
     cat("THERE IS NO TEMPERATURE DATA FOR THIS YEAR YET!\n")
-    cat("You have to wait until NOVEMBER.\n\n")
+    cat("You have to wait until at least NOVEMBER.\n\n")
     return()
   }
-  
+  if(year > lubridate::year(lubridate::today())){
+    cat("YOU ARE WAY AHEAD OF YOURSELF!")
+    cat("Chose a year that is not in the future.")
+    return()
+  }
+    
   if(unique(is.na(my_place))){
     stations <- sebms_default_station(my_place, tempstat = TRUE)
   }else{

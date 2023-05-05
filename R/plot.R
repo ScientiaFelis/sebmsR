@@ -130,11 +130,11 @@ sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::t
     stations <- sebms_user_station(my_place)
   }
   
-  precip <- stations %>% 
+  all_precip <- stations %>% 
     pull(id) %>% 
     set_names() %>% # To keep the id-names of the list
-    map(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/23/station/",.x,"/period/corrected-archive/data.csv")), skip = 12)) %>% 
-    map(~rename_with(.x, ~c("FrDate", "ToDate", "month", "nb", "Delete", "Delete2", "Delete3"))) %>% # Set column names 
+    map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/23/station/",.x,"/period/corrected-archive/data.csv")), skip = 12))) %>% 
+    map(possibly(~rename_with(.x, ~c("FrDate", "ToDate", "month", "nb", "Delete", "Delete2", "Delete3")))) %>% # Set column names 
     bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
     as_tibble() %>% 
     select(!starts_with("Delete")) %>% # Remove the columns we do not need
@@ -142,21 +142,46 @@ sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::t
            # filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())), ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
            month(ymd_hms(FrDate)) %in% 4:9) %>% 
     left_join(stations, by = "id") %>% 
-    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd_hms(FrDate), label = T, abbr = T), nb = as.numeric(nb), monthnr = month(ymd_hms(FrDate)), period = "2") %>% 
-    bind_rows(norm_precip %>% filter(id %in% c(stations %>% distinct(id) %>% pull(id)))) %>% 
+    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd_hms(FrDate), label = T, abbr = T), nb = as.numeric(nb), monthnr = month(ymd_hms(FrDate)), period = "2")
+  
+  filt_precip <- all_precip  %>%
+    mutate(name = str_remove(name, " .*|-.*")) %>% 
+    group_by(name) %>% 
+    distinct(id) %>% 
+    slice(1) %>%
+    ungroup() %>% 
+    select(-name)
+  
+  precip <- filt_precip  %>%
+    left_join(all_precip, by = "id") %>% 
+    bind_rows(norm_precip %>% filter(id %in% c(filt_precip %>% pull(id)))) %>% 
     mutate(name = str_remove(name, " .*|-.*"))
   
+  return(precip)
+}
+
+#col_palette <- sebms_palette
+#http://colorbrewer2.org/#type=diverging&scheme=RdYlGn&n=5
+#col_palette <- c("#a6d96a", "#d7191c")
+# x_tick <- c(0, unique(nb$month)+0.5)
+# len <- length(x_tick)
+# br <- c(sort(unique(nb$month)), x_tick)
+# lab <- c(sort(unique(nb$month.name)), rep(c(""), len))
+# 
+
+#' Make a ggplot from Precipitation Data
+#' 
+#' This takes a dataframe from sebms_precip_data and makes a precipitation figure from that 
+#' 
+#' @import ggplot2
+#' @import dplyr
+#' @import purrr
+#' 
+#' @noRd
+sebms_precipplot <- function(precip) {
   
-  #col_palette <- sebms_palette
-  #http://colorbrewer2.org/#type=diverging&scheme=RdYlGn&n=5
-  #col_palette <- c("#a6d96a", "#d7191c")
-  # x_tick <- c(0, unique(nb$month)+0.5)
-  # len <- length(x_tick)
-  # br <- c(sort(unique(nb$month)), x_tick)
-  # lab <- c(sort(unique(nb$month.name)), rep(c(""), len))
-  # 
-  precipplot <- function(df)
-  {ggplot(data = df, aes(x = reorder(month, monthnr), y = nb, fill = forcats::fct_rev(period))) + 
+  plotfunc <- function(df){
+    ggplot(data = df, aes(x = reorder(month, monthnr), y = nb, fill = forcats::fct_rev(period))) + 
       geom_bar(stat = "identity", position = "dodge", width = .7) + 
       facet_wrap(~ name, ncol = 1) +
       #scale_x_continuous(breaks = br, labels = lab) +
@@ -164,12 +189,12 @@ sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::t
       scale_fill_manual(values = rev(sebms_palette)) + 
       labs(x = NULL, y = "Nederbörd (mm)") +
       theme_sebms()
+    
   }
-  
   p <- precip %>% 
     group_by(id) %>% 
     nest() %>%  
-    mutate(plots = map(data, precipplot))
+    mutate(plots = map(data, plotfunc))
   
   p$plots
 }
@@ -177,10 +202,11 @@ sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::t
 #' Plot temperatures
 #' @import dplyr 
 #' @import stringr
+#' @import lubridate
 #' @import purrr
 #' @import ggplot2
 #' @noRd
-sebms_temp_plot <- function(my_place = NA, year = lubridate::year(lubridate::today())-1) {
+sebms_temp_data <- function(my_place = NA, year = lubridate::year(lubridate::today())-1) {
   
   
   if(year == lubridate::year(lubridate::today()) & lubridate::month(lubridate::today()) < 11){
@@ -193,14 +219,14 @@ sebms_temp_plot <- function(my_place = NA, year = lubridate::year(lubridate::tod
     cat("Chose a year that is not in the future.")
     return()
   }
-    
+  
   if(unique(is.na(my_place))){
     stations <- sebms_default_station(my_place, tempstat = TRUE)
   }else{
     stations <- sebms_user_station(my_place)
   }
   
-  temp <- stations %>% 
+  all_temp <- stations %>% 
     pull(id) %>% 
     set_names() %>% # To keep the id-names of the list
     map(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",.x,"/period/corrected-archive/data.csv")), skip = 12)) %>% 
@@ -212,21 +238,44 @@ sebms_temp_plot <- function(my_place = NA, year = lubridate::year(lubridate::tod
            #filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())), ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
            month(ymd_hms(FrDate)) %in% 4:9) %>% 
     left_join(stations, by = "id") %>%
-    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd_hms(FrDate), label = T, abbr = T), temp = as.numeric(temp), monthnr = month(ymd_hms(FrDate)), period = "2") %>% 
-    bind_rows(norm_temp %>% filter(id %in% c(stations %>% distinct(id) %>% pull(id)))) %>% 
+    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd_hms(FrDate), label = T, abbr = T), temp = as.numeric(temp), monthnr = month(ymd_hms(FrDate)), period = "2")
+  
+  filt_temp <- all_temp  %>%
+    mutate(name = str_remove(name, " .*|-.*")) %>% 
+    group_by(name) %>% 
+    distinct(id) %>% 
+    slice(1) %>%
+    ungroup() %>% 
+    select(-name)
+  
+  temp <- filt_temp  %>%
+    left_join(all_temp, by = "id") %>% 
+    bind_rows(norm_temp %>% filter(id %in% c(filt_temp %>% pull(id)))) %>% 
     mutate(name = str_remove(name, " .*|-.*"))
   
+  return(temp) 
+}
+#library(RColorBrewer)
+# BFB8AF D6D2C4 ADCAB8 B9D3DC E9C4C7 9C6114 000080
+#RColorBrewer::brewer.pal(7, "RdYlGn")
+#RColorBrewer::display.brewer.pal(7, "RdYlGn")
+# "#D73027" "#FC8D59" "#FEE08B" "#FFFFBF" "#D9EF8B" "#91CF60" "#1A9850"
+
+#col_pal_temp <- c("#D73027", "#1A9850")
+#col_pal_temp <- sebms_palette
+
+#' Make a ggplot from Temperature Data
+#' 
+#' This takes a dataframe from sebms_temp_data and makes a temperature figure from that 
+#' 
+#' @import ggplot2
+#' @import dplyr
+#' @import purrr
+#' 
+#' @noRd
+sebms_tempplot <- function(temp){
   
-  #library(RColorBrewer)
-  # BFB8AF D6D2C4 ADCAB8 B9D3DC E9C4C7 9C6114 000080
-  #RColorBrewer::brewer.pal(7, "RdYlGn")
-  #RColorBrewer::display.brewer.pal(7, "RdYlGn")
-  # "#D73027" "#FC8D59" "#FEE08B" "#FFFFBF" "#D9EF8B" "#91CF60" "#1A9850"
-  
-  #col_pal_temp <- c("#D73027", "#1A9850")
-  #col_pal_temp <- sebms_palette
-  
-  tempplot <- function(df)
+  plotfunct <- function(df)
   {ggplot(data = df, aes(x = reorder(month, monthnr), 
                          y = temp, group = period, linetype = period, 
                          colour = period)) + 
@@ -246,7 +295,7 @@ sebms_temp_plot <- function(my_place = NA, year = lubridate::year(lubridate::tod
   g <- temp %>% 
     group_by(id) %>% 
     nest() %>%  
-    mutate(plots = map(data, tempplot))
+    mutate(plots = map(data, plotfunct))
   
   g$plots  
   

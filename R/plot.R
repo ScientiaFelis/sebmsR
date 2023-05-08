@@ -365,6 +365,33 @@ sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_p
 }
 
 
+#' Downloads Global irradience from SMHI
+#' 
+#' Produce a data frame of the total irradiance in Sweden for the given month.
+#' 
+#' @param year the year to produce plot for
+#' @param month numeric value of the months to summarise sun ours over (default to 4:9)
+#'
+#' @export
+sebms_sunhours_data <- function(year = 2022, month = 4:9) {
+
+  sunHdata <- function(year, month) {
+    httr::GET(glue::glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{month}/parameter/118/data.json?interval=monthly")) %>% 
+      httr::content(encoding = "UTF-8") %>% 
+      bind_rows()
+  }
+  sunlist <- map2(year, mon, sunHdata) %>%
+    set_names(mon) %>% 
+    bind_rows(.id = "month") %>% 
+    group_by(lat, lon) %>% 
+    summarise(Total_ir = sum(value))
+  
+  ##TODO: Cut out Sweden
+  
+  return(sunlist)
+}
+
+
 # TODO FIX THE FUNCTION BELOW THAT PRODUCE A FIGURE IN THE RMD 
 
 #' Plot of temperature and precipitation data for 2015
@@ -436,7 +463,7 @@ sebms_precip_temp_plot <- function(filter_cities, df_precip, df_temp) {
 
 
 
-
+#QUESTION: What to do with the following funtions()
 
 #' Cumulative specielist plots
 #' @import dplyr

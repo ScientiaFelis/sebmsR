@@ -7,7 +7,7 @@ knitr::opts_chunk$set(
 
 ## ---- message=FALSE------------------------------------------------------
 
-library(swedishbutterflies)
+library(sebmsR)
 
 suppressPackageStartupMessages(library(purrr))
 suppressPackageStartupMessages(library(dplyr))

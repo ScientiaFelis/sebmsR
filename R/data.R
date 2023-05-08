@@ -15,7 +15,7 @@ sebms_connect <- function() {
       if (!dir.exists(dirname(cfgfile))) 
         dir.create(dirname(cfgfile), recursive = TRUE)
       template <- 
-        system.file("extdata", "config.yml", package = "swedishbutterflies")
+        system.file("extdata", "config.yml", package = "sebmsR")
       if (template != "") 
         file.copy(template, cfgfile) 
       else 

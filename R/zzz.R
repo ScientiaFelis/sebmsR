@@ -27,7 +27,7 @@ Use runShinyApp('poc') to run the Shiny proof-of-concept app"
   # do something with conn
   #poolReturn(conn)  
   #}
-  sebms_pool <<- swedishbutterflies:::sebms_connect()
+  sebms_pool <<- sebmsR:::sebms_connect()
   if (is.null(sebms_pool)) {
     message("Please enable db connections for full functionality")
     message("(edit settings in config.yml and/or run ssh tunnels?)")

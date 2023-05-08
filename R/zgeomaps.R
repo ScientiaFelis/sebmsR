@@ -52,7 +52,7 @@ sebms_species_site_plot <- function(occ_sp,
 #  colnames(tiff) <- c("value", "x", "y")
 
   tiff <- raster(system.file("extdata", "MapSweden.tif", 
-    package = "swedishbutterflies", mustWork = TRUE))
+    package = "sebmsR", mustWork = TRUE))
   
   raster::crs(tiff) <-  sp::CRS("+proj=tmerc +lat_0=0 +lon_0=15.80827777777778 +k=1 +x_0=1500000 +y_0=0 +ellps=bessel +units=m +no_defs")
   

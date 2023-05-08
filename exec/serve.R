@@ -1,9 +1,9 @@
 #!/usr/bin/Rscript
 
 library(plumber)
-library(swedishbutterflies)
+library(sebmsR)
 
-router <- file.path(system.file("bin", "api.R", package = "swedishbutterflies"))
+router <- file.path(system.file("bin", "api.R", package = "sebmsR"))
 
 if (!file.exists(router)) {
     stop(sprintf("file not found: '%s' ", router))

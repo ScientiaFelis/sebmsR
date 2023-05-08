@@ -1,4 +1,4 @@
-context("swedishbutterflies")
+context("sebmsR")
 
 test_that("data retrieval works", {
   skip_on_travis()

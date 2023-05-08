@@ -1,5 +1,5 @@
 library(testthat)
-library(swedishbutterflies)
+library(sebmsR)
 
-test_check("swedishbutterflies")
+test_check("sebmsR")
 

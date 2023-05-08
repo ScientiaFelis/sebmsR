@@ -4,7 +4,7 @@ output:
     variant: markdown_github
 ---
 
-[![Build Status](https://travis-ci.org/rekonstrukt/swedishbutterflies.svg?branch=master)](https://travis-ci.org/rekonstrukt/swedishbutterflies)  
+[![Build Status](https://scientiafelis/sebmsr.svg?branch=master)](https://scientiafelis/sebmsr)  
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 knitr::opts_chunk$set(warning=FALSE, comment=NA)
 ```
 
-`swedishbutterflies` is an R package for SeBMS - the Swedish Butterfly Monitoring Scheme - offering tools for accessing data, making plots and a Shiny app.
+`sebmsR` is an R package for SeBMS - the Swedish Butterfly Monitoring Scheme - offering tools for accessing data, making plots and a Shiny app.
 
 ## Installing from github
 
@@ -33,10 +33,10 @@ If you want to install the latest version:
 
 install.packages("devtools") 
 library(devtools)
-install_github("rekonstrukt/swedishbutterflies")
+install_github("scientiafelis/sebmsr")
 
 # A specific versioned release can be installed like this:
-install_github("rekonstrukt/swedishbutterflies@0.1.6")
+install_github("scientiafelis/sebmsr@0.4.0")
 
 ```
 
@@ -65,7 +65,7 @@ Once the database server is available, the R package needs to be configured to u
 
 ```{r message=FALSE, warning=FALSE, eval=FALSE}
 
-library(swedishbutterflies)
+library(sebmsR)
 library(rappdirs)
 
 # this is the location for config.yml holding db connection details
@@ -100,7 +100,7 @@ If you prefer to use environment variables for the credentials and reference tho
 
 # example content in config.yml
 content <- readLines(system.file("extdata", "config.yml", 
-  package = "swedishbutterflies"))
+  package = "sebmsR"))
 
 cat(paste(content, collapse = "\n"))
 ```

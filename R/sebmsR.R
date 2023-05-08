@@ -1,6 +1,6 @@
-#' swedishbutterflies
+#' sebmsR
 #'
-#' @name swedishbutterflies
+#' @name sebmsR
 #' @docType package
 #' @keywords package
 

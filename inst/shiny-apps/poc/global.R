@@ -1,10 +1,10 @@
 library(dplyr)
 library(pool)
-library(swedishbutterflies)
+library(sebmsR)
 
 message("loading global.R")
-pool <- swedishbutterflies:::sebms_connect()
-swedishbutterflies:::sebms_assert_connection(pool)
+pool <- sebmsR:::sebms_connect()
+sebmsR:::sebms_assert_connection(pool)
 #onStop(function() {
 #  poolClose(pool)
 #})

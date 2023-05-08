@@ -448,7 +448,7 @@ use_data(sebms_data_sites, overwrite = TRUE)
 
 message("Saving Swedish TIFF raster")
 # https://stackoverflow.com/questions/24495487/r-error-thrown-while-using-rgdal-and-raster-packages
-tiff <- raster::raster(system.file("extdata", "MapSweden.tif", package = "swedishbutterflies", mustWork = TRUE))
+tiff <- raster::raster(system.file("extdata", "MapSweden.tif", package = "sebmsR", mustWork = TRUE))
 #tiff <- raster::raster(tif)
 raster::crs(tiff) <-  sp::CRS("+proj=tmerc +lat_0=0 +lon_0=15.80827777777778 +k=1 +x_0=1500000 +y_0=0 +ellps=bessel +units=m +no_defs")
 sebms_data_swetiff <- tiff

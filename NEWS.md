@@ -3,8 +3,15 @@ NEWS
 
 For more fine-grained list of changes or to report a bug, consult 
 
-* [The issues log](https://github.com/rekonstrukt/swedishbutterflies/issues)
-* [The commit log](https://github.com/rekonstrukt/swedishbutterflies/commits/master)
+* [The issues log](https://github.com/scientiafelis/sebmsr/issues)
+* [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
+
+# v 0.5.0
+
+* Separate functions to make station names
+* User given station names are resulting in one station with data for the specified year, per user specifies site name.
+* Possibility to only view the resulting figures and not ave them as pngs.
+* Add posibility to change colours
 
 # v 0.4.1
 
@@ -26,6 +33,7 @@ For more fine-grained list of changes or to report a bug, consult
 
 * Redo the plot functions to conform to the look in the Butterfly report.
 
+## From v 0.2.0 the package is renamed to `sebmsR` and reworked by Georg Andersson and Lars Pettersson.
 
 # v 0.1.7
 

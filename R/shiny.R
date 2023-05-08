@@ -4,7 +4,7 @@
 #' @export
 runShinyApp <- function(example) {
 
-  PKG <- "swedishbutterflies"
+  PKG <- "sebmsR"
   APPS <- "shiny-apps"
 
   validExamples <- list.files(system.file(APPS, package = PKG))

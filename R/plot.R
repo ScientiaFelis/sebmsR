@@ -351,7 +351,12 @@ sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_p
 #' @param year the year to produce plot for
 #' @param month numeric value of the months to summarise sun ours over (default to 4:9)
 #'
-#' @export
+#' @import dplyr
+#' @importFrom purrr map2
+#' @importFrom httr GET content
+#' @importFrom glue glue
+#' @importFrom magrittr set_names
+#' @noRd
 sebms_sunhours_data <- function(year = 2022, month = 4:9) {
 
   sunHdata <- function(year, month) {
@@ -359,11 +364,12 @@ sebms_sunhours_data <- function(year = 2022, month = 4:9) {
       httr::content(encoding = "UTF-8") %>% 
       bind_rows()
   }
-  sunlist <- map2(year, mon, sunHdata) %>%
-    set_names(mon) %>% 
+  
+  sunlist <- map2(year, month, sunHdata) %>%
+    set_names(month) %>% 
     bind_rows(.id = "month") %>% 
     group_by(lat, lon) %>% 
-    summarise(Total_ir = sum(value))
+    summarise(Total_ir = sum(value), .groups = "drop")
   
   ##TODO: Cut out Sweden
   

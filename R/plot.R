@@ -42,8 +42,9 @@ theme_sebms <- function(title_sz = 24,
 }
 
 
+## Below are functions that creates the weather figures for the butterfly monitoring reports
 
-#' Extract Station names and id
+#' Extract default Station names and id
 #' 
 #' @importFrom jsonlite fromJSON
 #' @import dplyr
@@ -71,7 +72,7 @@ sebms_default_station <- function(my_place, tempstat = TRUE) {
 }
 
 
-#' Reduce the List of Stations to One per Name
+#' Downloads and Exctract Stations Given by User
 #' 
 #' This takes the given list by users and match only one station to the possible with similar names
 #' 

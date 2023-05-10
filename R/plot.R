@@ -439,7 +439,9 @@ sebms_sunmean_data <- function(year = 2017:2021, month = 4:9, df) {
     bind_rows() %>% 
     group_by(geometry) %>% 
     mutate(mean_sunH = mean(total_sunH, na.rm = T)) %>% 
-    ungroup()
+    ungroup() %>% 
+    filter(Year == last(year)) %>% 
+    select(mean_sunH, geometry)
 
     return(meansunH)
 }

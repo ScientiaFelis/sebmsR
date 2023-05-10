@@ -6,6 +6,12 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
 
+# v 0.6.5
+
+* Separate functions that belong together into different script files
+* Add function that calculate sun hour diff between given year and mean
+* Add function that plot a figure of the sunhour diff
+
 # v 0.6.0
 
 * Add functions to download sunhours

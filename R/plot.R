@@ -474,37 +474,85 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
 #' 
 #' This function makes a plot of the difference between the current years sun hours and the 5-year mean (2017-2021)
 #' 
+#' @param df dataframe from `sebms_sunhours_data()`
+#' @param year a year to compare with mean, if making new data
+#' @param month month to sum over, if making new data
+#'
 #' @noRd
-sebms_sunhour_diff <- function(year, month) {
-  
-  allyearlist %>% 
-    st_drop_geometry() %>% 
-    ggplot() +
-    geom_histogram(aes(total_sunH)) +
-    facet_wrap(~Year) +
-    theme_sebms()
-  
-  ggsave("SunHourHistogram.png", width = 14, height = 8)
-  
-  meansunH %>% 
-    ggplot() +
-    geom_histogram(aes(mean_sunH)) +
-    theme_sebms()
-  
-  ggsave("MeanSunHourHistogram.png", width = 14, height = 8)
-  
- allyearlist %>% 
-   st_drop_geometry() %>% 
-   group_by(Year) %>% 
-   summarise(minsun = min(total_sunH),
-             maxsun = max(total_sunH), .groups = "drop") %>% 
-  gt::gt() %>% 
- gt::gtsave(filename = "MinMax_sunHours.png")
+sebms_sunhour_diff <- function(df, year = year(today())-1, month = 4:9) {
  
  if (missing(df)) {
-  
+  df <- sebms_sunhours_data(year = year, month = month)
  }
+  
+  sundiff <- meansunH %>%  
+    bind_cols(df %>% st_drop_geometry()) %>% 
+    mutate(diffsun = total_sunH - mean_sunH)
+  
+  return(sundiff)
 } 
+
+#' Create a Figure that Shows the Difference in Sunhours
+#' 
+#' Produce a plot that shows differences in sun hours between a given year and mean.
+#'
+#' @param year the year to compare with
+#' @param df optinal; dataframe from the `sebms_sunhour_diff()`
+#' @param sunvar the variable to calculate colours on, `diffsun` for now
+#' @param month 
+#'
+#' @return a figure that shows diffeence in sunhours
+#' @export
+sebms_sundiff_plot <- function(year = year(today())-1, df, sunvar = diffsun, month = 4:9) {
+  
+  if(missing(df)) {
+    cat("Please be pacient...")
+    cat("THIS CAN TAKE A MINUTE OR FIVE\n\n")
+    cat("Downloading sunhour data from SMHI........\n")
+    df <- sebms_sunhour_diff(year = year, month = month)
+  }
+  
+  sunDiffplot <- df %>% 
+    ggplot() +
+    geom_sf(aes(colour = {{ sunvar }}), show.legend = F) +
+    scale_colour_gradientn(colours = suncols(5),
+                           limits = c(-600, 600),
+                           oob = scales::squish
+    ) +
+    theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
+  
+  sebms_ggsave(sunDiffplot, glue::glue("Sweden_{year}"), width = 9.25, height = 12.67, weathervar = "SunhourDiff")
+  
+  return(sunDiffplot) 
+  
+}
+
+
+# 
+#  allyearlist %>% 
+#     st_drop_geometry() %>% 
+#     ggplot() +
+#     geom_histogram(aes(total_sunH)) +
+#     facet_wrap(~Year) +
+#     theme_sebms()
+#   
+#   ggsave("SunHourHistogram.png", width = 14, height = 8)
+#   
+#   meansunH %>% 
+#     ggplot() +
+#     geom_histogram(aes(mean_sunH)) +
+#     theme_sebms()
+#   
+#   ggsave("MeanSunHourHistogram.png", width = 14, height = 8)
+#   
+#  allyearlist %>% 
+#    st_drop_geometry() %>% 
+#    group_by(Year) %>% 
+#    summarise(minsun = min(total_sunH),
+#              maxsun = max(total_sunH), .groups = "drop") %>% 
+#   gt::gt() %>% 
+#  gt::gtsave(filename = "MinMax_sunHours.png")
+#  
 # TODO FIX THE FUNCTION BELOW THAT PRODUCE A FIGURE IN THE RMD 
 
 #' Plot of temperature and precipitation data for 2015

@@ -319,7 +319,7 @@ sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.25, text.fact
 #' @export
 
 sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_place = NA, savepng = TRUE, colours = sebms_palette) {
- 
+  
   if(length(colours) != 2) {
     cat("GIVE TWO COLOURS")
     cat("For example; colours = c('#BE4B48', '#9BBB59')")
@@ -343,8 +343,22 @@ sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_p
   list(plotst, plotsp)
 }
 
+#* Download Function for SMHI Sunhours
+#* 
+#* Function that download sunhour data from SMHI
+#* @importFrom httr GET content
+#' @importFrom glue glue
+#' @details
+#' This is a helper function that download data from the SMHI API on sunhours (sun seconds) for a ceratin year `year` and month `month` and bind it to a dataframe.
+#' 
+#* @noRd
+sunHdata <- function(year, month) {
+  httr::GET(glue::glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{month}/parameter/119/data.json?interval=monthly")) %>% 
+    httr::content(encoding = "UTF-8") %>% 
+    bind_rows()
+}
 
-#' Downloads Global irradience from SMHI
+#' Create a total Sunhours Dataframe from SMHI Sunhour data
 #' 
 #' Produce a data frame of the total irradiance in Sweden for the given month.
 #' 
@@ -352,31 +366,139 @@ sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_p
 #' @param month numeric value of the months to summarise sun ours over (default to 4:9)
 #'
 #' @import dplyr
-#' @importFrom purrr map2
-#' @importFrom httr GET content
-#' @importFrom glue glue
-#' @importFrom magrittr set_names
-#' @noRd
-sebms_sunhours_data <- function(year = 2022, month = 4:9) {
-
-  sunHdata <- function(year, month) {
-    httr::GET(glue::glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{month}/parameter/118/data.json?interval=monthly")) %>% 
-      httr::content(encoding = "UTF-8") %>% 
-      bind_rows()
+#' @import sf
+#' @importFrom purrr map map2 set_names
+#' 
+#' @returns a sf spatial point object with the WGS84 coordinate system
+#' 
+#' @export
+sebms_sunhours_data <- function(year = year(today())-1, month = 4:9) {
+  
+  allyears <- function(year, month){
+    map2(year, month, sunHdata) %>% ##iterate through year plus month and send that to sunHdata, se above
+      set_names(month) %>% 
+      bind_rows(.id = "month") %>% 
+      group_by(lat, lon) %>% 
+      summarise(total_sunH = sum(value),.groups = "drop") %>% 
+      mutate(total_sunH = total_sunH / 60)
   }
   
-  sunlist <- map2(year, month, sunHdata) %>%
-    set_names(month) %>% 
-    bind_rows(.id = "month") %>% 
-    group_by(lat, lon) %>% 
-    summarise(Total_ir = sum(value), .groups = "drop")
+  sunlist <- map(year, ~allyears(year = .x, month = month)) %>% 
+    set_names(year) %>% 
+    bind_rows(.id = "Year")
   
-  ##TODO: Cut out Sweden
+  spatlist <- sunlist %>% 
+    filter(lon > 4) %>% 
+    st_as_sf(coords = c("lon", "lat")) %>% 
+    st_set_crs(4326) %>% 
+    st_intersection(SE)
   
-  return(sunlist)
+  assign("spatsunlist", spatlist, envir = .GlobalEnv)
+  
+  return(spatlist)
 }
 
+#' Colour Palette for Sunhours
+#' 
+#' @noRd
+suncols <- colorRampPalette(colors = c(rgb(43,131,186,maxColorValue = 255), rgb(171,221,164, maxColorValue = 255), rgb(255,255,191, maxColorValue = 255), rgb(253,174,97, maxColorValue = 255) , rgb(215,25,28,maxColorValue = 255)))
 
+
+#' Create a Mean Sunhour Value over a Five Year Period
+#' 
+#' Creates a five year mean from the SMHI Iradiance data. This data is also stored internally in the package to avoid to much downloading
+#' 
+#' @import dplyr
+#' @importFrom purrr map set_names
+#' @noRd
+sebms_sunmean_data <- function(year = 2017:2021, month = 4:9, df) {
+  
+  meansunH <- map(year, ~sebms_sunhours_data(.x, month = month)) %>% 
+    set_names(year) %>% 
+    bind_rows() %>% 
+    group_by(geometry) %>% 
+    mutate(mean_sunH = mean(total_sunH, na.rm = T)) %>% 
+    ungroup()
+
+    return(meansunH)
+}
+
+#* Create an Image with Sunhour Data
+#* 
+#* This function takes a data frame from e.g. `sebms_sunhours_data()` and creates an raster image.
+#* 
+#* @import sf
+#* @import ggplot2
+#* 
+#* @export
+sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, month = 4:9) {
+  
+  if(missing(df)) {
+    cat("Please be pacient...")
+    cat("THIS CAN TAKE A MINUTE OR FIVE\n\n")
+    cat("Downloading sunhour data from SMHI........\n")
+    df <- sebms_sunhours_data(year = year, month = month)
+  }
+  
+  sunHplot <- df %>% 
+    ggplot() +
+    geom_sf(aes(colour = {{ sunvar }}), show.legend = F) +
+    scale_colour_gradientn(colours = suncols(5),
+                           limits = c(950, 2050),
+                           oob = scales::squish
+                           #values = seq(750, 2600, 200)
+                           #low = "#2B83BA",
+                           #high = "#D7191C",
+                           #mid = "#FFFFBF"
+                           ) +#c(0, 0.25, 0.5, 0.74, 1)) +
+    theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
+  
+  sebms_ggsave(sunHplot, glue::glue("Sweden_{year}"), width = 9.25, height = 12.67, weathervar = "Sunhours")
+  return(sunHplot) 
+  
+}
+
+# all_plots <- allyearlist %>%
+#   mutate(year = Year) %>% 
+#   group_by(Year) %>%
+#   nest() %>%
+#   mutate(plots = map(data, ~sebms_sunhour_plot(df = .x, year = .x$year %>% unique())))
+
+#' Make a diff Between current Year and the 5-year Mean 
+#' 
+#' This function makes a plot of the difference between the current years sun hours and the 5-year mean (2017-2021)
+#' 
+#' @noRd
+sebms_sunhour_diff <- function(year, month) {
+  
+  allyearlist %>% 
+    st_drop_geometry() %>% 
+    ggplot() +
+    geom_histogram(aes(total_sunH)) +
+    facet_wrap(~Year) +
+    theme_sebms()
+  
+  ggsave("SunHourHistogram.png", width = 14, height = 8)
+  
+  meansunH %>% 
+    ggplot() +
+    geom_histogram(aes(mean_sunH)) +
+    theme_sebms()
+  
+  ggsave("MeanSunHourHistogram.png", width = 14, height = 8)
+  
+ allyearlist %>% 
+   st_drop_geometry() %>% 
+   group_by(Year) %>% 
+   summarise(minsun = min(total_sunH),
+             maxsun = max(total_sunH), .groups = "drop") %>% 
+  gt::gt() %>% 
+ gt::gtsave(filename = "MinMax_sunHours.png")
+ 
+ if (missing(df)) {
+  
+ }
+} 
 # TODO FIX THE FUNCTION BELOW THAT PRODUCE A FIGURE IN THE RMD 
 
 #' Plot of temperature and precipitation data for 2015

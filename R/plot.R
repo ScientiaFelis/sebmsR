@@ -343,15 +343,15 @@ sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_p
   list(plotst, plotsp)
 }
 
-#* Download Function for SMHI Sunhours
-#* 
-#* Function that download sunhour data from SMHI
-#* @importFrom httr GET content
+#' Download Function for SMHI Sunhours
+#' 
+#' Function that download sunhour data from SMHI
+#' @importFrom httr GET content
 #' @importFrom glue glue
 #' @details
 #' This is a helper function that download data from the SMHI API on sunhours (sun seconds) for a ceratin year `year` and month `month` and bind it to a dataframe.
 #' 
-#* @noRd
+#' @noRd
 sunHdata <- function(year, month) {
   httr::GET(glue::glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{month}/parameter/119/data.json?interval=monthly")) %>% 
     httr::content(encoding = "UTF-8") %>% 
@@ -423,14 +423,22 @@ sebms_sunmean_data <- function(year = 2017:2021, month = 4:9, df) {
     return(meansunH)
 }
 
-#* Create an Image with Sunhour Data
-#* 
-#* This function takes a data frame from e.g. `sebms_sunhours_data()` and creates an raster image.
-#* 
-#* @import sf
-#* @import ggplot2
-#* 
-#* @export
+
+#' Create an Image with Sunhour Data
+#'
+#' This function takes a data frame from e.g. `sebms_sunhours_data()` and creates an raster image.
+#' 
+#' @param year the year to create the figure for. 
+#' @param df optional; a dataframe created by `sebms_sunhours_data()`
+#' @param sunvar the variable to calculate colours on, `total_sunH` or `mean_sunH`
+#' @param month the month or month ranges to sum over if new data is downloaded with `sebms_sunhours_data()`
+#' 
+#' @import sf
+#' @import ggplot2
+#' 
+#' @return a figure saved as a png with the sunhours in coloour from, high (red) to low (blue)
+#' @export
+#'
 sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, month = 4:9) {
   
   if(missing(df)) {

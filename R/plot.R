@@ -81,11 +81,7 @@ sebms_default_station <- function(my_place, tempstat = TRUE) {
 #' @import stringr
 #' @noRd
 sebms_user_station <- function(my_place) {
-  #TODO: Fix the my_place to be able to be a list of names. This have to be translated to regex that sorts out a single station per name. 
-  #IDEA: Perhaps the name list to station name can be based on data
-  ## 1. Get all stations with the name in the list e.g. Visby.
-  ## 2. Then take out the station with most recent data, e.g. from present year
-  ## 3. If there are several from present year, take the first one.
+  
   my_place <- my_place %>% 
     paste0(collapse = "|")
   
@@ -106,8 +102,6 @@ sebms_user_station <- function(my_place) {
 #' @import ggplot2
 #' @noRd
 sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::today())-1) {
-  
-  
   
   if(year == lubridate::year(lubridate::today()) & lubridate::month(lubridate::today()) < 11){
     cat("THERE IS NO PRECIPITATION DATA FOR THIS YEAR YET!\n")
@@ -165,7 +159,6 @@ sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::t
 #' @import ggplot2
 #' @noRd
 sebms_temp_data <- function(my_place = NA, year = lubridate::year(lubridate::today())-1) {
-  
   
   if(year == lubridate::year(lubridate::today()) & lubridate::month(lubridate::today()) < 11){
     cat("THERE IS NO TEMPERATURE DATA FOR THIS YEAR YET!\n")
@@ -232,18 +225,6 @@ sebms_palette <- c("#BE4B48", "#9BBB59") #"#C0504D",
 #' @noRd
 sebms_precipplot <- function(precip, colours = sebms_palette) {
   
-  #library(RColorBrewer)
-  # BFB8AF D6D2C4 ADCAB8 B9D3DC E9C4C7 9C6114 000080
-  #RColorBrewer::brewer.pal(7, "RdYlGn")
-  #RColorBrewer::display.brewer.pal(7, "RdYlGn")
-  # "#D73027" "#FC8D59" "#FEE08B" "#FFFFBF" "#D9EF8B" "#91CF60" "#1A9850"
-  
-  #col_pal_temp <- c("#D73027", "#1A9850")
-  #col_pal_temp <- sebms_palette
-  
-  #col_palette <- sebms_palette
-  #http://colorbrewer2.org/#type=diverging&scheme=RdYlGn&n=5
-  #col_palette <- c("#a6d96a", "#d7191c")
   # x_tick <- c(0, unique(nb$month)+0.5)
   # len <- length(x_tick)
   # br <- c(sort(unique(nb$month)), x_tick)
@@ -292,10 +273,7 @@ sebms_tempplot <- function(temp, colours = sebms_palette){
       scale_y_continuous(expand = c(0,0), limits = c(0,25)) +
       #coord_cartesian(expand = F, ylim = c(0,25), xlim = c(0,NA)) +
       labs(x = NULL, y = "Temperatur (°C)") + 
-      #  ggtitle(temp$place) + 
-      theme_sebms()  #title_sz = 32, x_title_sz = 22, 
-    #y_title_sz = 24, y_sz = 28, legend_position = "none") +
-    #guide_legend(label.position = "none")
+      theme_sebms() 
   }
   
   g <- temp %>% 

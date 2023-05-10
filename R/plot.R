@@ -477,11 +477,7 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
     scale_colour_gradientn(colours = suncols(5),
                            limits = c(950, 2050),
                            oob = scales::squish
-                           #values = seq(750, 2600, 200)
-                           #low = "#2B83BA",
-                           #high = "#D7191C",
-                           #mid = "#FFFFBF"
-                           ) +#c(0, 0.25, 0.5, 0.74, 1)) +
+                           ) +
     theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
   
   sebms_ggsave(sunHplot, glue::glue("Sweden_{year}"), width = 9.25, height = 12.67, weathervar = "Sunhours")

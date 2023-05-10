@@ -6,6 +6,12 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
 
+# v 0.6.0
+
+* Add functions to download sunhours
+* Add functions to plot figures of sunhours in Sweden
+* Add mean sunhours for 2017 to 2021 to internal data
+
 # v 0.5.0
 
 * Separate functions to make station names

@@ -6,6 +6,10 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
 
+# v 0.7.0
+
+* New function that check the nearest locale of a set minimum population per coordinate.
+
 # v 0.6.5
 
 * Separate functions that belong together into different script files

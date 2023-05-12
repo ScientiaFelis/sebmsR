@@ -107,7 +107,7 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
   
   sunHplot <- df %>% 
     ggplot() +
-    geom_sf(aes(colour = {{ sunvar }}), show.legend = F) +
+    geom_sf(aes(colour = {{ sunvar }}), size = 0.1, show.legend = F) +
     scale_colour_gradientn(colours = suncols(5),
                            limits = c(950, 2050),
                            oob = scales::squish
@@ -169,7 +169,7 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, sunvar = diffsun, mon
   
   sunDiffplot <- df %>% 
     ggplot() +
-    geom_sf(aes(colour = {{ sunvar }}), show.legend = F) +
+    geom_sf(aes(colour = {{ sunvar }}), size = 0.1, show.legend = F) +
     #facet_wrap(vars({{ facet }})) +
     scale_colour_gradientn(colours = suncols(5),
                            limits = c(-550, 500),
@@ -183,8 +183,18 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, sunvar = diffsun, mon
   
 }
 
-
+## Max and min sunhour certain years
+# allyearlist_total_mean_diff %>%
+#   st_drop_geometry()  %>%
+#   bind_cols(allyearlist_total_mean_diff %>% st_coordinates() %>% as_tibble() %>% rename(lat = Y, lon = X)) %>% 
+#   filter(Year %in% c(2021, 2022)) %>%
+#   group_by(Year) %>% 
+#   mutate(max = max(total_sunH), min = min(total_sunH)) %>%
+#   ungroup() %>% 
+#   filter(total_sunH == max| total_sunH == min) %>% 
+#   get_nearby()
 # 
+
  # allyearlist_total_mean_diff %>%
  #    st_drop_geometry() %>%
  #    ggplot() +

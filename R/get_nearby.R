@@ -15,21 +15,25 @@
 #' @return a dataframe with names nearby you coordinates
 #' @export
 #'
-get_nearby <- function(df, radius=50, top=1, limited=TRUE, population_limit=0){
+get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limit = 0){
   
-  options(geonamesUsername="sebms") 
+  options(geonamesUsername = "sebms") 
   
-  find_near <- function(lat = lat, lon = lon, radius = radius, top = top, limited = limited, pupulation_limit = population_limit) {
+  find_near <- possibly(function(df, radius = radius, top = top, limited = limited, pupulation_limit = population_limit) {
     
-    GNfindNearbyPlaceName(lat = lat , lng = lon, radius = radius, maxRows = "100", style = "MEDIUM") %>%
-      transmute(name = toponymName, distance = as.numeric(distance), population = as.numeric(population)) %>%
-      filter(population > population_limit) %>%
-      slice_min(distance, n = top) %>%  
-      { if(limited) select(., name)  else select_all(.) }
-    
+    lat <- df$lat
+    lon <- df$lon
+      GNfindNearbyPlaceName(lat = lat , lng = lon, radius = radius, maxRows = "100", style = "MEDIUM") %>%
+        as_tibble() %>% 
+        transmute(name = toponymName, distance = as.numeric(distance), population = as.numeric(population)) %>%
+        filter(population > population_limit) %>%
+        slice_min(distance, n = top) %>%  
+        { if(limited) select(., name)  else select_all(.) }
   }
-  
-  if(class(df) %>% first() %in% "sf") {
+  )
+#  find_near <- possibly(find_near, otherwise = "Empty df")
+
+    if(class(df) %>% first() %in% "sf") {
     df <- df %>% 
       st_coordinates() %>% 
       as_tibble() %>%
@@ -42,13 +46,9 @@ get_nearby <- function(df, radius=50, top=1, limited=TRUE, population_limit=0){
     group_by(ID) %>%
     nest() %>%
     ungroup() %>%
-    mutate(loc = map(data, ~GNfindNearbyPlaceName(lat = lat , lng = lon, radius = radius, maxRows = "100", style = "MEDIUM") )) %>% 
+    mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, pupulation_limit = population_limit))) %>% 
     unnest(loc) %>%
-    transmute(name = toponymName, distance = as.numeric(distance), population = as.numeric(population)) %>%
-    filter(population > population_limit) %>%
-    slice_min(distance, n = top) %>%  
-    { if(limited) select(., name)  else select_all(.) } %>% 
-  unnest(data)
+    unnest(data)
   
   return(locations)
 }

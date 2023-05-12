@@ -158,7 +158,7 @@ sebms_sunhour_diff <- function(df, year = year(today())-1, month = 4:9) {
 #'
 #' @return a figure that shows diffeence in sunhours
 #' @export
-sebms_sundiff_plot <- function(year = year(today())-1, df, sunvar = diffsun, month = 4:9) {
+sebms_sundiff_plot <- function(year = year(today())-1, df, sunvar = diffsun, month = 4:9) { #facet = Year, 
   
   if(missing(df)) {
     cat("Please be pacient...")
@@ -170,8 +170,9 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, sunvar = diffsun, mon
   sunDiffplot <- df %>% 
     ggplot() +
     geom_sf(aes(colour = {{ sunvar }}), show.legend = F) +
+    #facet_wrap(vars({{ facet }})) +
     scale_colour_gradientn(colours = suncols(5),
-                           limits = c(-600, 600),
+                           limits = c(-550, 500),
                            oob = scales::squish
     ) +
     theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
@@ -184,12 +185,12 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, sunvar = diffsun, mon
 
 
 # 
-#  allyearlist %>% 
-#     st_drop_geometry() %>% 
-#     ggplot() +
-#     geom_histogram(aes(total_sunH)) +
-#     facet_wrap(~Year) +
-#     theme_sebms()
+ # allyearlist_total_mean_diff %>%
+ #    st_drop_geometry() %>%
+ #    ggplot() +
+ #    geom_histogram(aes(total_sunH)) +
+ #    facet_wrap(~Year) +
+ #    theme_sebms()
 #   
 #   ggsave("SunHourHistogram.png", width = 14, height = 8)
 #   
@@ -200,11 +201,29 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, sunvar = diffsun, mon
 #   
 #   ggsave("MeanSunHourHistogram.png", width = 14, height = 8)
 #   
-#  allyearlist %>% 
-#    st_drop_geometry() %>% 
-#    group_by(Year) %>% 
-#    summarise(minsun = min(total_sunH),
-#              maxsun = max(total_sunH), .groups = "drop") %>% 
-#   gt::gt() %>% 
+ # allyearlist_total_mean_diff %>%
+ #   st_drop_geometry() %>%
+ #   group_by(Year) %>%
+ #   summarise(minsun = min(total_sunH),
+ #             maxsun = max(total_sunH), .groups = "drop") %>%
+ #  gt::gt() %>%
 #  gt::gtsave(filename = "MinMax_sunHours.png")
-#
+# #
+# allyearlist_total_mean_diff %>%
+#   st_drop_geometry() %>%
+#   ggplot() +
+#   geom_histogram(aes(diffsun)) +
+#   facet_wrap(~Year) +
+#   theme_sebms()
+# 
+# ggsave("DiffsunH_histogram.png", width = 14, height = 8)
+# 
+# allyearlist_total_mean_diff %>%
+#   st_drop_geometry() %>%
+#   group_by(Year) %>%
+#   summarise(minsun = min(diffsun),
+#             maxsun = max(diffsun),
+#             meansun = mean(diffsun),
+#             .groups = "drop") %>%
+#   gt::gt() %>%
+#   gt::gtsave(filename = "MinMax_DiffsunHours.png")

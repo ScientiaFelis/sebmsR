@@ -183,6 +183,34 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, sunvar = diffsun, mon
 }
 
 
+#' Maximum and Minimum Sun-hours Given Years
+#'
+#' GIve the maximm and minimum sunhour per year and the city or village closest to that location
+#'
+#' @param df a sf object with `year` and `total_sunhour` created by `sebms_sunhour_data()`
+#' @param years optional; the years to create the min max for
+#' @param month optional; the month to summarise the sunhours over
+#'
+#' @return a data frame with the max and min of total sunhours per year and the mean and diff from mean at that lokation. It also gives the name of the nearest city or village for that location.
+#' @export
+sebms_minmax_sunhour <- function(df, years = 2017:2022, month = 4:9) {
+  
+  if(missing(df)) {
+    
+    df <- sebms_sunhours_data(year = years, month = month)
+  }
+
+    df %>%
+    st_drop_geometry()  %>%
+    bind_cols(df %>% st_coordinates() %>% as_tibble() %>% rename(lat = Y, lon = X)) %>%
+    filter(Year %in% c(2021, 2022)) %>%
+    group_by(Year) %>%
+    mutate(max = max(total_sunH), min = min(total_sunH)) %>%
+    ungroup() %>%
+    filter(total_sunH == max| total_sunH == min) %>%
+    get_nearby()
+}
+
 # 
 #  allyearlist %>% 
 #     st_drop_geometry() %>% 

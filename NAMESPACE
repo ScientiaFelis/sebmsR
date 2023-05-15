@@ -2,6 +2,7 @@
 
 export(runShinyApp)
 export(sebms_ggsave)
+export(sebms_minmax_sunhour)
 export(sebms_naturum_climate)
 export(sebms_palette)
 export(sebms_per_update_modified)

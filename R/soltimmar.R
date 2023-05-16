@@ -23,6 +23,21 @@ sunHdata <- function(year, month, day, hour) {
     bind_rows()
 }
 
+#' Replace Falting Sunhour Values with mean of Surrounding Values
+#' 
+#' This function look for gaps in sunhour values (set to -999) and replace them with the mean of the before and following value.
+#'
+#' @inheritParams sunHdata()
+#' @return a dataframe with no gaps in sunhour values.
+#' @noRd
+fix_sunhour_NAs <- function(year, month, day, hour) {
+  
+  fixna <- sunHdata(year=year, month=month, day=day, hour=hour) %>% 
+    mutate(value = if_else(value < 0,
+                           mean(c(lag(value), lead(value)), na.rm = T), value))
+  return(fixna)
+  
+}
 #' Create a total Sunhours Dataframe from SMHI Sunhour data
 #' 
 #' Produce a data frame of the total irradiance in Sweden for the given month.

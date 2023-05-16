@@ -1,6 +1,12 @@
 #' Download Function for SMHI Sunhours
 #' 
-#' Function that download sunhour data from SMHI
+#' Function that download hourly sunhour data from SMHI
+#'
+#' @param year the year of interest
+#' @param month the month of interest
+#' @param day the day of interest
+#' @param hour the hour of interest
+#'
 #' @importFrom httr GET content
 #' @importFrom glue glue
 #' @importFrom polite politely
@@ -33,26 +39,34 @@ sunHdata <- function(year, month, day, hour) {
 #' @export
 sebms_sunhours_data <- function(year = year(today())-1, month = 4:9) {
   
+  DayHour <- list(hour = rep(13:14, times = 2),
+                  day = rep(24:25, each = 2)) # All hours in all days in a month
+  
+    hourfunc <- function(year, month) {
+      pmap_dfr(DayHour, ~fix_sunhour_NAs(year = year, month = month, day = .y, hour = .x))
+    }
+    
   allyears <- function(year, month){
-    map2(year, month, sunHdata) %>% ##iterate through year plus month and send that to sunHdata, se above
+    map2(year, month, hourfunc) %>% ##iterate through year plus month and send that to sunHdata, se above
       set_names(month) %>% 
       bind_rows(.id = "month") %>% 
-      group_by(lat, lon) %>% 
-      summarise(total_sunH = sum(value),.groups = "drop") %>% 
+      group_by(lat, lon) %>%
+      summarise(total_sunH = sum(value),.groups = "drop") %>%
       mutate(total_sunH = total_sunH / 60)
+
   }
   
   sunlist <- map(year, ~allyears(year = .x, month = month)) %>% 
     set_names(year) %>% 
     bind_rows(.id = "Year")
   
-  spatlist <- sunlist %>% 
-    filter(lon > 4) %>% 
-    st_as_sf(coords = c("lon", "lat")) %>% 
-    st_set_crs(4326) %>% 
-    st_intersection(SE)
-  
-  assign("spatsunlist", spatlist, envir = .GlobalEnv)
+ spatlist <- sunlist %>%
+   filter(lon > 4) %>%
+   st_as_sf(coords = c("lon", "lat")) %>%
+   st_set_crs(4326) %>%
+   st_intersection(SE)
+
+ assign("spatsunlist", spatlist, envir = .GlobalEnv)
   
   return(spatlist)
 }

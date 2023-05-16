@@ -3,13 +3,17 @@
 #' Function that download sunhour data from SMHI
 #' @importFrom httr GET content
 #' @importFrom glue glue
+#' @importFrom polite politely
 #' @details
 #' This is a helper function that download data from the SMHI API on sunhours (sun seconds) for a ceratin year `year` and month `month` and bind it to a dataframe.
 #' 
 #' @noRd
-sunHdata <- function(year, month) {
-  httr::GET(glue::glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{month}/parameter/119/data.json?interval=monthly")) %>% 
-    httr::content(encoding = "UTF-8") %>% 
+sunHdata <- function(year, month, day, hour) {
+  
+  polite_GET_nrt <- politely(GET, verbose = TRUE, robots = FALSE) # turn off robotstxt checking
+  
+  polite_GET_nrt(glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{month}{day}{hour}/parameter/119/data.json?interval=hourly")) %>% 
+    content(encoding = "UTF-8") %>% 
     bind_rows()
 }
 

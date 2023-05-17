@@ -18,7 +18,7 @@
 #' @noRd
 sunHdata <- function(year, month, day) {
   
-  polite_GET_nrt <- politely(GET, verbose = TRUE, robots = FALSE) # turn off robotstxt checking
+  polite_GET_nrt <- politely(GET, verbose = FALSE, robots = FALSE) # turn off robotstxt checking
   
   polite_GET_nrt(glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{month}{day}/parameter/119/data.json?interval=daily")) %>% 
     content(encoding = "UTF-8") %>% 

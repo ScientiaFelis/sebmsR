@@ -117,8 +117,8 @@ sebms_sunmean_data <- function(year = 2017:2021, month = 4:9, df) {
     ungroup() %>% 
     filter(Year == last(year)) %>% 
     select(mean_sunH, geometry)
-
-    return(meansunH)
+  
+  return(meansunH)
 }
 
 
@@ -131,7 +131,8 @@ sebms_sunmean_data <- function(year = 2017:2021, month = 4:9, df) {
 #' @param sunvar the variable to calculate colours on, `total_sunH` or `mean_sunH`
 #' @param month the month or month ranges to sum over if new data is downloaded with `sebms_sunhours_data()`
 #' 
-#' @import sf
+#' @importFrom sf geom_sf
+#' @importFrom lubridate year today
 #' @import ggplot2
 #' 
 #' @return a figure saved as a png with the sunhours in coloour from, high (red) to low (blue)
@@ -152,7 +153,7 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
     scale_colour_gradientn(colours = suncols(5),
                            limits = c(950, 2050),
                            oob = scales::squish
-                           ) +
+    ) +
     theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
   
   sebms_ggsave(sunHplot, glue::glue("Sweden_{year}"), width = 9.25, height = 12.67, weathervar = "Sunhours")
@@ -173,13 +174,17 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
 #' @param df dataframe from `sebms_sunhours_data()`
 #' @param year a year to compare with mean, if making new data
 #' @param month month to sum over, if making new data
+#' 
+#' @importFrom dplyr bind_cols mutate
+#' @importFrom sf st_drop_geometry
+#' @importFrom lubridate year today
 #'
 #' @noRd
 sebms_sunhour_diff <- function(df, year = year(today())-1, month = 4:9) {
- 
- if (missing(df)) {
-  df <- sebms_sunhours_data(year = year, month = month)
- }
+  
+  if (missing(df)) {
+    df <- sebms_sunhours_data(year = year, month = month)
+  }
   
   sundiff <- meansunH %>%  
     bind_cols(df %>% st_drop_geometry()) %>% 
@@ -197,6 +202,9 @@ sebms_sunhour_diff <- function(df, year = year(today())-1, month = 4:9) {
 #' @param sunvar the variable to calculate colours on, `diffsun` for now
 #' @param month 
 #'
+#' @importFrom lubridate year today
+#' @import ggplot2
+#' 
 #' @return a figure that shows diffeence in sunhours
 #' @export
 sebms_sundiff_plot <- function(year = year(today())-1, df, sunvar = diffsun, month = 4:9) {
@@ -231,6 +239,9 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, sunvar = diffsun, mon
 #' @param df a sf object with `year` and `total_sunhour` created by `sebms_sunhour_data()`
 #' @param years optional; the years to create the min max for
 #' @param month optional; the month to summarise the sunhours over
+#' 
+#' @importFrom sf st_drop_geometry st_coordinates
+#' @import dplyr
 #'
 #' @return a data frame with the max and min of total sunhours per year and the mean and diff from mean at that lokation. It also gives the name of the nearest city or village for that location.
 #' @export
@@ -240,8 +251,8 @@ sebms_minmax_sunhour <- function(df, years = 2017:2022, month = 4:9) {
     
     df <- sebms_sunhours_data(year = years, month = month)
   }
-
-    df %>%
+  
+  df %>%
     st_drop_geometry()  %>%
     bind_cols(df %>% st_coordinates() %>% as_tibble() %>% rename(lat = Y, lon = X)) %>%
     filter(Year %in% c(2021, 2022)) %>%

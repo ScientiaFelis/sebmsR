@@ -4,16 +4,22 @@
 \alias{sebms_sunhours_data}
 \title{Create a total Sunhours Dataframe from SMHI Sunhour data}
 \usage{
-sebms_sunhours_data(year = year(today()) - 1, month = 4:9)
+sebms_sunhours_data(year = year(today()) - 1, month = 4:9, per_day = FALSE)
 }
 \arguments{
 \item{year}{the year to produce plot for}
 
 \item{month}{numeric value of the months to summarise sun ours over (default to 4:9)}
+
+\item{per_day}{logical; if data should be downloaded per day}
+
+\item{day}{the day of interest}
+
+\item{hour}{the hour of interest}
 }
 \value{
 a sf spatial point object with the WGS84 coordinate system
 }
 \description{
-Produce a data frame of the total irradiance in Sweden for the given month.
+Produce a data frame of the total sunhours in Sweden for the given month.
 }

@@ -12,13 +12,13 @@ sebms_sunhour_plot(
 )
 }
 \arguments{
-\item{year}{the year to create the figure for.}
+\item{year}{the year to produce plot for}
 
 \item{df}{optional; a dataframe created by `sebms_sunhours_data()`}
 
 \item{sunvar}{the variable to calculate colours on, `total_sunH` or `mean_sunH`}
 
-\item{month}{the month or month ranges to sum over if new data is downloaded with `sebms_sunhours_data()`}
+\item{month}{numeric value of the months to summarise sun ours over (default to 4:9)}
 }
 \value{
 a figure saved as a png with the sunhours in coloour from, high (red) to low (blue)

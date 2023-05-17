@@ -9,9 +9,7 @@ sebms_minmax_sunhour(df, years = 2017:2022, month = 4:9)
 \arguments{
 \item{df}{a sf object with `year` and `total_sunhour` created by `sebms_sunhour_data()`}
 
-\item{years}{optional; the years to create the min max for}
-
-\item{month}{optional; the month to summarise the sunhours over}
+\item{month}{numeric value of the months to summarise sun ours over (default to 4:9)}
 }
 \value{
 a data frame with the max and min of total sunhours per year and the mean and diff from mean at that lokation. It also gives the name of the nearest city or village for that location.

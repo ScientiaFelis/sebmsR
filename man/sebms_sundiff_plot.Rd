@@ -4,18 +4,6 @@
 \alias{sebms_sundiff_plot}
 \title{Create a Figure that Shows the Difference in Sunhours}
 \usage{
-<<<<<<< HEAD
-sebms_sundiff_plot(year = year(today()) - 1, df, sunvar = diffsun, month = 4:9)
-}
-\arguments{
-\item{year}{the year to compare with}
-
-\item{df}{optinal; dataframe from the `sebms_sunhour_diff()`}
-
-\item{sunvar}{the variable to calculate colours on, `diffsun` for now}
-
-\item{month}{}
-=======
 sebms_sundiff_plot(year = year(today()) - 1, df, month = 4:9)
 }
 \arguments{
@@ -24,7 +12,6 @@ sebms_sundiff_plot(year = year(today()) - 1, df, month = 4:9)
 \item{df}{optinal; dataframe from the `sebms_sunhour_diff()`}
 
 \item{month}{numeric value of the months to summarise sun ours over (default to 4:9)}
->>>>>>> soltimmar
 }
 \value{
 a figure that shows diffeence in sunhours

@@ -6,6 +6,14 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
 
+# v 0.8.0
+
+* Add function to make and plot difference in sun-hours
+* Add function to calculate min and max sunhours for a given year and what location that is closest
+* Minor changes in the plot functions to set limits of colours etc.
+* Add possibility to download data per day or per month and then summarise per year.
+
+
 # v 0.7.0
 
 * New function that check the nearest locale of a set minimum population per coordinate.

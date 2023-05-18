@@ -99,7 +99,7 @@ sebms_sunhours_data <- function(year = year(today())-1, month = 4:9, per_day = F
   }else {
     
     allyears <- function(year, month){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
-      map2(year, month, fix_sunhour_NAs) %>% ##iterate through year plus month and send that to sunHdata, se above
+      map2(year, month, possibly(fix_sunhour_NAs)) %>% ##iterate through year plus month and send that to sunHdata, se above
         set_names(month) %>% # set the names of month to list items
         bind_rows(.id = "month") %>% # Take the nmae of list items (month) and set them in a variable
         group_by(gapvalue, lat, lon) %>%

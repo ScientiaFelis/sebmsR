@@ -173,6 +173,11 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
     df <- sebms_sunhours_data(year = year, month = month)
   }
   
+  if (length(month) < 7) {
+    cat("THIS FIGURE IF OPTIMIZED FOR THE SUM OF SUNHOURS OVER 6 SUMMER MONTH\n")
+    cat("IT MIGHT LOOK VERY BLUE (LOW NR HOURS) OR RED (HIGH NR HOURS) IF FEWER OR MORE MONTH IS USED\n")
+  }
+  # IDEA: Perhaps make the function iterate over given years and save the plots to file. Like in sebms_weather_png, or make a new function sunhour_pngs
   sunHplot <- df %>% 
     ggplot() +
     geom_sf(aes(colour = {{ sunvar }}), size = 0.1, show.legend = F) +

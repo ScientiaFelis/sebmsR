@@ -9,14 +9,14 @@
 
 sebms_default_station <- function(my_place, tempstat = TRUE) {
   
-  if(tempstat){
+  if(tempstat){ # This change stations slightly depending on if it is precipitation or tempereature that is used.
     my_place <- c("Stock.*Obs.*len$|^Lund$|Visby.*Flyg|Umeå.*Flyg")
     stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
       filter(str_detect(name, my_place)) %>% 
       select(name, id, latitude, longitude) %>% 
       mutate(id = str_squish(id))
     
-  }else{
+  }else{ # Stations for perecipitation
     my_place <- c("Stock.*Observ.*len$|^Lund$|Visby$|Umeå-Röbäck")
     stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
       filter(str_detect(name, my_place)) %>% 
@@ -39,7 +39,7 @@ sebms_default_station <- function(my_place, tempstat = TRUE) {
 sebms_user_station <- function(my_place) {
   
   my_place <- my_place %>% 
-    paste0(collapse = "|")
+    paste0(collapse = "|") # This makes the concatenated list of stations from user to a regex spressions with the names.
   
   stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
     filter(str_detect(name, my_place)) %>% 
@@ -144,20 +144,20 @@ sebms_temp_data <- function(my_place = NA, year = lubridate::year(lubridate::tod
     filter(lubridate::year(ymd_hms(FrDate)) == year,
            #filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())), ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
            month(ymd_hms(FrDate)) %in% 4:9) %>% 
-    left_join(stations, by = "id") %>%
-    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd_hms(FrDate), label = T, abbr = T), temp = as.numeric(temp), monthnr = month(ymd_hms(FrDate)), period = "2")
+    left_join(stations, by = "id") %>% # Join in the names
+    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd_hms(FrDate), label = T, abbr = T), temp = as.numeric(temp), monthnr = month(ymd_hms(FrDate)), period = "2") # Change name and variables I want to keep/have
   
   filt_temp <- all_temp  %>%
-    mutate(name = str_remove(name, " .*|-.*")) %>% 
+    mutate(name = str_remove(name, " .*|-.*")) %>% # Only keep basic name, e.g. Umeå Flygplats become Umeå
     group_by(name) %>% 
     distinct(id) %>% 
-    slice(1) %>%
+    slice(1) %>% # This take the first station id from the location name if there are several
     ungroup() %>% 
     select(-name)
   
   temp <- filt_temp  %>%
-    left_join(all_temp, by = "id") %>% 
-    bind_rows(norm_temp %>% filter(id %in% c(filt_temp %>% pull(id)))) %>% 
+    left_join(all_temp, by = "id") %>% # Join in the data from the chosen station
+    bind_rows(norm_temp %>% filter(id %in% c(filt_temp %>% pull(id)))) %>% # add in the normal temperatures from the internal data for the chosen stations
     mutate(name = str_remove(name, " .*|-.*"))
   
   return(temp) 
@@ -200,8 +200,8 @@ sebms_precipplot <- function(precip, colours = sebms_palette) {
   }
   p <- precip %>% 
     group_by(id) %>% 
-    nest() %>%  
-    mutate(plots = map(data, plotfunc))
+    nest() %>%  # Nest by name
+    mutate(plots = map(data, plotfunc)) # Iterate over the station names and make a plot for each
   
   p$plots
 }
@@ -292,7 +292,7 @@ sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_p
     if(unique(is.na(my_place))) # This is the default station names
       my_place <- c("Lund","Stockholm", "Umeå","Visby")
     
-    try(map2(plotst, my_place, sebms_ggsave), silent = T)
+    try(map2(plotst, my_place, sebms_ggsave), silent = T) # This iterates over plot + name and save it to file
     try(map2(plotsp, my_place, sebms_ggsave, weathervar = "Precip"), silent = T)
   }
   

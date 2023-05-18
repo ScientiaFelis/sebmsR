@@ -1,4 +1,4 @@
-#' Download Function for SMHI Sunhours
+c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23")
 #' 
 #' Function that download hourly sunhour data from SMHI
 #'
@@ -72,13 +72,16 @@ fix_sunhour_NAs <- function(year, month, day, per_day = FALSE) {
 #' @export
 sebms_sunhours_data <- function(year = year(today())-1, month = 4:9, per_day = FALSE) {
   
-  # DayHour <- list(#hour = rep(13:14, times = 2), # All hours of the day
-  #   day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31")
-  # ) # All days in a month
+  #TODO: Add function to chose per Day and Hour downloads.
   # 
+  # DayHour <- list(day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"),# All days in a month
+  #   hour = c("00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23")
+  # )  # All hours of the day
+  # Day <- list(day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31")) # All hours of the day
+  # # 
   if (per_day) {
     dayfunc <- function(year, month) {
-      pmap_dfr(DayHour, possibly(~fix_sunhour_NAs(year = year, month = month, day = .x, per_day = per_day))) %>%
+      pmap_dfr(Day, possibly(~fix_sunhour_NAs(year = year, month = month, day = .x, per_day = TRUE))) %>%
         bind_rows() %>% 
         group_by(gapvalue, lat, lon) %>% 
         summarise(daysunH = sum(value), .groups = "drop")

@@ -80,7 +80,7 @@ sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::t
   all_precip <- stations %>% 
     pull(id) %>% 
     set_names() %>% # To keep the id-names of the list
-    map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/23/station/",.x,"/period/corrected-archive/data.csv")), skip = 12))) %>% 
+    map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/23/station/",.x,"/period/corrected-archive/data.csv")), skip = 12)), .progress = "Downloading precipitation") %>% 
     map(possibly(~rename_with(.x, ~c("FrDate", "ToDate", "month", "nb", "Delete", "Delete2", "Delete3")))) %>% # Set column names 
     bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
     as_tibble() %>% 
@@ -136,8 +136,8 @@ sebms_temp_data <- function(my_place = NA, year = lubridate::year(lubridate::tod
   all_temp <- stations %>% 
     pull(id) %>% 
     set_names() %>% # To keep the id-names of the list
-    map(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",.x,"/period/corrected-archive/data.csv")), skip = 12)) %>% 
-    map(~rename_with(.x, ~c("FrDate", "ToDate", "month", "temp", "Delete", "Delete2", "Delete3"))) %>% # Set column names 
+    map(\(x) read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",x,"/period/corrected-archive/data.csv")), skip = 12), .progress = "Downloading temperatures") %>% 
+    map(\(x) rename_with(x, ~c("FrDate", "ToDate", "month", "temp", "Delete", "Delete2", "Delete3"))) %>% # Set column names 
     bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
     as_tibble() %>% 
     select(!starts_with("Delete")) %>% # Remove the columns we do not need
@@ -201,7 +201,7 @@ sebms_precipplot <- function(precip, colours = sebms_palette) {
   p <- precip %>% 
     group_by(id) %>% 
     nest() %>%  # Nest by name
-    mutate(plots = map(data, plotfunc)) # Iterate over the station names and make a plot for each
+    mutate(plots = map(data, plotfunc, .progress = "Create precip figures")) # Iterate over the station names and make a plot for each
   
   p$plots
 }
@@ -235,7 +235,7 @@ sebms_tempplot <- function(temp, colours = sebms_palette){
   g <- temp %>% 
     group_by(id) %>% 
     nest() %>%  
-    mutate(plots = map(data, plotfunct))
+    mutate(plots = map(data, plotfunct, .progress = "Creating temp figures"))
   
   g$plots  
   
@@ -292,8 +292,8 @@ sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_p
     if(unique(is.na(my_place))) # This is the default station names
       my_place <- c("Lund","Stockholm", "Umeå","Visby")
     
-    try(map2(plotst, my_place, sebms_ggsave), silent = T) # This iterates over plot + name and save it to file
-    try(map2(plotsp, my_place, sebms_ggsave, weathervar = "Precip"), silent = T)
+    try(map2(plotst, my_place, sebms_ggsave, .progress = "Saving temp figure"), silent = T) # This iterates over plot + name and save it to file
+    try(map2(plotsp, my_place, sebms_ggsave, weathervar = "Precip", .progress = "Saving precip figure"), silent = T)
   }
   
   list(plotst, plotsp)

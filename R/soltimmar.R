@@ -78,6 +78,8 @@ sebms_sunhours_data <- function(year = year(today())-1, month = 4:9, per_day = F
   # )  # All hours of the day
   # Day <- list(day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31")) # All hours of the day
   # # 
+#Days <- list(c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "31")) # To test with specific days
+  
   if (per_day) {
     dayfunc <- function(year, month) {
       pmap_dfr(Day, possibly(~fix_sunhour_NAs(year = year, month = month, day = .x, per_day = TRUE))) %>%

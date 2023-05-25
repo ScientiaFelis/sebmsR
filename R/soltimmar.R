@@ -108,7 +108,7 @@ sebms_sunhours_data <- function(year = year(today())-1, month = 4:9, per_day = F
     }
   }
   
-  sunlist <- map(year, ~allyears(year = .x, month = month)) %>%  # This iterates over all years given and send each one to allyears() function
+  sunlist <- map(year, ~allyears(year = .x, month = month), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
     set_names(year) %>% # set names to Year
     bind_rows(.id = "Year") %>% # Put year in a column
     filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs

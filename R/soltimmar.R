@@ -119,7 +119,7 @@ sebms_sunhours_data <- function(year = year(today())-1, month = 4:9, per_day = F
     st_intersection(SE) %>%  # intersects with Sweden sf object to cut out only Sweden from area.
     select(Year, gapvalue, total_sunH, geometry)
 
-  assign("spatsunlist", sunlist, envir = .GlobalEnv) # Send the result to Global environment
+  #assign("spatsunlist", sunlist, envir = .GlobalEnv) # Send the result to Global environment
   
   return(sunlist) # Also return the data frame to consol
 }

@@ -6,6 +6,11 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
 
+# v 0.8.1
+
+* Minor changes in error and warning handling.
+* Added some comments to code to explain what it do.
+
 # v 0.8.0
 
 * Add function to make and plot difference in sun-hours

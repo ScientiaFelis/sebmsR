@@ -22,6 +22,12 @@ knitr::opts_chunk$set(warning=FALSE, comment=NA)
 
 `sebmsR` is an R package for SeBMS - the Swedish Butterfly Monitoring Scheme - offering tools for accessing data, making plots and a Shiny app.
 
+## Under construction
+
+The package is currently under re-development and some functions do not work well, e.g. the Shiny app and reading from a Postgres database.
+The functions related to weather data, e.g. `sebms_weather_png()`, `sebms_sunhours_data()`, `sebms_sunhour_plot ()`, and `sebms_sundiff_plot()` works well.
+
+
 ## Installing from github
 
 If you want to install the latest version:
@@ -117,7 +123,14 @@ DBPASS = my_db_password
 
 After getting connected to the database, look at usage examples to get you started. 
 
-Please read the Vignette, using either the Help tab in RStudio IDE or the R prompt command `browseVignettes(package = "swedishbutterflies")`.
+Please read the Vignette, using either the Help tab in RStudio IDE or the R prompt command `browseVignettes(package = "sebmsR")`.
+
+### Examples
+
+To make a plot and generate the pngs for the weather data for the Butterfly yearly report of **2022** you can just do `sebms_weather_png(2022)`.
+For the sunhour figure for the same year do `sebms_sunhour_plot(2022)`.
+
+
 
 ## Development
 

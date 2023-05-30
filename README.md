@@ -1,13 +1,21 @@
 [![Build
-Status](https://travis-ci.org/rekonstrukt/swedishbutterflies.svg?branch=master)](https://travis-ci.org/rekonstrukt/swedishbutterflies)
+Status](https://scientiafelis/sebmsr.svg?branch=master)](https://scientiafelis/sebmsr)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-`swedishbutterflies` is an R package for SeBMS - the Swedish Butterfly
-Monitoring Scheme - offering tools for accessing data, making plots and
-a Shiny app.
 
-Installing from github
-----------------------
+`sebmsR` is an R package for SeBMS - the Swedish Butterfly Monitoring
+Scheme - offering tools for accessing data, making plots and a Shiny
+app.
+
+## Under construction
+
+The package is currently under re-development and some functions do not
+work well, e.g. the Shiny app and reading from a Postgres database. The
+functions related to weather data, e.g. `sebms_weather_png()`,
+`sebms_sunhours_data()`, `sebms_sunhour_plot ()`, and
+`sebms_sundiff_plot()` works well.
+
+## Installing from github
 
 If you want to install the latest version:
 
@@ -18,14 +26,13 @@ If you want to install the latest version:
 
 install.packages("devtools") 
 library(devtools)
-install_github("rekonstrukt/swedishbutterflies")
+install_github("scientiafelis/sebmsr")
 
 # A specific versioned release can be installed like this:
-install_github("rekonstrukt/swedishbutterflies@0.1.6")
+install_github("scientiafelis/sebmsr@0.4.0")
 ```
 
-Quick start
------------
+## Quick start
 
 Since the package can read data from a Postgres db with live data from
 SeBMS, some initial system configuration may first be needed to set up
@@ -60,7 +67,7 @@ config file that references environment variables in R:
 
 ``` r
 
-library(swedishbutterflies)
+library(sebmsR)
 library(rappdirs)
 
 # this is the location for config.yml holding db connection details
@@ -109,17 +116,22 @@ DBUSER = my_db_username
 DBPASS = my_db_password
 ```
 
-Usage
------
+## Usage
 
 After getting connected to the database, look at usage examples to get
 you started.
 
 Please read the Vignette, using either the Help tab in RStudio IDE or
-the R prompt command `browseVignettes(package = "swedishbutterflies")`.
+the R prompt command `browseVignettes(package = "sebmsR")`.
 
-Development
------------
+### Examples
+
+To make a plot and generate the pngs for the weather data for the
+Butterfly yearly report of **2022** you can just do
+`sebms_weather_png(2022)`. For the sunhour figure for the same year do
+`sebms_sunhour_plot(2022)`.
+
+## Development
 
 To further develop or change the package, please refer to instructions
 at <http://r-pkgs.had.co.nz/>, then fork this repo and submit a PR with
@@ -128,7 +140,7 @@ the changes.
 For a concrete example - to make a change with regards to how the
 filtering on species and year dimensions works for the species data,
 edit the ‘R/data.R’ file for example by adjusting the query used in the
-sebms\_species\_per\_year function, and possibly adding a test in
+sebms_species_per_year function, and possibly adding a test in
 `test/testthat/test-sebms-various.R` that verifies expected results,
 then do the Ctrl+Shift+{D,T,E} steps and then use git to commit and push
 the changes.
@@ -142,14 +154,12 @@ The plotting uses ggplot2 and leaflet mostly and functions are in
 The long-form documentation / Vignette is located in
 `vignettes/sebms-intro.Rmd`.
 
-Credits
--------
+## Credits
 
 The package bundles code and data assembled and curated by Lars
 Pettersson at <http://dagfjarilar.lu.se>
 
-Meta
-----
+## Meta
 
 -   Please [report any issues or
     bugs](https://github.com/rekonstrukt/swedishbutterflies/issues).

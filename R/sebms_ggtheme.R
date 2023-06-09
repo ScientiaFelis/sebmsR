@@ -34,7 +34,7 @@ theme_sebms <- function(title_sz = 24,
       panel.background = element_rect(size = 0.5),
       panel.border = element_rect(color = "black"),
       strip.background = element_blank(),
-      strip.text.x = element_text(size = 16),
+      strip.text.x = element_text(size = 16, margin = margin(b = 15)),
       legend.position = legend_position
     )
   

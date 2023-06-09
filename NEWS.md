@@ -6,6 +6,16 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
 
+# v 0.9.0
+
+* New command to `sebms_sunhour_data()` that make it possible to assign result data to Global env. This is degfault to `FALSE` but is set to `TRUE` when this function is used in the plot functions. This makes it possible to use this object to make a diff plot after making a sunhour plot without having to download the data again.
+
+* Add the year to the `sebms_ggsave()` to differencciate the temp and precip plots from different years.
+
+* Small fixes to the figures. Add margin between text and panel in weather plots, larger linewidth, and smaller points in sunhourplots.
+
+* Some code cleaning and commenting of code.
+
 # v 0.8.1
 
 * Minor changes in error and warning handling.

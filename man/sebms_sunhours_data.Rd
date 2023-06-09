@@ -4,7 +4,12 @@
 \alias{sebms_sunhours_data}
 \title{Create a total Sunhours Dataframe from SMHI Sunhour data}
 \usage{
-sebms_sunhours_data(year = year(today()) - 1, month = 4:9, per_day = FALSE)
+sebms_sunhours_data(
+  year = year(today()) - 1,
+  month = 4:9,
+  per_day = FALSE,
+  to_env = FALSE
+)
 }
 \arguments{
 \item{year}{the year to produce plot for}
@@ -12,6 +17,8 @@ sebms_sunhours_data(year = year(today()) - 1, month = 4:9, per_day = FALSE)
 \item{month}{numeric value of the months to summarise sun ours over (default to 4:9)}
 
 \item{per_day}{logical; if data should be downloaded per day}
+
+\item{to_env}{logical; also send the result to the global environment as an object called 'spatsunist_{year}. If the function is used within a plot function this is TRUE}
 
 \item{day}{the day of interest}
 

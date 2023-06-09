@@ -192,9 +192,9 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
   sunHplot <- df %>% 
     ggplot() +
     geom_sf(aes(colour = {{ sunvar }}), size = 0.01, show.legend = F) +
-    scale_colour_gradientn(colours = suncols(5),
-                           limits = c(950, 2050),
-                           oob = scales::squish
+    scale_colour_gradientn(colours = suncols(5), # Use the 5 colours of suncols, blue to red.
+                           limits = c(950, 2050), # These limits are set from a bit above and below the min and max values of sunhours
+                           oob = scales::squish # This makes all values under min lim to blue, and all above max lim to red.
     ) +
     theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
   

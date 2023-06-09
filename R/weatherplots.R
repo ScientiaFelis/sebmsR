@@ -222,12 +222,12 @@ sebms_tempplot <- function(temp, colours = sebms_palette){
   {ggplot(data = df, aes(x = reorder(month, monthnr), 
                          y = temp, group = period, linetype = period, 
                          colour = period)) + 
-      geom_line(stat = "identity", linewidth = 1) +
+      geom_line(stat = "identity", linewidth = 1.1) +
       facet_wrap(~ name, ncol = 1) +
       scale_linetype_manual(values = c(32, "solid")) +
       scale_color_manual(values = colours) + 
       scale_y_continuous(expand = c(0,0), limits = c(0,25)) +
-      #coord_cartesian(expand = F, ylim = c(0,25), xlim = c(0,NA)) +
+      #coord_cartesian(expand = T, ylim = c(0,25), xlim = c(0.7,6.3)) +
       labs(x = NULL, y = "Temperatur (°C)") + 
       theme_sebms() 
   }

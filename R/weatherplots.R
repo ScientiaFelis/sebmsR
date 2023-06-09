@@ -252,12 +252,12 @@ sebms_tempplot <- function(temp, colours = sebms_palette){
 #' @param weathervar which weather variable it shoulld put in the name; 'Temp' or 'Precip'
 #' @importFrom ggplot2 ggsave
 #' @export
-sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.25, text.factor = 3, weathervar = "Temp") 
+sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.25, text.factor = 3, weathervar = "Temp", year = lubridate::year(lubridate::today())) 
 {
   dpi <- text.factor * 100
   width.calc <- width #/ dpi
   height.calc <- height # / dpi
-  ggsave(filename = paste0(filename, weathervar, ".png"), plot = plot,
+  ggsave(filename = paste0(filename, weathervar, year, ".png"), plot = plot,
          device = "png", dpi = dpi, width = width.calc, height = height.calc, units = 'cm')
 }
 
@@ -292,8 +292,8 @@ sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_p
     if(unique(is.na(my_place))) # This is the default station names
       my_place <- c("Lund","Stockholm", "Umeå","Visby")
     
-    try(map2(plotst, my_place, sebms_ggsave, .progress = "Saving temp figure"), silent = T) # This iterates over plot + name and save it to file
-    try(map2(plotsp, my_place, sebms_ggsave, weathervar = "Precip", .progress = "Saving precip figure"), silent = T)
+    try(map2(plotst, my_place, sebms_ggsave, year = year, .progress = "Saving temp figure"), silent = T) # This iterates over plot + name and save it to file
+    try(map2(plotsp, my_place, sebms_ggsave, weathervar = "Precip", year = year, .progress = "Saving precip figure"), silent = T)
   }
   
   list(plotst, plotsp)

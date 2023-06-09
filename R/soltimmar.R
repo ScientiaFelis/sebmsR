@@ -198,7 +198,7 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
     ) +
     theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
   
-  sebms_ggsave(sunHplot, glue::glue("Sweden_{year}"), width = 9.25, height = 12.67, weathervar = "Sunhours")
+  sebms_ggsave(sunHplot, glue::glue("Sweden_{year}"), width = 9.25, height = 12.67, weathervar = "Sunhours", year = year)
   return(sunHplot) 
   
 }
@@ -263,7 +263,7 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9) {
     ) +
     theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
   
-  sebms_ggsave(sunDiffplot, glue::glue("Sweden_{year}"), width = 9.25, height = 12.67, weathervar = "SunhourDiff")
+  sebms_ggsave(sunDiffplot, glue::glue("Sweden_{year}"), width = 9.25, height = 12.67, weathervar = "SunhourDiff", year = year)
   
   return(sunDiffplot) 
   

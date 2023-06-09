@@ -191,7 +191,7 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
   # IDEA: Perhaps make the function iterate over given years and save the plots to file. Like in sebms_weather_png, or make a new function sunhour_pngs
   sunHplot <- df %>% 
     ggplot() +
-    geom_sf(aes(colour = {{ sunvar }}), size = 0.1, show.legend = F) +
+    geom_sf(aes(colour = {{ sunvar }}), size = 0.01, show.legend = F) +
     scale_colour_gradientn(colours = suncols(5),
                            limits = c(950, 2050),
                            oob = scales::squish
@@ -256,7 +256,7 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9) {
   
   sunDiffplot <- df %>% 
     ggplot() +
-    geom_sf(aes(colour = diffsun), show.legend = F) +
+    geom_sf(aes(colour = diffsun), size = 0.01, show.legend = F) +
     scale_colour_gradientn(colours = suncols(5),
                            limits = c(-600, 600),
                            oob = scales::squish

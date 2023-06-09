@@ -252,7 +252,7 @@ sebms_tempplot <- function(temp, colours = sebms_palette){
 #' @param weathervar which weather variable it shoulld put in the name; 'Temp' or 'Precip'
 #' @importFrom ggplot2 ggsave
 #' @export
-sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.25, text.factor = 3, weathervar = "Temp", year = lubridate::year(lubridate::today())) 
+sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.722, text.factor = 3, weathervar = "Temp", year = lubridate::year(lubridate::today())) 
 {
   dpi <- text.factor * 100
   width.calc <- width #/ dpi

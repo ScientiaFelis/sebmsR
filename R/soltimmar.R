@@ -140,7 +140,7 @@ suncols <- colorRampPalette(colors = c(rgb(43,131,186,maxColorValue = 255), rgb(
 #' @noRd
 sebms_sunmean_data <- function(year = 2017:2021, month = 4:9) {
   
-  meansunH <- map(year, ~sebms_sunhours_data(.x, month = month, per_day = FALSE)) %>% 
+  meansunH <- sebms_sunhours_data(year, month = month, per_day = FALSE) %>% 
     set_names(year) %>% 
     bind_rows() %>% 
     group_by(geometry) %>% 

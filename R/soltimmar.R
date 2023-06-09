@@ -60,6 +60,7 @@ fix_sunhour_NAs <- function(year, month, day, per_day = FALSE) {
 #' @param day the day of interest
 #' @param hour the hour of interest
 #' @param per_day logical; if data should be downloaded per day
+#' @param to_env logical; also send the result to the global environment as an object called 'spatsunist_{year}. If the function is used within a plot function this is TRUE
 #'
 #' @import dplyr
 #' @importFrom sf st_as_sf st_set_crs st_intersection
@@ -69,7 +70,7 @@ fix_sunhour_NAs <- function(year, month, day, per_day = FALSE) {
 #' @returns a sf spatial point object with the WGS84 coordinate system
 #' 
 #' @export
-sebms_sunhours_data <- function(year = year(today())-1, month = 4:9, per_day = FALSE) {
+sebms_sunhours_data <- function(year = year(today())-1, month = 4:9, per_day = FALSE, to_env = FALSE) {
   
   #TODO: Add function to chose per Day and Hour downloads.
   # 
@@ -78,7 +79,7 @@ sebms_sunhours_data <- function(year = year(today())-1, month = 4:9, per_day = F
   # )  # All hours of the day
   # Day <- list(day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31")) # All hours of the day
   # # 
-#Days <- list(c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "31")) # To test with specific days
+  #Days <- list(c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "31")) # To test with specific days
   
   if (per_day) {
     dayfunc <- function(year, month) {
@@ -95,7 +96,7 @@ sebms_sunhours_data <- function(year = year(today())-1, month = 4:9, per_day = F
         group_by(gapvalue, lat, lon) %>%
         summarise(total_sunH = sum(daysunH),
                   .groups = "drop") %>%
-      mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
+        mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
       
     }
   }else {
@@ -118,9 +119,17 @@ sebms_sunhours_data <- function(year = year(today())-1, month = 4:9, per_day = F
     st_set_crs(4326) %>%
     st_intersection(SE) %>%  # intersects with Sweden sf object to cut out only Sweden from area.
     select(Year, gapvalue, total_sunH, geometry)
-
-  #assign("spatsunlist", sunlist, envir = .GlobalEnv) # Send the result to Global environment
   
+  if (to_env) {
+    
+      if(length(year) > 1) {
+        Year <- glue("{min(year)}-{max(year)}") 
+      }else {
+        Year <- glue("{year}")
+      }
+
+    assign(glue("spatsunlist_{Year}"), sunlist, envir = .GlobalEnv) # Send the result to Global environment if the function is used inside a plot function. This way you do not need to download the data again if you want a diff plt to. You can just feed the spatsunlist data to the sun_diff_plot function
+  }
   return(sunlist) # Also return the data frame to consol
 }
 
@@ -148,8 +157,8 @@ sebms_sunmean_data <- function(year = 2017:2021, month = 4:9) {
     ungroup() %>% 
     filter(Year == last(year)) %>% 
     select(mean_sunH, geometry)
-
-    return(meansunH)
+  
+  return(meansunH)
 }
 
 
@@ -172,7 +181,7 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
     cat("Please be pacient...")
     cat("THIS CAN TAKE A MINUTE OR FIVE\n\n")
     cat("Downloading sunhour data from SMHI........\n")
-    df <- sebms_sunhours_data(year = year, month = month)
+    df <- sebms_sunhours_data(year = year, month = month, to_env = TRUE)
   }
   
   if (length(month) < 6) {
@@ -186,7 +195,7 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
     scale_colour_gradientn(colours = suncols(5),
                            limits = c(950, 2050),
                            oob = scales::squish
-                           ) +
+    ) +
     theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
   
   sebms_ggsave(sunHplot, glue::glue("Sweden_{year}"), width = 9.25, height = 12.67, weathervar = "Sunhours")
@@ -214,7 +223,7 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
 sebms_sunhour_diff <- function(df, year = year(today())-1, month = 4:9) {
   
   if (missing(df)) {
-    df <- sebms_sunhours_data(year = year, month = month)
+    df <- sebms_sunhours_data(year = year, month = month, to_env = TRUE)
   }
   
   sundiff <- meansunH %>%  
@@ -291,12 +300,12 @@ sebms_minmax_sunhour <- function(df, years = 2017:2022, month = 4:9) {
 }
 
 # 
- # allyearlist_total_mean_diff %>%
- #   st_drop_geometry() %>%
- #   group_by(Year) %>%
- #   summarise(minsun = min(total_sunH),
- #             maxsun = max(total_sunH), .groups = "drop") %>%
- #  gt::gt() %>%
+# allyearlist_total_mean_diff %>%
+#   st_drop_geometry() %>%
+#   group_by(Year) %>%
+#   summarise(minsun = min(total_sunH),
+#             maxsun = max(total_sunH), .groups = "drop") %>%
+#  gt::gt() %>%
 #  gt::gtsave(filename = "MinMax_sunHours.png")
 # #
 # allyearlist_total_mean_diff %>%

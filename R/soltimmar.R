@@ -175,7 +175,7 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
     df <- sebms_sunhours_data(year = year, month = month)
   }
   
-  if (length(month) < 7) {
+  if (length(month) < 6) {
     cat("THIS FIGURE IF OPTIMIZED FOR THE SUM OF SUNHOURS OVER 6 SUMMER MONTH\n")
     cat("IT MIGHT LOOK VERY BLUE (LOW NR HOURS) OR RED (HIGH NR HOURS) IF FEWER OR MORE MONTH IS USED\n")
   }

@@ -224,7 +224,7 @@ sebms_tempplot <- function(temp, colours = sebms_palette){
                          colour = period)) + 
       geom_line(stat = "identity", linewidth = 1) +
       facet_wrap(~ name, ncol = 1) +
-      scale_linetype_manual(values = c("dashed", "solid")) +
+      scale_linetype_manual(values = c(32, "solid")) +
       scale_color_manual(values = colours) + 
       scale_y_continuous(expand = c(0,0), limits = c(0,25)) +
       #coord_cartesian(expand = F, ylim = c(0,25), xlim = c(0,NA)) +

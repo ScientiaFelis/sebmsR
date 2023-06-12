@@ -122,12 +122,12 @@ sebms_sunhours_data <- function(year = year(today())-1, month = 4:9, per_day = F
   
   if (to_env) {
     
-      if(length(year) > 1) {
-        Year <- glue("{min(year)}-{max(year)}") 
-      }else {
-        Year <- glue("{year}")
-      }
-
+    if(length(year) > 1) {
+      Year <- glue("{min(year)}-{max(year)}") 
+    }else {
+      Year <- glue("{year}")
+    }
+    
     assign(glue("spatsunlist_{Year}"), sunlist, envir = .GlobalEnv) # Send the result to Global environment if the function is used inside a plot function. This way you do not need to download the data again if you want a diff plt to. You can just feed the spatsunlist data to the sun_diff_plot function
   }
   return(sunlist) # Also return the data frame to consol
@@ -189,21 +189,27 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
     cat("IT MIGHT LOOK VERY BLUE (LOW NR HOURS) OR RED (HIGH NR HOURS) IF FEWER OR MORE MONTH IS USED\n")
   }
   # IDEA: Perhaps make the function iterate over given years and save the plots to file. Like in sebms_weather_png, or make a new function sunhour_pngs
-  sunHplot <- df %>% 
-    ggplot() +
-    geom_sf(aes(colour = {{ sunvar }}), size = 0.01, show.legend = F) +
-    scale_colour_gradientn(colours = suncols(5), # Use the 5 colours of suncols, blue to red.
-                           limits = c(950, 2050), # These limits are set from a bit above and below the min and max values of sunhours
-                           oob = scales::squish # This makes all values under min lim to blue, and all above max lim to red.
-    ) +
-    coord_sf(expand = F) +
-    theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"),
-                         #plot.margin = unit(c(1,0,1,0), "mm")
-                         )
+  sunHplot <- function(df) {  
+    ggplot(data = df) +
+      geom_sf(aes(colour = {{ sunvar }}), size = 0.01, show.legend = F) +
+      scale_colour_gradientn(colours = suncols(5), # Use the 5 colours of suncols, blue to red.
+                             limits = c(950, 2050), # These limits are set from a bit above and below the min and max values of sunhours
+                             oob = scales::squish # This makes all values under min lim to blue, and all above max lim to red.
+      ) +
+      coord_sf(expand = F) +
+      theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"),
+                           #plot.margin = unit(c(1,0,1,0), "mm")
+      )
+  }
   
-  sebms_ggsave(sunHplot, "Sweden", width = 6, height = 12.67, weathervar = glue("Sunhours_{year}"))
-  return(sunHplot) 
+  ggs <- df %>% 
+    group_by(Year) %>% 
+    nest() %>% 
+    mutate(plots = map(data, sunHplot, .progress = "Create sunhour figures"))
   
+  map2(ggs$plots, ggs$Year, ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("Sunhours_{.y}")))
+  
+  return(ggs$plots) 
 }
 
 # all_plots <- allyearlist %>%

@@ -254,10 +254,12 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9) {
     cat("Please be pacient...")
     cat("THIS CAN TAKE A MINUTE OR FIVE\n\n")
     cat("Downloading sunhour data from SMHI........\n")
-    df <- sebms_sunhour_diff(year = year, month = month)
+    dff <- sebms_sunhour_diff(year = year, month = month)
+  }else{
+    dff <- df %>% sebms_sunhour_diff(year = year, month = month)
   }
   
-  sunDiffplot <- df %>% 
+  sunDiffplot <- dff %>% 
     ggplot() +
     geom_sf(aes(colour = diffsun), size = 0.01, show.legend = F) +
     scale_colour_gradientn(colours = suncols(5),

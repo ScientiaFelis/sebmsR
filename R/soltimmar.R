@@ -196,9 +196,12 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
                            limits = c(950, 2050), # These limits are set from a bit above and below the min and max values of sunhours
                            oob = scales::squish # This makes all values under min lim to blue, and all above max lim to red.
     ) +
-    theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
+    coord_sf(expand = F) +
+    theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"),
+                         #plot.margin = unit(c(1,0,1,0), "mm")
+                         )
   
-  sebms_ggsave(sunHplot, glue::glue("Sweden_{year}"), width = 9.25, height = 12.67, weathervar = "Sunhours", year = year)
+  sebms_ggsave(sunHplot, "Sweden", width = 6, height = 12.67, weathervar = glue("Sunhours_{year}"))
   return(sunHplot) 
   
 }
@@ -261,9 +264,10 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9) {
                            limits = c(-600, 600),
                            oob = scales::squish
     ) +
+    coord_sf(expand = F) +
     theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
   
-  sebms_ggsave(sunDiffplot, glue::glue("Sweden_{year}"), width = 9.25, height = 12.67, weathervar = "SunhourDiff", year = year)
+  sebms_ggsave(sunDiffplot, "Sweden", width = 6, height = 12.67, weathervar = glue("SunhourDiff_{year}"))
   
   return(sunDiffplot) 
   

@@ -10,8 +10,7 @@ sebms_ggsave(
   width = 12.67,
   height = 9.722,
   text.factor = 3,
-  weathervar = "Temp",
-  year = lubridate::year(lubridate::today())
+  weathervar = "Temp"
 )
 }
 \arguments{

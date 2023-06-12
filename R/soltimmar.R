@@ -280,6 +280,8 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9) {
 #' GIve the maximm and minimum sunhour per year and the city or village closest to that location
 #'
 #' @param df a sf object with `year` and `total_sunhour` created by `sebms_sunhour_data()`
+#' @param sunvar which variable to calculate the min and max on, can 
+#' be `total_sunH` or `diffsun`
 #' @inheritParams sebms_sunhours_data
 #' 
 #' @importFrom sf st_drop_geometry st_coordinates

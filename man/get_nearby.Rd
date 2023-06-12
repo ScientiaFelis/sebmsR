@@ -4,7 +4,14 @@
 \alias{get_nearby}
 \title{Get Nearby Places to Given Coordinates}
 \usage{
-get_nearby(df, radius = 50, top = 1, limited = TRUE, population_limit = 0)
+get_nearby(
+  df,
+  radius = 50,
+  top = 1,
+  limited = TRUE,
+  population_limit = 0,
+  sunvar = total_sunH
+)
 }
 \arguments{
 \item{df}{data frame with coordinates, or sf object}

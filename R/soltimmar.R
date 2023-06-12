@@ -297,7 +297,7 @@ sebms_minmax_sunhour <- function(df, years = 2017:2022, month = 4:9) {
   df %>%
     st_drop_geometry()  %>%
     bind_cols(df %>% st_coordinates() %>% as_tibble() %>% rename(lat = Y, lon = X)) %>%
-    filter(Year %in% c(2021, 2022)) %>%
+    filter(Year %in% years) %>%
     group_by(Year) %>%
     mutate(max = max(total_sunH), min = min(total_sunH)) %>%
     ungroup() %>%

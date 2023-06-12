@@ -48,7 +48,8 @@ get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limi
     ungroup() %>%
     mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, pupulation_limit = population_limit))) %>% 
     unnest(loc) %>%
-    unnest(data)
+    unnest(data) %>% 
+    transmute(Year, lon, lat, name, Max_Min = total_sunH)
   
   return(locations)
 }

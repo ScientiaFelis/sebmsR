@@ -15,7 +15,7 @@
 #' @return a dataframe with names nearby you coordinates
 #' @export
 #'
-get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limit = 0){
+get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limit = 0, sunvar = total_sunH){
   
   options(geonamesUsername = "sebms") 
   
@@ -49,7 +49,7 @@ get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limi
     mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, pupulation_limit = population_limit))) %>% 
     unnest(loc) %>%
     unnest(data) %>% 
-    transmute(Year, lon, lat, name, Max_Min = total_sunH)
+    transmute(Year, lon, lat, name, Max_Min = {{ sunvar }})
   
   return(locations)
 }

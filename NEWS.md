@@ -6,6 +6,20 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
 
+
+# v 0.9.2
+
+* Now the `sebms_sunhour_plot()` iterate over years you have sunhour data from, which makes it possible to give a span of years or give a data.frame from `sebms_sunhour_data()` with several years. It will pruduce a figure and png for each year.
+* The `sebms_sundiff_plot()` also now iterate over years and produce figure for each year.
+
+# v 0.9.1
+
+* Remove year variable in ggsave function and incorporate it into the naming in plot functions.
+* You can now give data.frame from `sebms_sunhour_data()` to `sebms_sundiff_plot()` directly instead of feed it through `sebms_sunhour_diff()`.
+* The `sebms_minmax_sunhour()` had an error where it filtered on years 2021 and 2022, in now filter out the **given** years.
+* Add variable to chose which factors to extract the min and max from in the `sebms_minmax_sunhour()` function. This enable you to find the places where there were most and least sun but also, if you feed it diff data, where the difference is as greatest in either more or less sun compare to the mean.
+* Reduce the width to 6 in to reduxe white space around map.
+
 # v 0.9.0
 
 * New command to `sebms_sunhour_data()` that make it possible to assign result data to Global env. This is degfault to `FALSE` but is set to `TRUE` when this function is used in the plot functions. This makes it possible to use this object to make a diff plot after making a sunhour plot without having to download the data again.

@@ -265,19 +265,26 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9) {
     dff <- df %>% sebms_sunhour_diff(year = year, month = month)
   }
   
-  sunDiffplot <- dff %>% 
-    ggplot() +
-    geom_sf(aes(colour = diffsun), size = 0.01, show.legend = F) +
-    scale_colour_gradientn(colours = suncols(5),
-                           limits = c(-600, 600),
-                           oob = scales::squish
-    ) +
-    coord_sf(expand = F) +
-    theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
+  sunDiffplot <- function(dff) { 
+    ggplot(data = dff) +
+      geom_sf(aes(colour = diffsun), size = 0.01, show.legend = F) +
+      scale_colour_gradientn(colours = suncols(5),
+                             limits = c(-600, 600),
+                             oob = scales::squish
+      ) +
+      coord_sf(expand = F) +
+      theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
+  }
   
-  sebms_ggsave(sunDiffplot, "Sweden", width = 6, height = 12.67, weathervar = glue("SunhourDiff_{year}"))
+  ggs <- dff %>% 
+    group_by(Year) %>% 
+    nest() %>% 
+    mutate(plots = map(data, sunDiffplot, .progress = "Create sunhour diff figures"))
   
-  return(sunDiffplot) 
+  
+  map2(ggs$plots, ggs$Year,  ~sebms_ggsave(sunDiffplot, "Sweden", width = 6, height = 12.67, weathervar = glue("SunhourDiff_{year}")))
+  
+  return(ggs$plots)
   
 }
 

@@ -16,7 +16,7 @@
 #' @export
 #'
 get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limit = 0, sunvar = total_sunH){
-  
+  #TODO: Make it use only Swedish locals
   options(geonamesUsername = "sebms") 
   
   find_near <- possibly(function(df, radius = radius, top = top, limited = limited, pupulation_limit = population_limit) {

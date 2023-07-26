@@ -282,7 +282,7 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9) {
     mutate(plots = map(data, sunDiffplot, .progress = "Create sunhour diff figures"))
   
   
-  map2(ggs$plots, ggs$Year,  ~sebms_ggsave(sunDiffplot, "Sweden", width = 6, height = 12.67, weathervar = glue("SunhourDiff_{year}")))
+  map2(ggs$plots, ggs$Year,  ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("SunhourDiff_{.y}")))
   
   return(ggs$plots)
   

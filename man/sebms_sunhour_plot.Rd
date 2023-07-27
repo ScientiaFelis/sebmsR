@@ -8,7 +8,8 @@ sebms_sunhour_plot(
   year = year(today()) - 1,
   df,
   sunvar = total_sunH,
-  month = 4:9
+  month = 4:9,
+  per_month = FALSE
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ sebms_sunhour_plot(
 \item{sunvar}{the variable to calculate colours on, `total_sunH` or `mean_sunH`}
 
 \item{month}{numeric value of the months to summarise sun ours over (default to 4:9)}
+
+\item{per_month}{logical; summarise per month instead of per year}
 }
 \value{
 a figure saved as a png with the sunhours in coloour from, high (red) to low (blue)

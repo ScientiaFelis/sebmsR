@@ -298,4 +298,3 @@ sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_p
   
   list(plotst, plotsp)
 }
- 

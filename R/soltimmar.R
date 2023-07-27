@@ -59,6 +59,7 @@ fix_sunhour_NAs <- function(year, month, day, per_day = FALSE) {
 #' @param month numeric value of the months to summarise sun ours over (default to 4:9)
 #' @param day the day of interest
 #' @param hour the hour of interest
+#' @param per_month logical; summarise per month instead of per year
 #' @param per_day logical; if data should be downloaded per day
 #' @param to_env logical; also send the result to the global environment as an object called 'spatsunist_{year}. If the function is used within a plot function this is TRUE
 #'
@@ -70,55 +71,99 @@ fix_sunhour_NAs <- function(year, month, day, per_day = FALSE) {
 #' @returns a sf spatial point object with the WGS84 coordinate system
 #' 
 #' @export
-sebms_sunhours_data <- function(year = year(today())-1, month = 4:9, per_day = FALSE, to_env = FALSE) {
+sebms_sunhours_data <- function(year = year(today())-1, month = 4:9, per_month = FALSE, per_day = FALSE, to_env = FALSE) {
   
-  #TODO: Add function to chose per Day and Hour downloads.
-  # 
-  # DayHour <- list(day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"),# All days in a month
-  #   hour = c("00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23")
-  # )  # All hours of the day
-  # Day <- list(day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31")) # All hours of the day
-  # # 
-  #Days <- list(c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "31")) # To test with specific days
-  
-  if (per_day) {
-    dayfunc <- function(year, month) {
-      pmap_dfr(Day, possibly(~fix_sunhour_NAs(year = year, month = month, day = .x, per_day = TRUE))) %>%
-        bind_rows() %>% 
-        group_by(gapvalue, lat, lon) %>% 
-        summarise(daysunH = sum(value), .groups = "drop")
-    } # This function iterate over days (and hour combinations if wanted) in combination with the year and month.
+  if (per_month) { #This runs two different versions of the functions. Summarise per month or per year.
     
-    allyears <- function(year, month){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
-      map2(year, month, dayfunc) %>% ##iterate through year plus month and send that to sunHdata via dayfunc and fix_sunhour_NAs, se above
-        set_names(month) %>% # set the names of month to list items
-        bind_rows(.id = "month") %>% # Take the nmae of list items (month) and set them in a variable
-        group_by(gapvalue, lat, lon) %>%
-        summarise(total_sunH = sum(daysunH),
-                  .groups = "drop") %>%
-        mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
+    if (per_day) {
+      dayfunc <- function(year, month) {
+        pmap_dfr(Day, possibly(~fix_sunhour_NAs(year = year, month = month, day = .x, per_day = TRUE))) %>%
+          bind_rows() %>% 
+          group_by(month, gapvalue, lat, lon) %>% 
+          summarise(daysunH = sum(value), .groups = "drop")
+      } # This function iterate over days (and hour combinations if wanted) in combination with the year and month.
       
-    }
-  }else {
+      allyears <- function(year, month){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
+        map2(year, month, dayfunc) %>% ##iterate through year plus month and send that to sunHdata via dayfunc and fix_sunhour_NAs, se above
+          set_names(month) %>% # set the names of month to list items
+          bind_rows(.id = "month") %>% # Take the nmae of list items (month) and set them in a variable
+          group_by(month, gapvalue, lat, lon) %>%
+          summarise(total_sunH = sum(daysunH),
+                    .groups = "drop") %>%
+          mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
+        
+      }
+    }else {
+      
+      allyears <- function(year, month){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
+        map2(year, month, possibly(fix_sunhour_NAs)) %>% ##iterate through year plus month and send that to sunHdata, se above
+          set_names(month) %>% # set the names of month to list items
+          bind_rows(.id = "month") %>% # Take the name of list items (month) and set them in a variable
+          group_by(month, gapvalue, lat, lon) %>%
+          summarise(total_sunH = sum(value),.groups = "drop") %>%
+          mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
+      }
+    }  
+  }else { # Below functions summarise per year instead.
     
-    allyears <- function(year, month){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
-      map2(year, month, possibly(fix_sunhour_NAs)) %>% ##iterate through year plus month and send that to sunHdata, se above
-        set_names(month) %>% # set the names of month to list items
-        bind_rows(.id = "month") %>% # Take the nmae of list items (month) and set them in a variable
-        group_by(gapvalue, lat, lon) %>%
-        summarise(total_sunH = sum(value),.groups = "drop") %>%
-        mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
+    
+    # 
+    # DayHour <- list(day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"),# All days in a month
+    #   hour = c("00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23")
+    # )  # All hours of the day
+    # Day <- list(day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31")) # All hours of the day
+    # # 
+    #Days <- list(c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "31")) # To test with specific days
+    
+    if (per_day) {
+      dayfunc <- function(year, month) {
+        pmap_dfr(Day, possibly(~fix_sunhour_NAs(year = year, month = month, day = .x, per_day = TRUE))) %>%
+          bind_rows() %>% 
+          group_by(gapvalue, lat, lon) %>% 
+          summarise(daysunH = sum(value), .groups = "drop")
+      } # This function iterate over days (and hour combinations if wanted) in combination with the year and month.
+      
+      allyears <- function(year, month){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
+        map2(year, month, dayfunc) %>% ##iterate through year plus month and send that to sunHdata via dayfunc and fix_sunhour_NAs, se above
+          set_names(month) %>% # set the names of month to list items
+          bind_rows(.id = "month") %>% # Take the nmae of list items (month) and set them in a variable
+          group_by(gapvalue, lat, lon) %>%
+          summarise(total_sunH = sum(daysunH),
+                    .groups = "drop") %>%
+          mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
+        
+      }
+    }else {
+      
+      allyears <- function(year, month){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
+        map2(year, month, possibly(fix_sunhour_NAs)) %>% ##iterate through year plus month and send that to sunHdata, se above
+          set_names(month) %>% # set the names of month to list items
+          bind_rows(.id = "month") %>% # Take the name of list items (month) and set them in a variable
+          group_by(gapvalue, lat, lon) %>%
+          summarise(total_sunH = sum(value),.groups = "drop") %>%
+          mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
+      }
     }
   }
-  
   sunlist <- map(year, ~allyears(year = .x, month = month), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
     set_names(year) %>% # set names to Year
-    bind_rows(.id = "Year") %>% # Put year in a column
-    filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
-    st_as_sf(coords = c("lon", "lat")) %>%
-    st_set_crs(4326) %>%
-    st_intersection(SE) %>%  # intersects with Sweden sf object to cut out only Sweden from area.
-    select(Year, gapvalue, total_sunH, geometry)
+    bind_rows(.id = "Year")
+  
+  if (per_month) {
+    sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.
+      select(Year, month, gapvalue, total_sunH, lon, lat) %>% # Put year in a column
+      filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
+      st_as_sf(coords = c("lon", "lat")) %>%
+      st_set_crs(4326) %>%
+      st_intersection(SE)
+  }else {
+    sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.
+      select(Year, gapvalue, total_sunH, lon, lat) %>% # Put year in a column
+      filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
+      st_as_sf(coords = c("lon", "lat")) %>%
+      st_set_crs(4326) %>%
+      st_intersection(SE)
+  }
   
   if (to_env) {
     
@@ -147,18 +192,24 @@ suncols <- colorRampPalette(colors = c(rgb(43,131,186,maxColorValue = 255), rgb(
 #' @import dplyr
 #' @importFrom purrr map set_names
 #' @noRd
-sebms_sunmean_data <- function(year = 2017:2021, month = 4:9) {
+sebms_sunmean_data <- function(year = 2017:2021, month = 4:9, per_month = FALSE) {
   
-  meansunH <- sebms_sunhours_data(year, month = month, per_day = FALSE) %>% 
-    set_names(year) %>% 
-    bind_rows() %>% 
-    group_by(geometry) %>% 
-    mutate(mean_sunH = mean(total_sunH, na.rm = T)) %>% 
-    ungroup() %>% 
-    filter(Year == last(year)) %>% 
-    select(mean_sunH, geometry)
+  if (per_month) {
+    meansunH_M <- sebms_sunhours_data(year, month = month, per_month = per_month, per_day = FALSE) %>% 
+      group_by(month, geometry) %>% 
+      summarise(mean_sunH = mean(total_sunH, na.rm = T), .groups = "drop") %>% 
+      select(month, mean_sunH, geometry)
+    
+    return(meansunH_M)
+  }else {
+    meansunH <- sebms_sunhours_data(year, month = month, per_month = per_month, per_day = FALSE) %>% 
+      group_by(geometry) %>% 
+      summarise(mean_sunH = mean(total_sunH, na.rm = T), .groups = "drop") %>% 
+      select(mean_sunH, geometry)
+    
+    return(meansunH)
+  }
   
-  return(meansunH)
 }
 
 

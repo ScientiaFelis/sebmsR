@@ -7,6 +7,7 @@
 sebms_sunhours_data(
   year = year(today()) - 1,
   month = 4:9,
+  per_month = FALSE,
   per_day = FALSE,
   to_env = FALSE
 )
@@ -15,6 +16,8 @@ sebms_sunhours_data(
 \item{year}{the year to produce plot for}
 
 \item{month}{numeric value of the months to summarise sun ours over (default to 4:9)}
+
+\item{per_month}{logical; summarise per month instead of per year}
 
 \item{per_day}{logical; if data should be downloaded per day}
 

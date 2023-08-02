@@ -10,6 +10,8 @@ For more fine-grained list of changes or to report a bug, consult
 
 * The functions now can also make a figure with sunhours **per month** in addition to per year.
 * The plots have a limit for each month with different min and max values that guide which values should be blue and red.
+* There is now a posibility to add legends to the figures by setting *legends* to **TRUE**
+
 
 # v 0.9.2
 

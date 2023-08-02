@@ -363,38 +363,85 @@ sebms_sunhour_diff <- function(df, year = year(today())-1, month = 4:9, per_mont
 #' 
 #' @return a figure that shows diffeence in sunhours
 #' @export
-sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9) {
+#TODO: make a per month diff plot. Similar to sunhour plot
+sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9, per_month = FALSE) {
   
   if(missing(df)) {
     cat("Please be pacient...")
     cat("THIS CAN TAKE A MINUTE OR FIVE\n\n")
     cat("Downloading sunhour data from SMHI........\n")
-    dff <- sebms_sunhour_diff(year = year, month = month)
+    dff <- sebms_sunhour_diff(year = year, month = month, per_month = per_month)
   }else{
-    dff <- df %>% sebms_sunhour_diff(year = year, month = month)
+    dff <- df %>% sebms_sunhour_diff(year = year, month = month, per_month = per_month)
   }
   
-  sunDiffplot <- function(dff) { 
-    ggplot(data = dff) +
-      geom_sf(aes(colour = diffsun), size = 0.01, show.legend = F) +
-      scale_colour_gradientn(colours = suncols(5),
-                             limits = c(-600, 600),
-                             oob = scales::squish
-      ) +
-      coord_sf(expand = F) +
-      theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
+  if (per_month) {
+    #FIXME: check actual min and max for each month for years 2017:2022
+    ## This makes limits specific for each month
+    jan = c(60, 200) 
+    feb = c(65, 230)
+    mar = c(70, 300)
+    apr = c(-80, 50)
+    maj = c(-150, 40)
+    jun = c(-100, 80)
+    jul = c(-120, 50)
+    aug = c(-65, 100) #FIXME: Check august values 2018. Min is 0.99!!
+    sep = c(-75, 80) #FIXME: Very low min here too
+    okt = c(65, 250)
+    nov = c(60, 200)
+    dec = c(60, 200)
+    
+    sunDiffplot <- function(dff, month) { 
+      ggplot(data = dff) +
+        geom_sf(aes(colour = diffsun), size = 0.01, show.legend = F) +
+        scale_colour_gradientn(colours = suncols(5),
+                               limits = switch(month, "1" = jan, "2"=feb, "3"=mar, "4"=apr, "5"=maj, "6"=jun, "7"=jul, "8"=aug, "9"=sep, "10"=okt, "11"=nov, "12"=dec),
+                               oob = scales::squish
+        ) +
+        coord_sf(expand = F) +
+        theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
+    }
+    
+    
+  }else {
+    
+    sunDiffplot <- function(dff) { 
+      ggplot(data = dff) +
+        geom_sf(aes(colour = diffsun), size = 0.01, show.legend = F) +
+        scale_colour_gradientn(colours = suncols(5),
+                               limits = c(-600, 600),
+                               oob = scales::squish
+        ) +
+        coord_sf(expand = F) +
+        theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
+    }
+    
   }
   
-  ggs <- dff %>% 
-    group_by(Year) %>% 
-    nest() %>% 
-    mutate(plots = map(data, sunDiffplot, .progress = "Create sunhour diff figures"))
+  cat("\n Making plots.....\n")
   
-  
-  map2(ggs$plots, ggs$Year,  ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("SunhourDiff_{.y}")))
-  
-  return(ggs$plots)
-  
+  if (per_month) {
+    ggs <- dff %>% 
+      group_by(month) %>% 
+      nest() %>% 
+      mutate(plots = map2(data, month, ~sunDiffplot(dff = .x, month = .y), .progress = "Create sunhour diff figures"))
+    
+    
+    map2(ggs$plots, ggs$month,  ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("SunhourDiff_{year}-{.y}")))
+    
+    return(ggs$plots)
+  }else {
+    
+    ggs <- dff %>% 
+      group_by(Year) %>% 
+      nest() %>% 
+      mutate(plots = map(data, sunDiffplot, .progress = "Create sunhour diff figures"))
+    
+    
+    map2(ggs$plots, ggs$Year,  ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("SunhourDiff_{.y}")))
+    
+    return(ggs$plots)
+  }
 }
 
 #' Maximum and Minimum Sun-hours Given Years

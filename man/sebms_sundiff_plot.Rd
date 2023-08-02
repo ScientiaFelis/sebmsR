@@ -4,7 +4,12 @@
 \alias{sebms_sundiff_plot}
 \title{Create a Figure that Shows the Difference in Sunhours}
 \usage{
-sebms_sundiff_plot(year = year(today()) - 1, df, month = 4:9)
+sebms_sundiff_plot(
+  year = year(today()) - 1,
+  df,
+  month = 4:9,
+  per_month = FALSE
+)
 }
 \arguments{
 \item{year}{the year to produce plot for}
@@ -12,6 +17,8 @@ sebms_sundiff_plot(year = year(today()) - 1, df, month = 4:9)
 \item{df}{optinal; dataframe from the `sebms_sunhour_diff()`}
 
 \item{month}{numeric value of the months to summarise sun ours over (default to 4:9)}
+
+\item{per_month}{logical; summarise per month instead of per year}
 }
 \value{
 a figure that shows diffeence in sunhours

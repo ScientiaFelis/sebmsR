@@ -9,7 +9,8 @@ sebms_sunhour_plot(
   df,
   sunvar = total_sunH,
   month = 4:9,
-  per_month = FALSE
+  per_month = FALSE,
+  legends = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ sebms_sunhour_plot(
 \item{month}{numeric value of the months to summarise sun ours over (default to 4:9)}
 
 \item{per_month}{logical; summarise per month instead of per year}
+
+\item{legends}{logical; if you want a legend to the figures (default: FALSE)}
 }
 \value{
 a figure saved as a png with the sunhours in coloour from, high (red) to low (blue)

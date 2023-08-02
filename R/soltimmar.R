@@ -220,13 +220,14 @@ sebms_sunmean_data <- function(year = 2017:2021, month = 4:9, per_month = FALSE)
 #' @inheritParams sebms_sunhours_data
 #' @param df optional; a dataframe created by `sebms_sunhours_data()`
 #' @param sunvar the variable to calculate colours on, `total_sunH` or `mean_sunH`
+#' @param legends logical; if you want a legend to the figures (default: FALSE)
 #' 
 #' @importFrom lubridate year today
 #' @import ggplot2
 #' 
 #' @return a figure saved as a png with the sunhours in coloour from, high (red) to low (blue)
 #' @export
-sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, month = 4:9, per_month = FALSE) {
+sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, month = 4:9, per_month = FALSE, legends = FALSE) {
   
   if(missing(df)) {
     cat("Please be pacient...")
@@ -254,12 +255,13 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
     sunHplot <- function(df, month) {  
       
       ggplot(data = df) +
-        geom_sf(aes(colour = {{ sunvar }}), size = 0.01, show.legend = F) +
+        geom_sf(aes(colour = {{ sunvar }}), size = 0.01, show.legend = legends) +
         scale_colour_gradientn(colours = suncols(5), # Use the 5 colours of suncols, blue to red.
                                limits = switch(month, "1" = jan, "2"=feb, "3"=mar, "4"=apr, "5"=maj, "6"=jun, "7"=jul, "8"=aug, "9"=sep, "10"=okt, "11"=nov, "12"=dec), # Te switch take the month and return the corresponding limits from above. # These limits are set from a bit above and below the min and max values of sunhours
                                oob = scales::squish # This makes all values under min lim to blue, and all above max lim to red.
         ) +
         coord_sf(expand = F) +
+        labs(colour = "Sun hours") +
         theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"),
                              #plot.margin = unit(c(1,0,1,0), "mm")
         )
@@ -268,12 +270,13 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
   }else {
     sunHplot <- function(df) {  
       ggplot(data = df) +
-        geom_sf(aes(colour = {{ sunvar }}), size = 0.01, show.legend = F) +
+        geom_sf(aes(colour = {{ sunvar }}), size = 0.01, show.legend = legends) +
         scale_colour_gradientn(colours = suncols(5), # Use the 5 colours of suncols, blue to red.
                                limits = c(950, 2050), # These limits are set from a bit above and below the min and max values of sunhours
                                oob = scales::squish # This makes all values under min lim to blue, and all above max lim to red.
         ) +
         coord_sf(expand = F) +
+        labs(colour = "Sun hours") +
         theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"),
                              #plot.margin = unit(c(1,0,1,0), "mm")
         )
@@ -318,7 +321,7 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
 #' 
 #' This function makes a plot of the difference between the current years sun hours and the 5-year mean (2017-2021)
 #' 
-#' @inheritParams sebms_sunhour_plot
+#' @inheritParams sebms_sunhour_data
 #'  
 #' @importFrom dplyr bind_cols mutate
 #' @importFrom sf st_drop_geometry
@@ -356,7 +359,7 @@ sebms_sunhour_diff <- function(df, year = year(today())-1, month = 4:9, per_mont
 #' Produce a plot that shows differences in sun hours between a given year and mean.
 #'
 #' @param df optinal; dataframe from the `sebms_sunhour_diff()`
-#' @inheritParams sebms_sunhours_data
+#' @inheritParams sebms_sunhours_plot
 #'
 #' @importFrom lubridate year today
 #' @import ggplot2
@@ -364,7 +367,7 @@ sebms_sunhour_diff <- function(df, year = year(today())-1, month = 4:9, per_mont
 #' @return a figure that shows diffeence in sunhours
 #' @export
 #TODO: make a per month diff plot. Similar to sunhour plot
-sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9, per_month = FALSE) {
+sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9, per_month = FALSE, legends = FALSE) {
   
   if(missing(df)) {
     cat("Please be pacient...")
@@ -393,12 +396,13 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9, per_mont
     
     sunDiffplot <- function(dff, month) { 
       ggplot(data = dff) +
-        geom_sf(aes(colour = diffsun), size = 0.01, show.legend = F) +
+        geom_sf(aes(colour = diffsun), size = 0.01, show.legend = legends) +
         scale_colour_gradientn(colours = suncols(5),
                                limits = switch(month, "1" = jan, "2"=feb, "3"=mar, "4"=apr, "5"=maj, "6"=jun, "7"=jul, "8"=aug, "9"=sep, "10"=okt, "11"=nov, "12"=dec),
                                oob = scales::squish
         ) +
         coord_sf(expand = F) +
+        labs(colour = "Sun hour diff") +
         theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
     }
     
@@ -407,12 +411,13 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9, per_mont
     
     sunDiffplot <- function(dff) { 
       ggplot(data = dff) +
-        geom_sf(aes(colour = diffsun), size = 0.01, show.legend = F) +
+        geom_sf(aes(colour = diffsun), size = 0.01, show.legend = legends) +
         scale_colour_gradientn(colours = suncols(5),
                                limits = c(-600, 600),
                                oob = scales::squish
         ) +
         coord_sf(expand = F) +
+        labs(colour = "Sun hour diff") +
         theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
     }
     

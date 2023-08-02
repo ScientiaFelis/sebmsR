@@ -251,7 +251,7 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
     okt = c(65, 250)
     nov = c(60, 200)
     dec = c(60, 200)
-    
+    #FIXME: The legend is way to big
     sunHplot <- function(df, month) {  
       
       ggplot(data = df) +
@@ -263,7 +263,10 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
         coord_sf(expand = F) +
         labs(colour = "Sun hours") +
         theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"),
-                             #plot.margin = unit(c(1,0,1,0), "mm")
+                             legend.key.size = unit(4, "mm"),
+                             legend.title = element_text(size = 9),
+                             legend.text = element_text(size = 6),
+                             legend.position = c(0.8, 0.45)
         )
     }
     
@@ -278,7 +281,10 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
         coord_sf(expand = F) +
         labs(colour = "Sun hours") +
         theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"),
-                             #plot.margin = unit(c(1,0,1,0), "mm")
+                             legend.key.size = unit(4, "mm"),
+                             legend.title = element_text(size = 9),
+                             legend.text = element_text(size = 6),
+                             legend.position = c(0.8, 0.45)
         )
     }
   }
@@ -366,7 +372,6 @@ sebms_sunhour_diff <- function(df, year = year(today())-1, month = 4:9, per_mont
 #' 
 #' @return a figure that shows diffeence in sunhours
 #' @export
-#TODO: make a per month diff plot. Similar to sunhour plot
 sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9, per_month = FALSE, legends = FALSE) {
   
   if(missing(df)) {
@@ -394,6 +399,7 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9, per_mont
     nov = c(60, 200)
     dec = c(60, 200)
     
+    #FIXME: The legend is way to big
     sunDiffplot <- function(dff, month) { 
       ggplot(data = dff) +
         geom_sf(aes(colour = diffsun), size = 0.01, show.legend = legends) +
@@ -403,7 +409,12 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9, per_mont
         ) +
         coord_sf(expand = F) +
         labs(colour = "Sun hour diff") +
-        theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
+        theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"),
+                             legend.key.size = unit(4, "mm"),
+                             legend.title = element_text(size = 9),
+                             legend.text = element_text(size = 6),
+                             legend.position = c(0.8, 0.45)
+        )
     }
     
     
@@ -418,7 +429,12 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, month = 4:9, per_mont
         ) +
         coord_sf(expand = F) +
         labs(colour = "Sun hour diff") +
-        theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"))
+        theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"),
+                             legend.key.size = unit(4, "mm"),
+                             legend.title = element_text(size = 9),
+                             legend.text = element_text(size = 6),
+                             legend.position = c(0.8, 0.45)
+        )
     }
     
   }

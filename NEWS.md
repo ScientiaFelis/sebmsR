@@ -6,6 +6,10 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
 
+# v 1.0.0
+
+* The functions now can also make a figure with sunhours **per month** in addition to per year.
+* The plots have a limit for each month with different min and max values that guide which values should be blue and red.
 
 # v 0.9.2
 

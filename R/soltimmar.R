@@ -226,41 +226,86 @@ sebms_sunmean_data <- function(year = 2017:2021, month = 4:9, per_month = FALSE)
 #' 
 #' @return a figure saved as a png with the sunhours in coloour from, high (red) to low (blue)
 #' @export
-sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, month = 4:9) {
+sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, month = 4:9, per_month = FALSE) {
   
   if(missing(df)) {
     cat("Please be pacient...")
     cat("THIS CAN TAKE A MINUTE OR FIVE\n\n")
     cat("Downloading sunhour data from SMHI........\n")
-    df <- sebms_sunhours_data(year = year, month = month, to_env = TRUE)
+    df <- sebms_sunhours_data(year = year, month = month, per_month = per_month, to_env = TRUE)
   }
   
-  if (length(month) < 6) {
-    cat("THIS FIGURE IF OPTIMIZED FOR THE SUM OF SUNHOURS OVER 6 SUMMER MONTH\n")
-    cat("IT MIGHT LOOK VERY BLUE (LOW NR HOURS) OR RED (HIGH NR HOURS) IF FEWER OR MORE MONTH IS USED\n")
+  if (per_month) {
+    #FIXME: check actual min and max for each month for years 2017:2022
+    ## This makes limits specific for each month
+    jan = c(60, 200) 
+    feb = c(65, 230)
+    mar = c(70, 300)
+    apr = c(80, 350)
+    maj = c(95, 440)
+    jun = c(90, 440)
+    jul = c(90, 460)
+    aug = c(75, 400) #FIXME: Check august values 2018. Min is 0.99!!
+    sep = c(75, 300) #FIXME: Very low min here too
+    okt = c(65, 250)
+    nov = c(60, 200)
+    dec = c(60, 200)
+    
+    sunHplot <- function(df, month) {  
+      
+      ggplot(data = df) +
+        geom_sf(aes(colour = {{ sunvar }}), size = 0.01, show.legend = F) +
+        scale_colour_gradientn(colours = suncols(5), # Use the 5 colours of suncols, blue to red.
+                               limits = switch(month, "1" = jan, "2"=feb, "3"=mar, "4"=apr, "5"=maj, "6"=jun, "7"=jul, "8"=aug, "9"=sep, "10"=okt, "11"=nov, "12"=dec), # Te switch take the month and return the corresponding limits from above. # These limits are set from a bit above and below the min and max values of sunhours
+                               oob = scales::squish # This makes all values under min lim to blue, and all above max lim to red.
+        ) +
+        coord_sf(expand = F) +
+        theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"),
+                             #plot.margin = unit(c(1,0,1,0), "mm")
+        )
+    }
+    
+  }else {
+    sunHplot <- function(df) {  
+      ggplot(data = df) +
+        geom_sf(aes(colour = {{ sunvar }}), size = 0.01, show.legend = F) +
+        scale_colour_gradientn(colours = suncols(5), # Use the 5 colours of suncols, blue to red.
+                               limits = c(950, 2050), # These limits are set from a bit above and below the min and max values of sunhours
+                               oob = scales::squish # This makes all values under min lim to blue, and all above max lim to red.
+        ) +
+        coord_sf(expand = F) +
+        theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"),
+                             #plot.margin = unit(c(1,0,1,0), "mm")
+        )
+    }
   }
-  # IDEA: Perhaps make the function iterate over given years and save the plots to file. Like in sebms_weather_png, or make a new function sunhour_pngs
-  sunHplot <- function(df) {  
-    ggplot(data = df) +
-      geom_sf(aes(colour = {{ sunvar }}), size = 0.01, show.legend = F) +
-      scale_colour_gradientn(colours = suncols(5), # Use the 5 colours of suncols, blue to red.
-                             limits = c(950, 2050), # These limits are set from a bit above and below the min and max values of sunhours
-                             oob = scales::squish # This makes all values under min lim to blue, and all above max lim to red.
-      ) +
-      coord_sf(expand = F) +
-      theme_void() + theme(plot.background = element_rect(fill = "white", colour = "white"),
-                           #plot.margin = unit(c(1,0,1,0), "mm")
-      )
+  
+  cat("\nMaking plots........\n")
+  if (per_month) {
+    ggs <- df %>% 
+      group_by(month) %>% 
+      nest() %>% 
+      mutate(plots = map2(data, month, ~sunHplot(df = .x, month = .y), .progress = "Create sunhour figures")) # The map2 use data for eachmonth and also give the sunHplot function the month which is used in the switch to give a specific limits for eachmonth.
+    
+    map2(ggs$plots, ggs$month, ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("Sunhours_{year}-{.y}")))
+    
+    return(ggs$plots) 
+    
+  }else {
+    if (length(month) < 6 && per_month == FALSE) {
+      cat("THIS FIGURE IF OPTIMIZED FOR THE SUM OF SUNHOURS OVER 6 SUMMER MONTH\n")
+      cat("IT MIGHT LOOK VERY BLUE (LOW NR HOURS) OR RED (HIGH NR HOURS) IF FEWER OR MORE MONTH IS USED\n\n")
+      cat("USE 'per_month = TRUE' TO GET VALUES PER MONTH")
+    }
+    ggs <- df %>% 
+      group_by(Year) %>% 
+      nest() %>% 
+      mutate(plots = map(data, sunHplot, .progress = "Create sunhour figures"))
+    
+    map2(ggs$plots, ggs$Year, ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("Sunhours_{.y}")))
+    
+    return(ggs$plots) 
   }
-  
-  ggs <- df %>% 
-    group_by(Year) %>% 
-    nest() %>% 
-    mutate(plots = map(data, sunHplot, .progress = "Create sunhour figures"))
-  
-  map2(ggs$plots, ggs$Year, ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("Sunhours_{.y}")))
-  
-  return(ggs$plots) 
 }
 
 # all_plots <- allyearlist %>%

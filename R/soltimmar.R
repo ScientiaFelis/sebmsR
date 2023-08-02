@@ -280,15 +280,28 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
 #' @importFrom lubridate year today
 #'
 #' @noRd
-sebms_sunhour_diff <- function(df, year = year(today())-1, month = 4:9) {
+sebms_sunhour_diff <- function(df, year = year(today())-1, month = 4:9, per_month = FALSE) {
   
   if (missing(df)) {
-    df <- sebms_sunhours_data(year = year, month = month, to_env = TRUE)
+    df <- sebms_sunhours_data(year = year, month = month, per_month = per_month, to_env = TRUE)
   }
   
-  sundiff <- meansunH %>%  
-    bind_cols(df %>% st_drop_geometry()) %>% 
-    mutate(diffsun = total_sunH - mean_sunH)
+  if (per_month) {
+    sundiff <- df %>% 
+      st_drop_geometry() %>%  
+      select(Year, total_sunH) %>% # Take only Year and the sunhour var here as I am binding with the meansunH_M that contains what we need otherwise and is in the same order.  
+      bind_cols(meansunH_M) %>% 
+      group_by(month) %>% 
+      mutate(diffsun = total_sunH - mean_sunH) %>% 
+      ungroup() %>% 
+      st_as_sf()
+    
+  }else {
+    sundiff <- meansunH %>%  
+      bind_cols(df %>% st_drop_geometry()) %>% 
+      mutate(diffsun = total_sunH - mean_sunH) %>% 
+      st_as_sf()
+  }
   
   return(sundiff)
 } 

@@ -89,7 +89,7 @@ sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::t
            # filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())), ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
            month(ymd_hms(FrDate)) %in% 4:9) %>% 
     left_join(stations, by = "id") %>% 
-    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd_hms(FrDate), label = T, abbr = T), nb = as.numeric(nb), monthnr = month(ymd_hms(FrDate)), period = "2")
+    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd_hms(FrDate), label = T, abbr = T, locale = "SE_sv"), nb = as.numeric(nb), monthnr = month(ymd_hms(FrDate)), period = "2")
   
   filt_precip <- all_precip  %>%
     mutate(name = str_remove(name, " .*|-.*")) %>% 

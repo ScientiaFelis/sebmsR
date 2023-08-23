@@ -115,7 +115,6 @@ sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::t
 #' @import ggplot2
 #' @noRd
 sebms_temp_data <- function(my_place = NA, year = lubridate::year(lubridate::today())-1) {
-  
   if(year == lubridate::year(lubridate::today()) & lubridate::month(lubridate::today()) < 11){
     cat("THERE IS NO TEMPERATURE DATA FOR THIS YEAR YET!\n")
     cat("You have to wait until at least NOVEMBER.\n\n")
@@ -145,7 +144,7 @@ sebms_temp_data <- function(my_place = NA, year = lubridate::year(lubridate::tod
            #filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())), ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
            month(ymd_hms(FrDate)) %in% 4:9) %>% 
     left_join(stations, by = "id") %>% # Join in the names
-    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd_hms(FrDate), label = T, abbr = T), temp = as.numeric(temp), monthnr = month(ymd_hms(FrDate)), period = "2") # Change name and variables I want to keep/have
+    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd_hms(FrDate), label = T, abbr = T, locale = "sv_SE"), temp = as.numeric(temp), monthnr = month(ymd_hms(FrDate)), period = "2") # Change name and variables I want to keep/have
   
   filt_temp <- all_temp  %>%
     mutate(name = str_remove(name, " .*|-.*")) %>% # Only keep basic name, e.g. Umeå Flygplats become Umeå

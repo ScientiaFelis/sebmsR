@@ -7,7 +7,7 @@
 sebms_sundiff_plot(
   year = year(today()) - 1,
   df,
-  month = 4:9,
+  months = 4:9,
   per_month = FALSE,
   legends = FALSE
 )

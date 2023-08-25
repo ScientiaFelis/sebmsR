@@ -1,3 +1,62 @@
+#' Retrieve Total Species List from SeBMS
+#' 
+#' This is used eg for the histograms
+#' 
+#' @import tibble
+#' @importFrom DBI dbGetQuery
+#' @export
+sebms_species_count <- function(){
+  
+  q <- "SELECT
+ 
+        --t.speUId,
+        t.Art,
+        --t.sitUId,
+        --t.Lokalnamn,
+        t.Antal, --t.sumval,
+        t.Datum --t.date
+        --t.vecka,
+       
+      FROM
+      ( SELECT
+      --spe.spe_uid AS speUId,
+      spe.spe_semainname As Art,
+      --sit.sit_uid AS sitUId,
+      --sit.sit_name AS Lokalnamn,
+      SUM(obs.obs_count) AS Antal,
+      vis_begintime::date as Datum
+      --EXTRACT (week FROM vis_begintime::date) AS vecka,
+      
+      FROM obs_observation AS obs
+      INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
+      INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
+      INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
+      INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
+      INNER JOIN spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid      -- så här bör det väl vara?
+      WHERE extract('YEAR' from vis_begintime) = 2021
+      AND 
+      vis_typ_datasourceid in (54,55,56,63,64,66,67)
+      
+      --AND spv.spv_istrim=TRUE     
+      --AND sit.sit_uid=6
+      --AND spe.spe_uid =7
+      GROUP BY
+        Art, Datum --Lokalnamn, spe.spe_uid, sit.sit_uid, date --, vecka
+      ORDER BY
+      Art) AS t --, Lokalnamn,	spe.spe_uid,sit.sit_uid) AS t
+       
+       
+      GROUP BY
+      t.Art, t.Antal, t.Datum -- t.Lokalnamn, t.speUId, t.artnamn,t.sitUId,t.Lokalnamn,t.date,t.sumval
+      ORDER BY
+        t.Art,t.Datum; -- t.Lokalnamn, t.speUId, t.Lokalnamn, t.date;
+ "
+  
+  sebms_assert_connection()
+  res <- DBI::dbGetQuery(sebms_pool, q)
+  as_tibble(res)
+}
+
 
 #' Retrieve species list per year
 #' 
@@ -32,7 +91,7 @@ sebms_species_per_year <- function() {
   res <- DBI::dbGetQuery(sebms_pool, q)
   as_tibble(res)
 }
- 
+
 
 #' Retrieve species list per year, filter for approved ones
 #' 
@@ -92,7 +151,7 @@ GROUP BY
   sit.sit_uid
 ORDER BY
 species DESC;"
-
+  
   sebms_assert_connection()
   res <- dbGetQuery(sebms_pool, q)
   as_tibble(res)
@@ -105,7 +164,7 @@ species DESC;"
 #' @importFrom DBI dbGetQuery
 #' @export
 sebms_species_per_year_site_counts_filtered <- function() {
-
+  
   q <- "SELECT
   sit.sit_uid AS id,
   sit.sit_name AS site,
@@ -148,7 +207,7 @@ sebms_naturum_climate <- function() {
   #  "category/pmp3g/version/2/geotype/point/lon/", x ,"/lat/", y,"/data.json")
   
   api <- function(x, y) paste0("https://opendata-download-metfcst.smhi.se/api/", 
-    "category/pmp2g/version/2/geotype/point/lon/", x ,"/lat/", y,"/data.json")
+                               "category/pmp2g/version/2/geotype/point/lon/", x ,"/lat/", y,"/data.json")
   
   res <- 
     sebms_data_sites_naturum %>% 

@@ -129,9 +129,9 @@ sebms_species_histo_plot_orig <- function(Art = "Luktgräsfjäril", database = T
     #   "april", "maj", "juni",
     #   "juli","augusti", "september",
     #   "oktober", "november", "december")
-    # 
+
     if_else(is.na(lag(w)) | !month(ymd("2015-01-01") + weeks(lag(w))) == month(ymd("2015-01-01") + weeks(w)), 
-            paste0(sprintf("%2i", w), "\n", month(ymd("2015-01-01") + weeks(w), label = T, abbr = F)), #, locale = "sv_SE"
+            paste0(sprintf("%2i", w), "\n", month(ymd("2015-01-01") + weeks(w), label = T, abbr = F, locale = "sv_SE.UTF-8")),
             paste(w))
   }
   

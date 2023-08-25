@@ -1,3 +1,65 @@
+#' Retrieve Total Species List per Site from SeBMS
+#' 
+#' This is used eg for the histograms
+#' 
+#' @import tibble
+#' @importFrom DBI dbGetQuery
+#' @export
+sebms_species_lokal_count <- function(){
+  
+  q <- " SELECT
+ 
+--t.speUId,
+t.Art,
+--t.sitUId,
+t.Lokalnamn,
+t.Antal, --t.sumval,
+t.Datum --t.date
+--t.vecka,
+ 
+FROM
+( SELECT
+--spe.spe_uid AS speUId,
+spe.spe_semainname As Art,
+--sit.sit_uid AS sitUId,
+sit.sit_name AS Lokalnamn,
+SUM(obs.obs_count) AS Antal,
+vis_begintime::date as Datum
+--EXTRACT (week FROM vis_begintime::date) AS vecka,
+
+FROM obs_observation AS obs
+INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
+INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
+INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
+INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
+INNER JOIN spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid      -- så här bör det väl vara?
+WHERE extract('YEAR' from vis_begintime) = 2021
+AND 
+vis_typ_datasourceid in (54,55,56,63,64,66,67)
+
+--AND spv.spv_istrim=TRUE     
+--AND sit.sit_uid=6
+--AND spe.spe_uid =7
+GROUP BY
+  Art, Lokalnamn,Datum --spe.spe_uid, sit.sit_uid, date --, vecka
+ORDER BY
+Art, Lokalnamn) AS t --	spe.spe_uid,sit.sit_uid) AS t
+ 
+ 
+GROUP BY
+t.Art, t.Lokalnamn, t.Antal, t.Datum--t.speUId, t.artnamn,t.sitUId,t.Lokalnamn,t.date,t.sumval
+ORDER BY
+  t.Art,t.Lokalnamn, t.Datum-- t.speUId, t.Lokalnamn, t.date
+ 
+ "
+  
+  sebms_assert_connection()
+  res <- DBI::dbGetQuery(sebms_pool, q)
+  as_tibble(res)
+}
+
+
+
 #' Retrieve Total Species List from SeBMS
 #' 
 #' This is used eg for the histograms

@@ -139,36 +139,30 @@ sebms_species_histo_plot_orig <- function(Art = "Luktgräsfjäril", database = T
     ggplot(data = df, 
            aes(x = vecka, y = count)) +
     geom_bar(stat = 'identity', color = col_palette[2], fill = col_palette[2], width = 0.5) +
-    scale_y_continuous(limits = c(0, max(10, df$count)), expand = c(0, 0.6)) +
+    scale_y_continuous(limits = c(0, max(10, max(df$count)*1.2)), # Set Y-axis limits to 10 or the max value of the butterfly count
+     # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
+      breaks = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # 
+      expand = c(0,0)) +
+    #expand_limits(y=max(df$count)*1.1) +
     scale_x_continuous(
-      #minor_breaks = c(10, 13:42), 
-      #breaks = c(13, 18, 22, 26, 31, 35, 40),
       breaks = c(10, 14:40),
       labels = c("Vecka: ", fmt_label(14:40)),
-      limits = c(13.5, 40), 
+      limits = c(13, 40), 
       expand = c(0, 0) 
-      #sec.axis = sec_axis( ~ ., breaks = c(12:42), labels = c("", paste0("v", c(13:41)), "")
     ) + 
-    # annotate("text", x = 12, y = 0, label = "Vecka", size = 4) + 
-    # coord_cartesian(clip = "off") +
     labs(y = "Antal", x = NULL, tag = "Vecka:") +
     theme_sebms() +
     theme(panel.grid.major.y = element_line(color = "gray"),
-          # panel.grid.minor.x = element_line(color = "gray"),
-          # panel.grid.major.x = element_line(color = "gray40"),
           axis.ticks.x = element_line(color = "gray5"),
           axis.ticks.length = unit(0, "cm"),
           axis.text.x = element_text(hjust = 1, face = "bold"),
           axis.text.y = element_text(face = "bold"),
           axis.line = element_line(color = "gray5"),
           plot.title = element_text(hjust = 0.5),
-          plot.tag.position = c(0.01, 0.039))
+          plot.tag.position = c(0.03, 0.039))
   
-  return (p)
-  # remove clipping of x axis labels
-  #g <- ggplot_gtable(ggplot_build(p))
-  #g$layout$clip[g$layout$name == "panel"] <- "off"
-  #grid::grid.draw(g)
+  sebms_ggsave(p, Art, width = 22, height = 16, weathervar = "")
+  return(p)
 }
 
 

@@ -105,18 +105,20 @@ sebms_species_histo_plot <- function() {
 #' @importFrom lubridate month weeks ymd
 #' @export
 #' 
-sebms_species_histo_plot_orig <- function(art = "Luktgräsfjäril", database = TRUE) {
+sebms_species_histo_plot_orig <- function(Art = "Luktgräsfjäril", database = TRUE) {
   
   if (database) {
-   df <- sebms_species_per_year() %>% 
-     filter(str_detect(name, art))
+    df <- sebms_species_count() %>% 
+      filter(str_detect(art, Art)) %>% 
+      mutate(vecka = week(datum)) %>% 
+      group_by(art, vecka) %>%
+      summarise(count = as.double(sum(antal, na.rm = T)))
   }else {
-  df <- 
-    sebms_data_species_histo %>%
-    group_by(artnamn, vecka) %>%
-    summarise(count = sum(sumval))
+    df <- 
+      sebms_data_species_histo %>%
+      group_by(artnamn, vecka) %>%
+      summarise(count = sum(sumval))
   }
-  #df$count <- as.integer(floor(runif(7, 0, 10)))
   
   col_palette <- sebms_palette
   

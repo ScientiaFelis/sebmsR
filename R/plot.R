@@ -60,52 +60,16 @@ sebms_specieslist_cum_plots <- function() {
   return(res)
 }
 
-#' Species histo plot
-#' @import dplyr
-#' @import ggplot2
-#' @export
-#' 
-sebms_species_histo_plot <- function() {
-  
-  col_palette <- sebms_palette
-  
-  df <- 
-    sebms_data_species_histo %>%
-    group_by(artnamn, vecka) %>%
-    summarise(count = sum(sumval))
-  
-  p <- ggplot(data = df, 
-              aes(x = vecka, y = count)) +
-    geom_bar(stat = 'identity', color = col_palette[1], fill = col_palette[1], width = 0.5) +
-    xlab("") + ylab("") +
-    scale_y_continuous(breaks = c(10 * 1:10), limits = c(0, 100), expand = c(0, 0)) +
-    scale_x_continuous(
-      minor_breaks = c(14:42), 
-      breaks = c(13, 18, 22, 26, 31, 35, 40), 
-      labels = c("april", "maj", "juni", "juli", "augusti", "september", "oktober"),
-      limits = c(12, 42), expand = c(0, 0), 
-      sec.axis = sec_axis( ~ ., breaks = c(12:42), 
-                           labels = c("", paste0("", c(13:41)), ""))) +
-    theme_sebms() +
-    theme(panel.grid.major.y = element_line(color = "gray"),
-          panel.grid.minor.x = element_line(color = "gray"),
-          panel.grid.major.x = element_line(color = "gray40"),
-          axis.ticks.x = element_line(color = "gray5"),
-          axis.line = element_line(color = "gray5"),
-          plot.title = element_text(hjust = 0.5))
-  
-  return (p)
-}
 
-#' Species histo plot - original version
+#' Species Histogram Plot
 #' 
-#' This plot should probably be parameterized with the week range (defaulted to 13..42) used for the x-axis and with the relevant year context, also the range of y-axis should not be hardcoded in the future.
+#' 
 #' @import dplyr
 #' @import ggplot2
 #' @importFrom lubridate month weeks ymd
 #' @export
 #' 
-sebms_species_histo_plot_orig <- function(Art = "Luktgräsfjäril", database = TRUE) {
+sebms_species_histo_plot <- function(Art = "Luktgräsfjäril", database = TRUE) {
   
   if (database) {
     df <- sebms_species_count() %>% 
@@ -171,10 +135,11 @@ sebms_species_histo_plot_orig <- function(Art = "Luktgräsfjäril", database = T
 #' @import ggplot2
 #' @export
 #' 
-sebms_species_per_site_sitetype_plot <- function() {
+sebms_species_per_sitetype_plot <- function() {
   
   b <- seq(1, 50, by = 5)
   l <- paste0(b, "-", b + 4)
+  
   
   sebms_spss <- 
     sebms_data_species_per_site_sitetype %>%

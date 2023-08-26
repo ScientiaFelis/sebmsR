@@ -2,10 +2,10 @@
 % Please edit documentation in R/plot.R
 \name{sebms_species_histo_plot}
 \alias{sebms_species_histo_plot}
-\title{Species histo plot}
+\title{Species Histogram Plot}
 \usage{
-sebms_species_histo_plot()
+sebms_species_histo_plot(Art = "Luktgräsfjäril", database = TRUE)
 }
 \description{
-Species histo plot
+Species Histogram Plot
 }

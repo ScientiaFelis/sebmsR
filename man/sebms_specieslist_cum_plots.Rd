@@ -2,13 +2,13 @@
 % Please edit documentation in R/plot.R
 \name{sebms_specieslist_cum_plots}
 \alias{sebms_specieslist_cum_plots}
-\title{Cumulative specielist plots}
+\title{Cumulative Species List Plots}
 \usage{
-sebms_specieslist_cum_plots()
+sebms_specieslist_cum_plots(database = TRUE)
 }
 \value{
 a list with two ggplot objects, named p1 and p2
 }
 \description{
-Cumulative specielist plots
+Cumulative Species List Plots
 }

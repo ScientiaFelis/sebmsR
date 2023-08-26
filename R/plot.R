@@ -147,43 +147,62 @@ sebms_species_histo_plot <- function(Art = "Luktgräsfjäril", database = TRUE) 
 }
 
 
-#' Species per site and sitetype histo plot
+#' Species per Site and Site Type Plot
 #' @import dplyr
+#' @import forcats
 #' @import ggplot2
 #' @export
 #' 
-sebms_species_per_sitetype_plot <- function() {
+sebms_species_per_sitetype_plot <- function(database = TRUE) {
   
   b <- seq(1, 50, by = 5)
   l <- paste0(b, "-", b + 4)
   
-  
-  sebms_spss <- 
-    sebms_data_species_per_site_sitetype %>%
-    mutate(
-      interval = l[findInterval(species, b)], 
-      sortorder = findInterval(species, b)) %>%
-    group_by(interval, sortorder, sitetype) %>%
-    summarize(site_count = n_distinct(id)) %>%
-    arrange(-desc(sortorder)) %>%
-    dplyr::select(interval, sortorder, sitetype, site_count)
+  if (database) {
+    
+    sebms_spss <- sebms_species_lokal_count() %>% 
+      group_by(situid, lokalnamn, sitetype) %>% 
+      summarise(species = n_distinct(speuid), .groups = "drop") %>% 
+      group_by(sitetype) %>% 
+      mutate(medel = mean(species)) %>% 
+      ungroup() %>% 
+      mutate(interval = l[findInterval(species, b)],
+             sortorder = findInterval(species, b)) %>%
+      group_by(interval, sortorder, sitetype) %>%
+      summarize(site_count = n_distinct(situid),
+                medel = mean(medel), .groups = "drop") %>%
+      arrange(-desc(sortorder)) %>%
+      select(interval, sortorder, sitetype, site_count, medel)
+    
+  }else{
+    sebms_spss <- 
+      sebms_data_species_per_site_sitetype %>%
+      mutate(
+        interval = l[findInterval(species, b)], 
+        sortorder = findInterval(species, b)) %>%
+      group_by(interval, sortorder, sitetype) %>%
+      summarize(site_count = n_distinct(id), .groups = "drop") %>%
+      arrange(-desc(sortorder)) %>%
+      select(interval, sortorder, sitetype, site_count)
+  }
   
   col_palette <- sebms_palette
+  lab <- sebms_spss %>% distinct(sitetype, medel) # unique mean labels
   
-  #sbm_spss$sitetype <- factor(sbm_spss$sitetype)
-  
-  ggplot(data = sebms_spss, aes(x = reorder(interval, sortorder), 
-                                y = site_count, fill = sitetype)) +
-    geom_bar(aes(fill = sitetype), stat = "identity", 
+  sebms_spss %>% 
+    ggplot(aes(x = reorder(interval, sortorder), y = site_count)) +
+    geom_bar(aes(fill = forcats::fct_rev(sitetype)), stat = "identity", 
              position = position_dodge(), width = 0.7) +
-    xlab("Antal olika arter på lokalen") + ylab("Antal lokaler") +
-    scale_y_continuous(breaks = c(10 * 1:10), limits = c(0, 100), expand = c(0, 0)) +
-    scale_fill_manual("Metod", values = c("P" = col_palette[1], "T" = col_palette[2])) +
+    stat_summary(aes(x = l[findInterval(medel, b)], y = 102, fill = sitetype), position = position_dodge(width = 0.9), fun = "mean", geom = "point", size = 4, shape = 25) +
+    geom_text(aes(x = l[findInterval(medel, b)], y = 105, label = round(medel, 1)), data = lab, position = position_dodge2(width = 0.9), inherit.aes = F) +
+    scale_y_continuous(breaks = c(10 * 1:10), limits = c(0, 120), expand = c(0, 0)) +
+    scale_fill_manual("Metod", values = c("P" = col_palette[2], "T" = col_palette[1])) +
+    labs(x = "Antal olika arter på lokalen", y = "Antal lokaler") +
     theme_sebms() +
     theme(panel.grid.major.y = element_line(color = "gray"),
-          panel.grid.minor.x = element_line(color = "gray"),
-          axis.ticks.x = element_blank(),
+          axis.ticks = element_blank(),
           axis.line = element_line(color = "gray5"),
-          plot.title = element_text(hjust = 0.5))
+          axis.title.x = element_text(margin = margin(t=9))
+    )
   
 }

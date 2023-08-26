@@ -2,10 +2,10 @@
 % Please edit documentation in R/plot.R
 \name{sebms_species_per_sitetype_plot}
 \alias{sebms_species_per_sitetype_plot}
-\title{Species per site and sitetype histo plot}
+\title{Species per Site and Site Type Plot}
 \usage{
-sebms_species_per_sitetype_plot()
+sebms_species_per_sitetype_plot(database = TRUE)
 }
 \description{
-Species per site and sitetype histo plot
+Species per Site and Site Type Plot
 }

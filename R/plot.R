@@ -1,30 +1,47 @@
 
-#' Cumulative specielist plots
+#' Cumulative Species List Plots
+#' 
 #' @import dplyr
 #' @import ggplot2
 #' @return a list with two ggplot objects, named p1 and p2
 #' @export
 #' 
-sebms_specieslist_cum_plots <- function() {
+sebms_specieslist_cum_plots <- function(database = TRUE) {
   
-  n <- nrow(sebms_data_specieslist_cum)
-  col_palette <- sebms_palette
-  
-  s1 <- 
-    sebms_data_specieslist_cum %>% 
-    filter(count >= 200)
-  #  slice(1 : floor(n/2))
-  
-  s2 <- 
-    sebms_data_specieslist_cum %>% 
-    filter(count < 200)
-  #  slice(-c(1 : floor(n/2)))
+  if (database) {
+    sp <- sebms_species_count()
+    
+    s1 <- sp %>% 
+      group_by(art) %>%
+      summarise(count = as.double(sum(antal, na.rm = T))) %>% 
+      filter(count >= 200) 
+    
+    s2 <- sp %>% 
+      group_by(art) %>%
+      summarise(count = as.double(sum(antal, na.rm = T))) %>% 
+      filter(count < 200) 
+    
+    
+  }else {
+    n <- nrow(sebms_data_specieslist_cum)
+    col_palette <- sebms_palette
+    
+    s1 <- 
+      sebms_data_specieslist_cum %>% 
+      filter(count >= 200)
+    #  slice(1 : floor(n/2))
+    
+    s2 <- 
+      sebms_data_specieslist_cum %>% 
+      filter(count < 200)
+    #  slice(-c(1 : floor(n/2)))
+  }
   
   p1 <- 
     ggplot(data = s1, 
-           aes(y = reorder(name, count), x = count)) +
-    geom_bar(stat='identity', color = col_palette[1], 
-             fill = col_palette[1], width = 0.5) +
+           aes(y = reorder(art, count), x = count)) +
+    geom_bar(stat='identity', color = col_palette[2], 
+             fill = col_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
     labs(title = "Antal individer (n >= 200)", x = NULL, y = NULL) +
     scale_x_continuous(breaks = c(1000 * 1:12), labels = c(1000 * 1:11, ""),

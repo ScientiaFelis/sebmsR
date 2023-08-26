@@ -4,8 +4,9 @@
 \alias{sebms_species_count}
 \title{Retrieve Total Species List from SeBMS}
 \usage{
-sebms_species_count()
+sebms_species_count(year = 2021)
 }
 \description{
+Species counts per date for given year over all sites.
 This is used eg for the histograms
 }

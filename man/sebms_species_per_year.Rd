@@ -2,10 +2,10 @@
 % Please edit documentation in R/data.R
 \name{sebms_species_per_year}
 \alias{sebms_species_per_year}
-\title{Retrieve species list per year}
+\title{Retrieve Species List per Year}
 \usage{
 sebms_species_per_year()
 }
 \description{
-Retrieve species list per year
+Retrieve Species List per Year
 }

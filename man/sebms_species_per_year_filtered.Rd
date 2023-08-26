@@ -2,10 +2,10 @@
 % Please edit documentation in R/data.R
 \name{sebms_species_per_year_filtered}
 \alias{sebms_species_per_year_filtered}
-\title{Retrieve species list per year, filter for approved ones}
+\title{Retrieve Filtered Species List per Year}
 \usage{
-sebms_species_per_year_filtered()
+sebms_species_per_year_filtered(year = 2018:2021)
 }
 \description{
-Retrieve species list per year, filter for approved ones
+Retrieve Filtered Species List per Year
 }

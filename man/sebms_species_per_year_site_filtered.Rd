@@ -2,8 +2,7 @@
 % Please edit documentation in R/data.R
 \name{sebms_species_per_year_site_filtered}
 \alias{sebms_species_per_year_site_filtered}
-\title{Count the number of species per year and site 
-and filter for approved ones}
+\title{Retrieve Filtered Species List per Year and Site}
 \usage{
 sebms_species_per_year_site_filtered()
 }

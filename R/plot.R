@@ -58,7 +58,7 @@ sebms_specieslist_cum_plots <- function(database = TRUE) {
   
   p2 <- 
     ggplot(data = s2, 
-           aes(y = reorder(name, count), x = count)) +
+           aes(y = reorder(art, count), x = count)) +
     geom_bar(stat='identity', color = col_palette[1], fill = col_palette[1], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
     labs(title = "Antal individer (n < 200)", x = NULL, y = NULL) +
@@ -110,7 +110,7 @@ sebms_species_histo_plot <- function(Art = "Luktgräsfjäril", database = TRUE) 
     #   "april", "maj", "juni",
     #   "juli","augusti", "september",
     #   "oktober", "november", "december")
-
+    
     if_else(is.na(lag(w)) | !month(ymd("2015-01-01") + weeks(lag(w))) == month(ymd("2015-01-01") + weeks(w)), 
             paste0(sprintf("%2i", w), "\n", month(ymd("2015-01-01") + weeks(w), label = T, abbr = F, locale = "sv_SE.UTF-8")),
             paste(w))
@@ -121,9 +121,9 @@ sebms_species_histo_plot <- function(Art = "Luktgräsfjäril", database = TRUE) 
            aes(x = vecka, y = count)) +
     geom_bar(stat = 'identity', color = col_palette[2], fill = col_palette[2], width = 0.5) +
     scale_y_continuous(limits = c(0, max(10, max(df$count)*1.2)), # Set Y-axis limits to 10 or the max value of the butterfly count
-     # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
-      breaks = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # 
-      expand = c(0,0)) +
+                       # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
+                       breaks = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # 
+                       expand = c(0,0)) +
     #expand_limits(y=max(df$count)*1.1) +
     scale_x_continuous(
       breaks = c(10, 14:40),

@@ -24,7 +24,6 @@ sebms_specieslist_cum_plots <- function(database = TRUE) {
     
   }else {
     n <- nrow(sebms_data_specieslist_cum)
-    col_palette <- sebms_palette
     
     s1 <- 
       sebms_data_specieslist_cum %>% 
@@ -37,43 +36,61 @@ sebms_specieslist_cum_plots <- function(database = TRUE) {
     #  slice(-c(1 : floor(n/2)))
   }
   
-  p1 <- 
-    ggplot(data = s1, 
-           aes(y = reorder(art, count), x = count)) +
-    geom_bar(stat='identity', color = col_palette[2], 
-             fill = col_palette[2], width = 0.5) +
-    geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
-    labs(title = "Antal individer (n >= 200)", x = NULL, y = NULL) +
-    scale_x_continuous(breaks = c(1000 * 1:12), labels = c(1000 * 1:11, ""),
-                       position = "top", limits = c(0, 12000), expand = c(0, 0)) +
+  # Modify theme
+  theme_sebms2 <- function() {
     theme_sebms() +
     theme(
-      panel.grid.major.x = element_line(color = "darkgray"),
+      axis.text = element_text(color = "black"),
+      panel.grid.major.x = element_line(color = "darkgrey", size = 0.3),
+      #panel.grid.minor.x = element_line(color = "darkgray"),
       panel.grid.major.y = element_blank(),
       panel.border = element_blank(),
-      axis.text.y.left = element_text(color = "darkgray"),
-      axis.ticks = element_blank(),
+      # adjust X-axis labels; also adjust their position using margin (acts like a bounding box)
+      # using margin was needed because of the inwards placement of ticks
+      axis.text.x = element_text(size = 6, margin = unit(c(t = 0, r = 0, b = 0.25, l = 0), "mm")),
+      axis.ticks.x.top = element_line(color = "darkgray"),
+      axis.ticks.length.x = unit(-1, "mm"),
+      axis.text.y = element_text(size = 6, margin = margin(0,0,0,0, unit = "mm")),
+      axis.ticks.y = element_blank(),
       axis.line = element_line(color = "darkgray"),
-      plot.title = element_text(hjust = 0.5)) 
-  
-  p2 <- 
-    ggplot(data = s2, 
-           aes(y = reorder(art, count), x = count)) +
-    geom_bar(stat='identity', color = col_palette[1], fill = col_palette[1], width = 0.5) +
+      plot.title = element_text(hjust = 0.5, size = 6, margin = margin(0,0,2,0, unit = "mm"))) 
+  }
+
+  # insert_minor <- function(major_labs, n_minor) {
+  #   labs <- c( sapply( major_labs, function(x) c(x, rep("", n_minor) ) ) )
+  #   labs[1:(length(labs)-n_minor)]
+  # }
+
+  p1 <- s1 %>%  
+    ggplot(aes(y = reorder(art, count), x = count)) +
+    geom_bar(stat='identity', color = sebms_palette[2], fill = sebms_palette[2], width = 0.3, just = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
-    labs(title = "Antal individer (n < 200)", x = NULL, y = NULL) +
-    scale_x_continuous(breaks = c(20 * 1:11), labels = c(20 * 1:10, ""),
-                       position = "top", limits = c(0, 210), expand = c(0, 0)) +
-    theme_sebms() +
-    theme(panel.grid.major.x = element_line(color = "darkgray"),
-          panel.grid.major.y = element_blank(),
-          panel.border = element_blank(),
-          axis.text.y.left = element_text(color = "darkgray"),
-          axis.ticks.x = element_blank(),
-          axis.line = element_line(color = "darkgray"),
-          plot.title = element_text(hjust = 0.5)) 
+    labs(title = "Antal individer", x = NULL, y = NULL) +
+    scale_x_continuous(breaks = c(2000 * 0:12),
+                       labels = c(2000 * 0:11, ""),
+                       #labels = insert_minor(c(4000*0:6), 1),
+                       position = "top",
+                       limits = c(0, 10000),
+                       expand = c(0, 0)) +
+    scale_y_discrete(expand = c(0.011,0.011)) +
+    theme_sebms2()
+  
+  p2 <- s2 %>% 
+    ggplot(aes(y = reorder(art, count), x = count)) +
+    geom_bar(stat='identity', color = sebms_palette[2], fill = sebms_palette[2], width = 0.3) +
+    geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
+    labs(title = "Antal individer", x = NULL, y = NULL) +
+    scale_x_continuous(breaks = c(20 * 0:11),
+                       labels = c(20 * 0:10, ""),
+                       position = "top",
+                       limits = c(0, 210),
+                       expand = c(0, 0)) +
+    theme_sebms2()
   
   res <- list(p1 = p1, p2 = p2)
+  name <- list("Över200", "Under200")
+  map2(res, name, ~sebms_ggsave(.x, "Species_tot_count", width = 12, height=18, weathervar = .y))
+  
   return(res)
 }
 

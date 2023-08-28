@@ -132,6 +132,43 @@ sebms_species_count <- function(year = 2021:2022) {
   as_tibble(res)
 }
 
+#' Retrieve Filtered Species List per Year
+#' 
+#' @import tibble
+#' @import glue
+#' @importFrom DBI dbGetQuery
+#' @export
+sebms_species_count_filtered <- function(year = 2020:2021) {
+  
+  year <- glue("({paste0({year}, collapse = ',')})")
+  
+  q <- glue("SELECT
+        spe.spe_uid AS id,
+        spe.spe_semainname As art,
+        --sit.sit_type AS sitetype,
+        SUM(obs.obs_count) AS antal,
+        --extract('YEAR' from vis_begintime) AS years,
+        vis_begintime::date as Datum
+      FROM obs_observation AS obs
+      INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
+      INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
+      INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
+      INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
+      INNER JOIN  spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid     
+      WHERE
+        extract('YEAR' from vis_begintime) IN {year}
+        AND (spv.spv_istrim=TRUE or spe_uid in (135,131,133) )
+      GROUP BY
+        spe.spe_uid, Datum --, years
+      ORDER BY
+      antal DESC;")
+  
+  sebms_assert_connection()
+  res <- dbGetQuery(sebms_pool, q)
+  as_tibble(res)
+  
+} 
+
 
 #' Retrieve Species List per Year
 #'

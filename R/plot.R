@@ -94,23 +94,95 @@ sebms_specieslist_cum_plots <- function(database = TRUE) {
   return(res)
 }
 
-
-#' Species Histogram Plot
+#' Butterfly Number Histogram  Plot
 #' 
+#' Show the number of found butterflies per week
 #' 
 #' @import dplyr
 #' @import ggplot2
 #' @importFrom lubridate month weeks ymd
 #' @export
 #' 
-sebms_species_histo_plot <- function(Art = "Luktgräsfjäril", database = TRUE) {
+sebms_species_count_histo_plot <- function(year = 2021:2022, database = TRUE) {
   
   if (database) {
-    df <- sebms_species_count() %>% 
+    df <- sebms_species_count(year = year) %>%
+      group_by(year = as.factor(year(datum)), vecka = week(datum)) %>%
+      summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
+  }else {
+    df <- 
+      sebms_data_species_histo %>%
+      group_by(artnamn, vecka) %>%
+      summarise(count = sum(sumval))
+  }
+  
+  
+  
+  fmt_label <- function(w) {
+    
+    # se_months <- c(
+    #   "januari", "februari", "mars",
+    #   "april", "maj", "juni",
+    #   "juli","augusti", "september",
+    #   "oktober", "november", "december")
+    
+    if_else(is.na(lag(w)) | !month(ymd("2021-01-01") + weeks(lag(w))) == month(ymd("2021-01-01") + weeks(w)), 
+            paste0(sprintf("%2i", w), "\n   ", month(ymd("2021-01-01") + weeks(w), label = T, abbr = T, locale = "sv_SE.UTF-8")),
+            paste(w))
+  }
+  
+  p <- 
+    ggplot(data = df, 
+           aes(x = vecka, y = count, fill = year)) +
+    geom_bar(stat = 'identity', position = position_dodge(), width = 0.7) +
+    scale_y_continuous(limits = c(0, max(10, max(df$count)*1.2)), # Set Y-axis limits to 10 or the max value of the butterfly count
+                       # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
+                       breaks = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # 
+                       expand = c(0,0)) +
+    #expand_limits(y=max(df$count)*1.1) +
+    scale_x_continuous(
+      breaks = c(10, 14:40),
+      labels = c("Vecka: ", fmt_label(14:40)),
+      limits = c(13.5, 40), 
+      expand = c(0, 0) 
+    ) +
+    scale_fill_manual("Year", values = c(sebms_palette[1], sebms_palette[2])) +
+    labs(y = "Antal individer", x = NULL, tag = "Vecka:") +
+    theme_sebms() +
+    theme(panel.grid.major.y = element_line(color = "gray"),
+          axis.ticks.x = element_line(color = "gray5"),
+          axis.ticks.length = unit(0, "cm"),
+          axis.text.x = element_text(hjust = 0.5, face = "bold", margin = margin(t=3, unit = "mm")),
+          axis.text.y = element_text(face = "bold", margin = margin(r=4, unit = "mm")),
+          axis.line = element_line(color = "gray5"),
+          plot.title = element_text(hjust = 0.5),
+          plot.tag = element_text(vjust = 0),
+          plot.tag.position = c(0.09, 0.039))
+  
+  yearname <- paste0(year, collapse = ":")
+  sebms_ggsave(p, "Butterflynumber", width = 22, height = 16, weathervar = yearname)
+  
+  return(p)
+}
+
+
+#' Species Histogram Plot
+#' 
+#' Show the number of individuals per week of a given species and year.
+#' 
+#' @import dplyr
+#' @import ggplot2
+#' @importFrom lubridate month weeks ymd
+#' @export
+#' 
+sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", database = TRUE) {
+  
+  if (database) {
+    df <- sebms_species_count(year = year) %>% 
       filter(str_detect(art, Art)) %>% 
       mutate(vecka = week(datum)) %>% 
       group_by(art, vecka) %>%
-      summarise(count = as.double(sum(antal, na.rm = T)))
+      summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
   }else {
     df <- 
       sebms_data_species_histo %>%

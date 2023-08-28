@@ -166,19 +166,22 @@ sebms_species_histo_plot <- function(Art = "Luktgräsfjäril", database = TRUE) 
 
 
 #' Species per Site and Site Type Plot
+#' 
+#' Show the number of sites within a range of species number found at the site. Also show the mean number of species per site in each site type.
+#'  
 #' @import dplyr
 #' @import forcats
 #' @import ggplot2
 #' @export
 #' 
-sebms_species_per_sitetype_plot <- function(database = TRUE) {
+sebms_species_per_sitetype_plot <- function(year = 2021, database = TRUE) {
   
   b <- seq(1, 50, by = 5)
   l <- paste0(b, "-", b + 4)
   
   if (database) {
     
-    sebms_spss <- sebms_species_lokal_count() %>% 
+    sebms_spss <- sebms_species_site_count(year = year) %>% 
       group_by(situid, lokalnamn, sitetype) %>% 
       summarise(species = n_distinct(speuid), .groups = "drop") %>% 
       group_by(sitetype) %>% 

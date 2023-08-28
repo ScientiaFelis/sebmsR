@@ -1,30 +1,37 @@
+#TODO: Streamline the functions to the ones necessary and so the output variables of the same kind is named consequently.
 #' Retrieve Total Species List per Site from SeBMS
 #' 
 #' Gives a list of species counts per site and date.
 #' This is used eg for the histograms
-#' 
+#'
+#' @param year the year of interest
+#'  
 #' @import tibble
 #' @import glue
 #' @importFrom DBI dbGetQuery
 #' @export
 sebms_species_site_count <- function(year = 2021){
   
+  year <- glue("({paste0({year}, collapse = ',')})")
+  
   q <- glue("SELECT
  
-          --t.speUId,
+          t.speUId,
           t.Art,
-          --t.sitUId,
+          t.sitUId,
           t.Lokalnamn,
           t.Antal, --t.sumval,
-          t.Datum --t.date
+          t.Datum, --t.date
+          t.sitetype
           --t.vecka,
            
           FROM
           ( SELECT
-          --spe.spe_uid AS speUId,
+          spe.spe_uid AS speUId,
           spe.spe_semainname As Art,
-          --sit.sit_uid AS sitUId,
+          sit.sit_uid AS sitUId,
           sit.sit_name AS Lokalnamn,
+          sit.sit_type AS sitetype,
           SUM(obs.obs_count) AS Antal,
           vis_begintime::date as Datum
           --EXTRACT (week FROM vis_begintime::date) AS vecka,
@@ -35,7 +42,7 @@ sebms_species_site_count <- function(year = 2021){
           INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
           INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
           INNER JOIN spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid      -- så här bör det väl vara?
-          WHERE extract('YEAR' from vis_begintime) = {year}
+          WHERE extract('YEAR' from vis_begintime) IN {year}
           AND 
           vis_typ_datasourceid in (54,55,56,63,64,66,67)
           
@@ -43,13 +50,13 @@ sebms_species_site_count <- function(year = 2021){
           --AND sit.sit_uid=6
           --AND spe.spe_uid =7
           GROUP BY
-            Art, Lokalnamn,Datum --spe.spe_uid, sit.sit_uid, date --, vecka
+            Art, Lokalnamn,Datum, sitetype, speUId, sitUId --, date --, vecka
           ORDER BY
           Art, Lokalnamn) AS t --	spe.spe_uid,sit.sit_uid) AS t
            
            
           GROUP BY
-          t.Art, t.Lokalnamn, t.Antal, t.Datum--t.speUId, t.artnamn,t.sitUId,t.Lokalnamn,t.date,t.sumval
+          t.Art, t.Lokalnamn, t.Antal, t.Datum, t.sitUId,t.speUId, t.sitetype --, t.artnamn,t.Lokalnamn,t.date,t.sumval
           ORDER BY
             t.Art,t.Lokalnamn, t.Datum-- t.speUId, t.Lokalnamn, t.date
  
@@ -71,7 +78,9 @@ sebms_species_site_count <- function(year = 2021){
 #' @import glue
 #' @importFrom DBI dbGetQuery
 #' @export
-sebms_species_count <- function(year = 2021) {
+sebms_species_count <- function(year = 2021:2022) {
+  
+  year <- glue("({paste0({year}, collapse = ',')})")
   
   q <- glue("SELECT
  
@@ -99,7 +108,7 @@ sebms_species_count <- function(year = 2021) {
       INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
       INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
       INNER JOIN spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid      -- så här bör det väl vara?
-      WHERE extract('YEAR' from vis_begintime) = {year}
+      WHERE extract('YEAR' from vis_begintime) IN {year}
       AND 
       vis_typ_datasourceid in (54,55,56,63,64,66,67)
       
@@ -168,13 +177,14 @@ sebms_species_per_year <- function() {
 #' @import glue
 #' @importFrom DBI dbGetQuery
 #' @export
-sebms_species_per_year_filtered <- function(year = 2018:2021) {
+sebms_species_per_year_filtered <- function(year = 2020:2021) {
   
   year <- glue("({paste0({year}, collapse = ',')})")
   
   q <- glue("SELECT
         spe.spe_uid AS id,
         spe.spe_semainname As name,
+        sit.sit_type AS sitetype,
         SUM(obs.obs_count) AS count,
         extract('YEAR' from vis_begintime) AS years
       FROM obs_observation AS obs
@@ -188,7 +198,7 @@ sebms_species_per_year_filtered <- function(year = 2018:2021) {
       AND extract('YEAR' from vis_begintime) IN {year}
       AND spv.spv_istrim=TRUE      -- new
       GROUP BY
-        spe.spe_uid, years
+        spe.spe_uid, years, sitetype
       ORDER BY
       count DESC;")
   

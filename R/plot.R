@@ -6,10 +6,10 @@
 #' @return a list with two ggplot objects, named p1 and p2
 #' @export
 #' 
-sebms_specieslist_cum_plots <- function(database = TRUE) {
+sebms_specieslist_cum_plots <- function(year = 2021, database = TRUE) {
   
   if (database) {
-    sp <- sebms_species_count()
+    sp <- sebms_species_count(year = year)
     
     s1 <- sp %>% 
       group_by(art) %>%

@@ -6,6 +6,11 @@
 \usage{
 sebms_species_count_histo_plot(year = 2021:2022, database = TRUE)
 }
+\arguments{
+\item{year}{year to use for plot}
+
+\item{database}{logical; if the data should be based on the sebms database}
+}
 \description{
 Show the number of found butterflies per week
 }

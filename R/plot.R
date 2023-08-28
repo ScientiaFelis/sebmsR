@@ -1,6 +1,11 @@
 
 #' Cumulative Species List Plots
 #' 
+#' Produce a plot with number of individuals per species a given year
+#' 
+#' @param year year to use for plot
+#' @param database logical; if the data should be based on the sebms database
+#'
 #' @import dplyr
 #' @import ggplot2
 #' @return a list with two ggplot objects, named p1 and p2
@@ -98,6 +103,8 @@ sebms_specieslist_cum_plots <- function(year = 2021, database = TRUE) {
 #' 
 #' Show the number of found butterflies per week
 #' 
+#' @inheritParams sebms_specieslist_cum_plots
+#' 
 #' @import dplyr
 #' @import ggplot2
 #' @importFrom lubridate month weeks ymd
@@ -170,6 +177,9 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, database = TRUE) {
 #' 
 #' Show the number of individuals per week of a given species and year.
 #' 
+#' @inheritParams sebms_specieslist_cum_plots
+#' @param Art The species of interest
+#' 
 #' @import dplyr
 #' @import ggplot2
 #' @importFrom lubridate month weeks ymd
@@ -240,6 +250,8 @@ sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", data
 #' Species per Site and Site Type Plot
 #' 
 #' Show the number of sites within a range of species number found at the site. Also show the mean number of species per site in each site type.
+#'  
+#'  @inheritParams sebms_specieslist_cum_plots
 #'  
 #' @import dplyr
 #' @import forcats

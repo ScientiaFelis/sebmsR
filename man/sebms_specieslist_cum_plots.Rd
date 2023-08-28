@@ -4,11 +4,16 @@
 \alias{sebms_specieslist_cum_plots}
 \title{Cumulative Species List Plots}
 \usage{
-sebms_specieslist_cum_plots(database = TRUE)
+sebms_specieslist_cum_plots(year = 2021, database = TRUE)
+}
+\arguments{
+\item{year}{year to use for plot}
+
+\item{database}{logical; if the data should be based on the sebms database}
 }
 \value{
 a list with two ggplot objects, named p1 and p2
 }
 \description{
-Cumulative Species List Plots
+Produce a plot with number of individuals per species a given year
 }

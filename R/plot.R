@@ -118,7 +118,7 @@ sebms_species_histo_plot <- function(Art = "Luktgräsfjäril", database = TRUE) 
       summarise(count = sum(sumval))
   }
   
-  col_palette <- sebms_palette
+ 
   
   fmt_label <- function(w) {
     
@@ -128,15 +128,15 @@ sebms_species_histo_plot <- function(Art = "Luktgräsfjäril", database = TRUE) 
     #   "juli","augusti", "september",
     #   "oktober", "november", "december")
     
-    if_else(is.na(lag(w)) | !month(ymd("2015-01-01") + weeks(lag(w))) == month(ymd("2015-01-01") + weeks(w)), 
-            paste0(sprintf("%2i", w), "\n", month(ymd("2015-01-01") + weeks(w), label = T, abbr = F, locale = "sv_SE.UTF-8")),
+    if_else(is.na(lag(w)) | !month(ymd("2021-01-01") + weeks(lag(w))) == month(ymd("2021-01-01") + weeks(w)), 
+            paste0(sprintf("%2i", w), "\n   ", month(ymd("2021-01-01") + weeks(w), label = T, abbr = T, locale = "sv_SE.UTF-8")),
             paste(w))
   }
   
   p <- 
     ggplot(data = df, 
            aes(x = vecka, y = count)) +
-    geom_bar(stat = 'identity', color = col_palette[2], fill = col_palette[2], width = 0.5) +
+    geom_bar(stat = 'identity', color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     scale_y_continuous(limits = c(0, max(10, max(df$count)*1.2)), # Set Y-axis limits to 10 or the max value of the butterfly count
                        # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
                        breaks = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # 
@@ -145,7 +145,7 @@ sebms_species_histo_plot <- function(Art = "Luktgräsfjäril", database = TRUE) 
     scale_x_continuous(
       breaks = c(10, 14:40),
       labels = c("Vecka: ", fmt_label(14:40)),
-      limits = c(13, 40), 
+      limits = c(13.5, 40), 
       expand = c(0, 0) 
     ) + 
     labs(y = "Antal", x = NULL, tag = "Vecka:") +
@@ -153,11 +153,12 @@ sebms_species_histo_plot <- function(Art = "Luktgräsfjäril", database = TRUE) 
     theme(panel.grid.major.y = element_line(color = "gray"),
           axis.ticks.x = element_line(color = "gray5"),
           axis.ticks.length = unit(0, "cm"),
-          axis.text.x = element_text(hjust = 1, face = "bold"),
-          axis.text.y = element_text(face = "bold"),
+          axis.text.x = element_text(hjust = 0.5, face = "bold", margin = margin(t=3, unit = "mm")),
+          axis.text.y = element_text(face = "bold", margin = margin(r=4, unit = "mm")),
           axis.line = element_line(color = "gray5"),
           plot.title = element_text(hjust = 0.5),
-          plot.tag.position = c(0.03, 0.039))
+          plot.tag = element_text(vjust = 0),
+          plot.tag.position = c(0.05, 0.039))
   
   sebms_ggsave(p, Art, width = 22, height = 16, weathervar = "")
   return(p)
@@ -203,7 +204,7 @@ sebms_species_per_sitetype_plot <- function(database = TRUE) {
       select(interval, sortorder, sitetype, site_count)
   }
   
-  col_palette <- sebms_palette
+  
   lab <- sebms_spss %>% distinct(sitetype, medel) # unique mean labels
   
   sebms_spss %>% 
@@ -211,15 +212,16 @@ sebms_species_per_sitetype_plot <- function(database = TRUE) {
     geom_bar(aes(fill = forcats::fct_rev(sitetype)), stat = "identity", 
              position = position_dodge(), width = 0.7) +
     stat_summary(aes(x = l[findInterval(medel, b)], y = 102, fill = sitetype), position = position_dodge(width = 0.9), fun = "mean", geom = "point", size = 4, shape = 25) +
-    geom_text(aes(x = l[findInterval(medel, b)], y = 105, label = round(medel, 1)), data = lab, position = position_dodge2(width = 0.9), inherit.aes = F) +
+    geom_text(aes(x = l[findInterval(medel, b)], y = 107, label = round(medel, 1)), data = lab, position = position_dodge2(width = 1.1), inherit.aes = F) +
     scale_y_continuous(breaks = c(10 * 1:10), limits = c(0, 120), expand = c(0, 0)) +
-    scale_fill_manual("Metod", values = c("P" = col_palette[2], "T" = col_palette[1])) +
+    scale_fill_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +
     labs(x = "Antal olika arter på lokalen", y = "Antal lokaler") +
     theme_sebms() +
     theme(panel.grid.major.y = element_line(color = "gray"),
           axis.ticks = element_blank(),
           axis.line = element_line(color = "gray5"),
-          axis.title.x = element_text(margin = margin(t=9))
+          axis.title.x = element_text(margin = margin(t = 9)),
+          panel.border = element_rect(colour = "black", size = 1)
     )
   
 }

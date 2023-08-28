@@ -6,6 +6,10 @@
 \usage{
 sebms_species_site_count(year = 2021)
 }
+\arguments{
+\item{year}{the year of interest}
+}
 \description{
+Gives a list of species counts per site and date.
 This is used eg for the histograms
 }

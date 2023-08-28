@@ -4,7 +4,7 @@
 \alias{sebms_species_per_year_filtered}
 \title{Retrieve Filtered Species List per Year}
 \usage{
-sebms_species_per_year_filtered(year = 2018:2021)
+sebms_species_per_year_filtered(year = 2020:2021)
 }
 \description{
 Retrieve Filtered Species List per Year

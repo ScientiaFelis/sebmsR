@@ -4,8 +4,8 @@
 \alias{sebms_species_histo_plot}
 \title{Species Histogram Plot}
 \usage{
-sebms_species_histo_plot(Art = "Luktgräsfjäril", database = TRUE)
+sebms_species_histo_plot(year = 2021, Art = "Luktgräsfjäril", database = TRUE)
 }
 \description{
-Species Histogram Plot
+Show the number of individuals per week of a given species and year.
 }

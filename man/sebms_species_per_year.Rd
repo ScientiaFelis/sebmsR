@@ -7,5 +7,5 @@
 sebms_species_per_year()
 }
 \description{
-Retrieve Species List per Year
+Give a list of all species counts from all databases for each year
 }

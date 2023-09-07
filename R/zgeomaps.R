@@ -1,4 +1,7 @@
-#' Swedish map of SeBMS site/location data, making use of raster grid and point data
+#' Swedish Map of SeBMS Site Data
+#' 
+#' Making use of raster grid and point data
+#' 
 #' @param occ_sp SpatialPoints with occurrence data
 #' @param width the plot width, default 5 inches
 #' @param height the plot height, default 3.5 inches
@@ -8,53 +11,74 @@
 #' @import ggthemes
 #' @import ggplot2
 #' @importFrom rasterVis gplot
-#' @importFrom raster extent raster rasterize crs crs<- colortable projection values
+#' @importFrom terra ext rast rasterize crs crs<- coltab project values
 #' @importFrom RColorBrewer brewer.pal
-#' @importFrom sp SpatialPixelsDataFrame spTransform
+#' @importFrom sf st_transform
+#' @importFrom sp SpatialPixelsDataFrame
 #' @importFrom cowplot ggdraw draw_grob
 #' @export
 #' 
 sebms_species_site_plot <- function(occ_sp, 
   width = 5, height = 3.5) {
   
-  grid <- sebms_swe_grid
+  SweLandGrid <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "SweLandGrid") %>% 
+    st_set_crs(3021)
+  alla <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "alla_2010-2014_sites") %>% 
+    st_set_crs(3021)
+  
+  bf <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "ButterflySquares0423") %>% 
+    st_set_crs(3021)
+  
+  #a = rast("data-raw/figures/MapDistribution-data/R_files_for_similar_map/MapSweden.tif")
 
-  rs <- raster(extent(grid), nrows = 62, ncols = 28, 
-      crs = projection(grid))
+  grid <- sebms_swe_grid %>% 
+    st_as_sf() %>% 
+    st_set_crs(3021) %>% 
+    st_transform(3021)
+    
+
+  rs <- rast(ext(grid), nrows = 62, ncols = 28, 
+      #crs = terra::project(x=grid, y="espg:4326"),
+      crs = "espg:3021")
   
-  n_points_in_cell <- function(x, na.rm = TRUE) 
+  n_points_in_cell <- function(x, na.rm = TRUE) {
     if (na.rm) length(na.omit(x)) else (length(x))
+  }
   
-  p <- occ_sp #spTransform(alla2, crs("+init=epsg:3857"))
+  p <- occ_sp 
+  p <- st_transform(alla, crs("epsg:3021"))
   
-  rl <- rasterize(p, rs, fun = n_points_in_cell)
+  rl <- rasterize(alla, rs, fun = n_points_in_cell)
   idx_n_large <- which(values(rl) >= 5)
   rl[][idx_n_large] <- 5
   
   #pal_orig <- c("#EAAD44","#CB8D35","#AB6D25","#944D15","#5C4504")
   pal <- brewer.pal(7, "OrRd")[c(1, 4, 7)]
   
-  spdf <- as(rl, "SpatialPixelsDataFrame")
-  df <- as.data.frame(spdf)
+  #spdf <- as(rl, "SpatialPixelsDataFrame")
+  spdf <- st_as_sf(rl)
+  df <- as.data.frame(rl, xy=T)
   colnames(df) <- c("value", "x", "y")
 
-  pdf <- as.data.frame(occ_sp)
+  pdf <- as.data.frame(alla, xy=T)
   colnames(pdf) <- c("x", "y")
 
   #bg <- as.data.frame(as(a, "SpatialPixelsDataFrame"))
   #colnames(bg) <- c("value", "x", "y")
   
-  bg <- spTransform(sebms_swe_borders, crs(grid))
+  bg <- sebms_swe_borders %>%
+    st_as_sf() %>% 
+    st_set_crs(3021)
   
 #  tiff <- as(a, "SpatialPixelsDataFrame")
 #  tiff <- spTransform(tiff, crs(grid))
 #  tiff <- as.data.frame(tiff)
 #  colnames(tiff) <- c("value", "x", "y")
 
-  tiff <- raster(system.file("extdata", "MapSweden.tif", 
+  tiff <- rast(system.file("extdata", "MapSweden.tif", 
     package = "sebmsR", mustWork = TRUE))
   
-  raster::crs(tiff) <-  sp::CRS("+proj=tmerc +lat_0=0 +lon_0=15.80827777777778 +k=1 +x_0=1500000 +y_0=0 +ellps=bessel +units=m +no_defs")
+  #raster::crs(tiff) <-  sp::CRS("+proj=tmerc +lat_0=0 +lon_0=15.80827777777778 +k=1 +x_0=1500000 +y_0=0 +ellps=bessel +units=m +no_defs")
   
   sebms_data_swetiff <- tiff
 
@@ -68,18 +92,18 @@ sebms_species_site_plot <- function(occ_sp,
   layer1 <- 
     gplot(sebms_data_swetiff, maxpixels = 1e6) + 
     geom_raster(aes(x = x, y = y, fill = factor(value))) +
-    scale_fill_manual(values = col_map(sebms_data_swetiff), guide = "none") +
+    #scale_fill_manual(values = col_map(sebms_data_swetiff), guide = "none") +
     geom_polygon(data = bg, 
-      aes(x = long, y = lat, group = group), 
-      fill = NA, color = "transparent", size = 0.4) +
+      aes(x = LON, y = LAT, group = REGION), 
+      fill = NA, color = "transparent", linewidth = 0.4) +
     coord_fixed() +
-    theme_map() +
+    theme_void() +
     theme(legend.position = "none")
   
   p <- 
     ggplot() +
     #layer1 + 
-    geom_tile(inherit.aes = FALSE, data = df, mapping = aes(x = x, y = y, fill = value), 
+    geom_tile(inherit.aes = FALSE, data = df, mapping = aes(x = y, y = x, fill = value), 
       alpha = 0.4, colour = "grey50", size = 0.2) + 
   #  geom_raster(inherit.aes = FALSE, data = df, aes(x = x, y = y, fill = value), 
   #    alpha = 0.4, color = "black") + 
@@ -88,13 +112,13 @@ sebms_species_site_plot <- function(occ_sp,
       low = pal[1], mid = pal[2], high = pal[3], 
         midpoint = mean(df$value)) + 
     geom_polygon(data = bg, 
-      aes(x = long, y = lat, group = group), 
+      aes(x = LON, y = LAT, group = REGION), 
       fill = NA, color = "transparent", size = 0.4) +
-    geom_point(data = pdf, aes(x = x, y = y), 
+    geom_point(data = pdf, aes(x = y, y = x), 
       size = 0.05, alpha = 0.4, 
       color = "darkred", fill = "darkred") +
     coord_fixed() +
-    theme_map() +
+    theme_void() +
     theme(legend.position = "none")
   
   p_legend <- p + 
@@ -120,11 +144,11 @@ sebms_species_site_plot <- function(occ_sp,
   fn2 <- tempfile("02-", fileext = ".png")
   fn3 <- tempfile("03-", fileext = ".png")
   
-  layer1 %>% sebms_ggsave(filename = fn1)
-  p %>% sebms_ggsave(filename = fn2)
+  layer1 %>% save_pplot(fn = fn1, h=3.5, w = 5)
+  p %>% save_pplot(fn = fn2, h=3.5, w = 5)
   
   l_plot <- cowplot::ggdraw() + cowplot::draw_grob(legend) 
-  l_plot %>% sebms_ggsave(filename = fn3)
+  l_plot %>% save_pplot(fn = fn3, h=3.5, w = 5)
   
   i1 <- image_read(fn1)%>% image_transparent("white")
   i2 <- image_read(fn2) %>% image_transparent("white")
@@ -135,76 +159,4 @@ sebms_species_site_plot <- function(occ_sp,
   res <- list(plot = i, legend = legend)
   unlink(c(fn1, fn2, fn3))
   return (res)
-}
-
-#' Plot of sunhours using Leaflet
-#' @param rl raster layer, if missing default is to use smhi_sunhours_rb$X2016
-#' @return leaflet map
-#' @importFrom leaflet colorNumeric
-#' @importFrom raster values
-#' @export
-sebms_sunhours_leaflet <- function(rl, ...) {
-  
-  if (missing(rl)) {
-    message("missing rl param, using default raster layer for 2016")
-    rl <- smhi_sunhours_rb$X2016
-  }
-
-  pal <- leaflet::colorNumeric("RdYlBu", raster::values(rl), 
-    reverse = TRUE, na.color = "transparent")
-
-  leaflet(...) %>% 
-#    addTiles(attribution = NULL, layerId = NULL, group = NULL) %>%
-#    addTiles("//server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", attribution = NULL, layerId = NULL, group = NULL) %>%
-#    addTiles("//stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.png", attribution = NULL, layerId = NULL, group = NULL) %>%
-    addRasterImage(rl, opacity = 0.8, colors = pal)
-  
-}
-
-#' Plot of sunhours data using ggplot
-#' @param rl raster layer, if missing default is to use smhi_sunhours_rb$X2016
-#' @param show_legend boolean to indicate if legend should be included
-#' @return ggplot object
-#' @import ggplot2
-#' @importFrom raster raster
-#' @importFrom sp SpatialPixelsDataFrame
-#' @importFrom RColorBrewer brewer.pal
-#' @export
-sebms_sunhours_plot <- function(rl, show_legend = FALSE) {
-  
-  if (missing(rl)) {
-    message("missing rl param, using default raster layer")
-    rl <- smhi_sunhours_rb$X2016
-  }
-
-  spdf <- as(rl, "SpatialPixelsDataFrame")
-  df <- as.data.frame(spdf)
-  colnames(df) <- c("value", "x", "y")
-
-  # from http://colorbrewer2.org/#type=diverging&scheme=RdYlBu&n=7
-  pal <- brewer.pal(11, "RdYlBu")[c(2, 6, 10)]
-  
-  #pal <- leaflet::colorNumeric("RdYlBu", raster::values(rl), 
-  #  reverse = TRUE, na.color = "transparent")
-
-  p <- 
-    ggplot() +  
-    geom_raster(data = df, aes(x = x, y = y, fill = value), 
-      alpha = 1) + 
-    scale_fill_gradient2(name = "Soltimmar (h)", 
-      guide = "legend", 
-      na.value = "transparent", 
-      low = pal[3], mid = pal[2], high = pal[1],
-      midpoint = mean(df$value)) + 
-    geom_polygon(data = sebms_swe_borders, 
-      aes(x = long, y = lat, group = group), 
-      fill = NA, color = "grey65", size = 0.4) +
-    coord_equal() +
-    theme_map() +
-    theme(legend.position = "none", panel.grid.major = element_blank())
-  
-  if (show_legend) 
-    p + theme(legend.position = "right")
-  else
-    p
 }

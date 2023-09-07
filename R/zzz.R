@@ -15,8 +15,8 @@ sebms_pool <- NULL
 |  _  |  |  ||   _|   _|  -__|   _|   _|  |  ||  -__|__ --|
 |_____|_____||____|____|_____|__| |__| |__|__||_____|_____|
 Use runShinyApp('poc') to run the Shiny proof-of-concept app"
-
-  packageStartupMessage(welcome)
+#TODO: Fix other start-up message
+  #packageStartupMessage(welcome)
 }
 
 .onLoad <- function(libname, pkgname) {

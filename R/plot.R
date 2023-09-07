@@ -71,16 +71,16 @@ sebms_specieslist_cum_plots <- function(year = 2021, database = TRUE) {
   
   p1 <- s1 %>%  
     ggplot(aes(y = reorder(art, count), x = count)) +
-    geom_bar(stat='identity', color = sebms_palette[2], fill = sebms_palette[2], width = 0.5, just = 0.5) +
+    geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
     geom_vline(xintercept = seq(0,12000, 2000), colour = "darkgrey") +
     scale_x_continuous(#breaks = seq(0,12000, 2000),
-                       #labels = seq(0,12000, 2000),
-                       breaks = seq(0,12000, 500),
-                       labels = insert_minor(c(2000*0:6), 3),
-                       position = "top",
-                       limits = c(0, 10000),
-                       expand = c(0, 0)) +
+      #labels = seq(0,12000, 2000),
+      breaks = seq(0,12000, 500),
+      labels = insert_minor(c(2000*0:6), 3),
+      position = "top",
+      limits = c(0, 10000),
+      expand = c(0, 0)) +
     scale_y_discrete(expand = c(0.017,0.017)) +
     #coord_cartesian(clip = "off") +
     labs(x = "Antal individer", y = NULL) +
@@ -88,7 +88,7 @@ sebms_specieslist_cum_plots <- function(year = 2021, database = TRUE) {
   
   p2 <- s2 %>% 
     ggplot(aes(y = reorder(art, count), x = count)) +
-    geom_bar(stat = 'identity', color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
+    geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
     geom_vline(xintercept = seq(0,12000, 2000), colour = "darkgrey") +
     labs(x = "Antal individer", y = NULL) +
@@ -285,10 +285,12 @@ sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", data
 #' 
 sebms_species_per_sitetype_plot <- function(year = 2021, database = TRUE) {
   
+  b <- seq(1, 50, by = 5)
+  l <- paste0(b, "-", b + 4)
   
   if (database) {
     
-    sebms_spss <- sebms_species_site_count(year = year) %>% 
+    df <- sebms_species_site_count(year = year) %>% 
       group_by(situid, lokalnamn, sitetype) %>% 
       summarise(species = n_distinct(speuid), .groups = "drop") %>% 
       group_by(sitetype) %>% 
@@ -303,8 +305,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021, database = TRUE) {
       select(interval, sortorder, sitetype, site_count, medel)
     
   }else{
-    sebms_spss <- 
-      sebms_data_species_per_site_sitetype %>%
+    df <- sebms_data_species_per_site_sitetype %>%
       mutate(
         interval = l[findInterval(species, b)], 
         sortorder = findInterval(species, b)) %>%
@@ -314,21 +315,28 @@ sebms_species_per_sitetype_plot <- function(year = 2021, database = TRUE) {
       select(interval, sortorder, sitetype, site_count)
   }
   
-  b <- seq(1, 50, by = 5)
-  l <- paste0(b, "-", b + 4)
+  
   options(OutDec = ",") # Set decimal separator to comma
   
-  lab <- sebms_spss %>% distinct(sitetype, medel) # unique mean labels
+  lab <- df %>% distinct(sitetype, medel) # unique mean labels
   
-  insert_minor <- function(major_labs, n_minor) {
-    labs <- c( sapply( major_labs, function(x) c(x, rep("", n_minor) ) ) )
-    labs[1:(length(labs)-n_minor)]
-  } # insert minor ticks without labels
-  
-  p <- sebms_spss %>% 
+  # insert_minor <- function(major_labs, n_minor) {
+  #   labs <- c( sapply( major_labs, function(x) c(x, rep("", n_minor) ) ) )
+  #   labs[1:(length(labs)-n_minor)]
+  # } # insert minor ticks without labels
+  # 
+  # Another try to get tickmarks between bars
+  # df$x1 <- as.integer(as.factor(df$interval))
+  # x_tick <- c(0, unique(df$x1)) + 0.5
+  # len <- length(x_tick)
+  # 
+  # r <- rbind(unique(df$interval),matrix(rep(c(""), 10),ncol=length(unique(df$interval))))
+  # labname <- c("", r)
+
+  p <- df %>% 
     ggplot(aes(x = reorder(interval, sortorder), y = site_count)) +
-    geom_bar(aes(fill = forcats::fct_rev(sitetype)), stat = "identity", 
-             position = position_dodge(preserve = "single"), width = 0.7, just = 0.5) +
+    geom_col(aes(fill = forcats::fct_rev(sitetype)), 
+             position = position_dodge(preserve = "single"), width = 0.7) +
     stat_summary(aes(x = l[findInterval(medel, b)], y = 104, colour = sitetype, fill = sitetype),
                  position = position_dodge(width = 1.1),
                  fun = "mean",
@@ -343,17 +351,17 @@ sebms_species_per_sitetype_plot <- function(year = 2021, database = TRUE) {
                        labels = seq(0,120,20),
                        limits = c(0, 120),
                        expand = c(0, 0)) +
-    # scale_x_discrete(breaks = c(0:18),
-    #                  labels = insert_minor(l,1)) +
+     # scale_x_discrete(breaks = sort(c(unique(df$x1), x_tick)),
+     #                  labels = labname) +
     scale_fill_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +
     scale_colour_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +
     labs(x = "Antal arter på lokalen", y = "Antal lokaler") +
     theme_sebms(fontfamily = "Arial") +
     theme(panel.grid.major.y = element_line(color = "gray"),
-          axis.ticks.x = element_line(linewidth = 1),
+          axis.ticks.x = element_line(linewidth = 1, colour = "black"),
           axis.line = element_line(color = "gray5", linewidth = 0.21),
           axis.title.x = element_text(margin = margin(t = 9)),
-          panel.border = element_rect(colour = "black", size = 1)
+          panel.border = element_rect(colour = "black", linewidth = 1)
     )
   
   sebms_ggsave(p, "Species_per_site", width = 16, height = 12, weathervar = year)

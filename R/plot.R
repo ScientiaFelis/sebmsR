@@ -7,6 +7,7 @@
 #' @param database logical; if the data should be based on the sebms database
 #'
 #' @import dplyr
+#' @import glue
 #' @import ggplot2
 #' @return a list with two ggplot objects, named p1 and p2
 #' @export
@@ -14,7 +15,7 @@
 sebms_specieslist_cum_plots <- function(year = 2021, database = TRUE) {
   
   if (database) {
-    sp <- sebms_species_count(year = year)
+    sp <- sebms_species_count_filtered(year = year)
     
     s1 <- sp %>% 
       group_by(art) %>%
@@ -44,57 +45,64 @@ sebms_specieslist_cum_plots <- function(year = 2021, database = TRUE) {
   # Modify theme
   theme_sebms2 <- function() {
     theme_sebms() +
-    theme(
-      axis.text = element_text(color = "black"),
-      panel.grid.major.x = element_line(color = "darkgrey", size = 0.3),
-      #panel.grid.minor.x = element_line(color = "darkgray"),
-      panel.grid.major.y = element_blank(),
-      panel.border = element_blank(),
-      # adjust X-axis labels; also adjust their position using margin (acts like a bounding box)
-      # using margin was needed because of the inwards placement of ticks
-      axis.text.x = element_text(size = 6, margin = unit(c(t = 0, r = 0, b = 0.25, l = 0), "mm")),
-      axis.ticks.x.top = element_line(color = "darkgray"),
-      axis.ticks.length.x = unit(-1, "mm"),
-      axis.text.y = element_text(size = 6, margin = margin(0,0,0,0, unit = "mm")),
-      axis.ticks.y = element_blank(),
-      axis.line = element_line(color = "darkgray"),
-      plot.title = element_text(hjust = 0.5, size = 6, margin = margin(0,0,2,0, unit = "mm"))) 
+      theme(
+        axis.text = element_text(color = "black", family = "Arial"),
+        plot.margin = margin(r=3, unit = "mm"),
+        panel.grid.major.x = element_blank(), #element_line(color = "darkgrey", size = 0.3),
+        #panel.grid.minor.x = element_line(color = "darkgray"),
+        panel.grid.major.y = element_blank(),
+        panel.border = element_blank(),
+        axis.title.x.top = element_text(size = 10, margin = margin(b=5, unit = "mm")),
+        # adjust X-axis labels; also adjust their position using margin (acts like a bounding box)
+        # using margin was needed because of the inwards placement of ticks
+        axis.text.x.top = element_text(size = 8, margin = margin(t = 0, r = 0, b = 3, l = 0, unit = "mm")),
+        axis.ticks.x.top = element_line(color = "darkgray"),
+        axis.ticks.length.x = unit(-1, "mm"),
+        axis.text.y = element_text(size = 10, margin = margin(0,2,0,0, unit = "mm")),
+        axis.ticks.y = element_line(colour = "darkgrey"),
+        axis.line = element_line(color = "darkgray", size = 0.35),
+        plot.title = element_text(hjust = 0.5, size = 6, margin = margin(0,0,2,0, unit = "mm"))) 
   }
-
-  # insert_minor <- function(major_labs, n_minor) {
-  #   labs <- c( sapply( major_labs, function(x) c(x, rep("", n_minor) ) ) )
-  #   labs[1:(length(labs)-n_minor)]
-  # }
-
+  
+  insert_minor <- function(major_labs, n_minor) {
+    labs <- c( sapply( major_labs, function(x) c(x, rep("", n_minor) ) ) )
+    labs[1:(length(labs)-n_minor)]
+  }
+  
   p1 <- s1 %>%  
     ggplot(aes(y = reorder(art, count), x = count)) +
-    geom_bar(stat='identity', color = sebms_palette[2], fill = sebms_palette[2], width = 0.3, just = 0.5) +
+    geom_bar(stat='identity', color = sebms_palette[2], fill = sebms_palette[2], width = 0.5, just = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
-    labs(title = "Antal individer", x = NULL, y = NULL) +
-    scale_x_continuous(breaks = c(2000 * 0:12),
-                       labels = c(2000 * 0:11, ""),
-                       #labels = insert_minor(c(4000*0:6), 1),
+    geom_vline(xintercept = seq(0,12000, 2000), colour = "darkgrey") +
+    scale_x_continuous(#breaks = seq(0,12000, 2000),
+                       #labels = seq(0,12000, 2000),
+                       breaks = seq(0,12000, 500),
+                       labels = insert_minor(c(2000*0:6), 3),
                        position = "top",
                        limits = c(0, 10000),
                        expand = c(0, 0)) +
-    scale_y_discrete(expand = c(0.011,0.011)) +
+    scale_y_discrete(expand = c(0.017,0.017)) +
+    #coord_cartesian(clip = "off") +
+    labs(x = "Antal individer", y = NULL) +
     theme_sebms2()
   
   p2 <- s2 %>% 
     ggplot(aes(y = reorder(art, count), x = count)) +
-    geom_bar(stat='identity', color = sebms_palette[2], fill = sebms_palette[2], width = 0.3) +
+    geom_bar(stat = 'identity', color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
-    labs(title = "Antal individer", x = NULL, y = NULL) +
-    scale_x_continuous(breaks = c(20 * 0:11),
-                       labels = c(20 * 0:10, ""),
+    geom_vline(xintercept = seq(0,12000, 2000), colour = "darkgrey") +
+    labs(x = "Antal individer", y = NULL) +
+    scale_x_continuous(breaks = seq(0,12000, 500),
+                       labels = insert_minor(c(2000*0:6), 3),
                        position = "top",
-                       limits = c(0, 210),
+                       limits = c(0, 10000),
                        expand = c(0, 0)) +
+    scale_y_discrete(expand = c(0.017,0.017)) +
     theme_sebms2()
   
   res <- list(p1 = p1, p2 = p2)
-  name <- list("Över200", "Under200")
-  map2(res, name, ~sebms_ggsave(.x, "Species_tot_count", width = 12, height=18, weathervar = .y))
+  name <- list(glue("Öv200_{year}"), glue("Und200_{year}"))
+  map2(res, name, ~sebms_ggsave(.x, "Species_tot_count", width = 18, height=32, weathervar = .y))
   
   return(res)
 }
@@ -106,6 +114,7 @@ sebms_specieslist_cum_plots <- function(year = 2021, database = TRUE) {
 #' @inheritParams sebms_specieslist_cum_plots
 #' 
 #' @import dplyr
+#' @importFrom plyr round_any
 #' @import ggplot2
 #' @importFrom lubridate month weeks ymd
 #' @export
@@ -124,7 +133,7 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, database = TRUE) {
   }
   
   
-  
+  # This makes a label that have a row of weeks and then a row of months in text 
   fmt_label <- function(w) {
     
     # se_months <- c(
@@ -134,40 +143,42 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, database = TRUE) {
     #   "oktober", "november", "december")
     
     if_else(is.na(lag(w)) | !month(ymd("2021-01-01") + weeks(lag(w))) == month(ymd("2021-01-01") + weeks(w)), 
-            paste0(sprintf("%2i", w), "\n   ", month(ymd("2021-01-01") + weeks(w), label = T, abbr = T, locale = "sv_SE.UTF-8")),
+            paste0(sprintf("%2i", w), "\n      ", month(ymd("2021-01-01") + weeks(w), label = T, abbr = F, locale = "sv_SE.UTF-8")),
             paste(w))
   }
   
+  maxlim <- round_any(max(df$count), 1000, f = ceiling) # Makes a rounded to nearest 1000 of max value to be at top of Y-axis
   p <- 
     ggplot(data = df, 
            aes(x = vecka, y = count, fill = year)) +
     geom_bar(stat = 'identity', position = position_dodge(), width = 0.7) +
-    scale_y_continuous(limits = c(0, max(10, max(df$count)*1.2)), # Set Y-axis limits to 10 or the max value of the butterfly count
+    scale_y_continuous(limits = c(0, max(10, maxlim)), # Set Y-axis limits to 10 or the max value of the butterfly count
                        # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
-                       breaks = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # 
-                       expand = c(0,0)) +
+                       breaks = seq(0,max(10, maxlim), 10^ceiling(log10(max(df$count)/100))*2), # Make breaks at even 200 0r 2000 marks depending on max number
+                       expand = c(0,0.05)) +
     #expand_limits(y=max(df$count)*1.1) +
     scale_x_continuous(
       breaks = c(10, 14:40),
       labels = c("Vecka: ", fmt_label(14:40)),
-      limits = c(13.5, 40), 
+      limits = c(13.5, 40.4), 
       expand = c(0, 0) 
     ) +
     scale_fill_manual("Year", values = c(sebms_palette[1], sebms_palette[2])) +
     labs(y = "Antal individer", x = NULL, tag = "Vecka:") +
-    theme_sebms() +
+    theme_sebms(y_title_sz = 16) +
     theme(panel.grid.major.y = element_line(color = "gray"),
+          panel.border = element_rect(colour = "black", linewidth = 0.8),
           axis.ticks.x = element_line(color = "gray5"),
           axis.ticks.length = unit(0, "cm"),
-          axis.text.x = element_text(hjust = 0.5, face = "bold", margin = margin(t=3, unit = "mm")),
+          axis.text.x = element_text(hjust = 0.5, face = "bold", margin = margin(t=3, unit = "mm"), lineheight = 1.3),
           axis.text.y = element_text(face = "bold", margin = margin(r=4, unit = "mm")),
-          axis.line = element_line(color = "gray5"),
+          axis.line = element_line(color = "gray5", linewidth = 0.3),
           plot.title = element_text(hjust = 0.5),
           plot.tag = element_text(vjust = 0),
-          plot.tag.position = c(0.09, 0.039))
+          plot.tag.position = c(0.06, 0.039))
   
   yearname <- paste0(year, collapse = ":")
-  sebms_ggsave(p, "Butterflynumber", width = 22, height = 16, weathervar = yearname)
+  sebms_ggsave(p, "Butterflynumber", width = 28, height = 16, weathervar = yearname)
   
   return(p)
 }
@@ -200,8 +211,6 @@ sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", data
       summarise(count = sum(sumval))
   }
   
- 
-  
   fmt_label <- function(w) {
     
     # se_months <- c(
@@ -215,34 +224,50 @@ sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", data
             paste(w))
   }
   
+  # This makes a rounded to nearest 10, 100 or 1000 of max value to be at top of Y-axis to align with gridline at top
+  maxlim <-  case_when(max(df$count) < 100 ~ round_any(max(df$count), 10, f = ceiling),
+                       max(df$count) < 10000 ~ round_any(max(df$count), 200, f = ceiling),
+                       max(df$count) > 10000 ~ round_any(max(df$count), 1000, f = ceiling)
+  )
+  
+  # This makes the steps right between labels
+  steps <- case_when(max(df$count) < 12 ~ 1,
+                     between(max(df$count),12,30) ~ 2,
+                     between(max(df$count),30,60) ~ 5,
+                     between(max(df$count),60,100) ~ 10,
+                     between(max(df$count),110,500) ~ 20,
+                     between(max(df$count),500,1000) ~ 100,
+                     between(max(df$count),1000,10000) ~ 200,
+                     TRUE ~1000)
+  
   p <- 
     ggplot(data = df, 
            aes(x = vecka, y = count)) +
     geom_bar(stat = 'identity', color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
-    scale_y_continuous(limits = c(0, max(10, max(df$count)*1.2)), # Set Y-axis limits to 10 or the max value of the butterfly count
+    scale_y_continuous(limits = c(0, maxlim), #nice_lim(df$count),#c(0, max(10, max(df$count)*1.2)), # Set Y-axis limits to 10 or the max value of the butterfly count
                        # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
-                       breaks = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # 
+                       breaks = seq(0,maxlim, steps), #10^ceiling(log10(max(df$count)/100))*2), # 
                        expand = c(0,0)) +
     #expand_limits(y=max(df$count)*1.1) +
     scale_x_continuous(
-      breaks = c(10, 14:40),
-      labels = c("Vecka: ", fmt_label(14:40)),
-      limits = c(13.5, 40), 
+      breaks = c(10, seq(14,40,2)),
+      labels = c("Vecka: ", fmt_label(seq(14,40,2))),
+      limits = c(13.5, 40.4), 
       expand = c(0, 0) 
     ) + 
     labs(y = "Antal", x = NULL, tag = "Vecka:") +
-    theme_sebms() +
+    theme_sebms(y_title_sz = 18, fontfamily = "Arial") +
     theme(panel.grid.major.y = element_line(color = "gray"),
           axis.ticks.x = element_line(color = "gray5"),
           axis.ticks.length = unit(0, "cm"),
-          axis.text.x = element_text(hjust = 0.5, face = "bold", margin = margin(t=3, unit = "mm")),
+          axis.text.x = element_text(hjust = 0.5, face = "bold", margin = margin(t=4, unit = "mm"), family = "Arial", size = 14, lineheight = 1.3),
           axis.text.y = element_text(face = "bold", margin = margin(r=4, unit = "mm")),
-          axis.line = element_line(color = "gray5"),
+          axis.line = element_line(color = "gray5", linewidth = 0.3),
           plot.title = element_text(hjust = 0.5),
-          plot.tag = element_text(vjust = 0),
+          plot.tag = element_text(vjust = 0, size = 14),
           plot.tag.position = c(0.05, 0.039))
   
-  sebms_ggsave(p, Art, width = 22, height = 16, weathervar = "")
+  sebms_ggsave(p, Art, width = 26, height = 12, weathervar = year)
   return(p)
 }
 
@@ -260,8 +285,6 @@ sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", data
 #' 
 sebms_species_per_sitetype_plot <- function(year = 2021, database = TRUE) {
   
-  b <- seq(1, 50, by = 5)
-  l <- paste0(b, "-", b + 4)
   
   if (database) {
     
@@ -291,24 +314,51 @@ sebms_species_per_sitetype_plot <- function(year = 2021, database = TRUE) {
       select(interval, sortorder, sitetype, site_count)
   }
   
+  b <- seq(1, 50, by = 5)
+  l <- paste0(b, "-", b + 4)
+  options(OutDec = ",") # Set decimal separator to comma
   
   lab <- sebms_spss %>% distinct(sitetype, medel) # unique mean labels
   
-  sebms_spss %>% 
+  insert_minor <- function(major_labs, n_minor) {
+    labs <- c( sapply( major_labs, function(x) c(x, rep("", n_minor) ) ) )
+    labs[1:(length(labs)-n_minor)]
+  } # insert minor ticks without labels
+  
+  p <- sebms_spss %>% 
     ggplot(aes(x = reorder(interval, sortorder), y = site_count)) +
     geom_bar(aes(fill = forcats::fct_rev(sitetype)), stat = "identity", 
-             position = position_dodge(), width = 0.7) +
-    stat_summary(aes(x = l[findInterval(medel, b)], y = 102, fill = sitetype), position = position_dodge(width = 0.9), fun = "mean", geom = "point", size = 4, shape = 25) +
-    geom_text(aes(x = l[findInterval(medel, b)], y = 107, label = round(medel, 1)), data = lab, position = position_dodge2(width = 1.1), inherit.aes = F) +
-    scale_y_continuous(breaks = c(10 * 1:10), limits = c(0, 120), expand = c(0, 0)) +
+             position = position_dodge(preserve = "single"), width = 0.7, just = 0.5) +
+    stat_summary(aes(x = l[findInterval(medel, b)], y = 104, colour = sitetype, fill = sitetype),
+                 position = position_dodge(width = 1.1),
+                 fun = "mean",
+                 geom = "point",
+                 size = 4,
+                 shape = 25) +
+    geom_text(aes(x = l[findInterval(medel, b)], y = 113, label = format(round(medel, 1), nsmall = 1)),
+              data = lab,
+              position = position_dodge2(width = 1.3),
+              inherit.aes = F) +
+    scale_y_continuous(breaks = seq(0,120,20),
+                       labels = seq(0,120,20),
+                       limits = c(0, 120),
+                       expand = c(0, 0)) +
+    # scale_x_discrete(breaks = c(0:18),
+    #                  labels = insert_minor(l,1)) +
     scale_fill_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +
-    labs(x = "Antal olika arter på lokalen", y = "Antal lokaler") +
-    theme_sebms() +
+    scale_colour_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +
+    labs(x = "Antal arter på lokalen", y = "Antal lokaler") +
+    theme_sebms(fontfamily = "Arial") +
     theme(panel.grid.major.y = element_line(color = "gray"),
-          axis.ticks = element_blank(),
-          axis.line = element_line(color = "gray5"),
+          axis.ticks.x = element_line(linewidth = 1),
+          axis.line = element_line(color = "gray5", linewidth = 0.21),
           axis.title.x = element_text(margin = margin(t = 9)),
           panel.border = element_rect(colour = "black", size = 1)
     )
+  
+  sebms_ggsave(p, "Species_per_site", width = 16, height = 12, weathervar = year)
+  return(p)
+  
+  options(OutDec = ".") # Restore decimal separator to dot
   
 }

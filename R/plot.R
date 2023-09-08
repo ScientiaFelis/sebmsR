@@ -346,6 +346,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021, database = TRUE) {
     geom_text(aes(x = l[findInterval(medel, b)], y = 113, label = format(round(medel, 1), nsmall = 1)),
               data = lab,
               position = position_dodge2(width = 1.3),
+              fontface = "bold",
               inherit.aes = F) +
     scale_y_continuous(breaks = seq(0,120,20),
                        labels = seq(0,120,20),
@@ -359,7 +360,9 @@ sebms_species_per_sitetype_plot <- function(year = 2021, database = TRUE) {
     theme_sebms(fontfamily = "Arial") +
     theme(panel.grid.major.y = element_line(color = "gray"),
           axis.ticks.x = element_line(linewidth = 1, colour = "black"),
+          axis.ticks.y = element_blank(),
           axis.line = element_line(color = "gray5", linewidth = 0.21),
+          axis.text = element_text(face = "bold"),
           axis.title.x = element_text(margin = margin(t = 9)),
           panel.border = element_rect(colour = "black", linewidth = 1)
     )

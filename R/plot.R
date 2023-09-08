@@ -7,6 +7,7 @@
 #' @param database logical; if the data should be based on the sebms database
 #'
 #' @import dplyr
+#' @importFrom plyr round_any
 #' @import glue
 #' @import ggplot2
 #' @return a list with two ggplot objects, named p1 and p2
@@ -69,18 +70,21 @@ sebms_specieslist_cum_plots <- function(year = 2021, database = TRUE) {
     labs[1:(length(labs)-n_minor)]
   }
   
+  maxlim <- round_any(max(s1$count), accuracy = 2000, ceiling)
+  
   p1 <- s1 %>%  
     ggplot(aes(y = reorder(art, count), x = count)) +
     geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
-    geom_vline(xintercept = seq(0,12000, 2000), colour = "darkgrey") +
+    geom_vline(xintercept = seq(0,maxlim, 2000), colour = "darkgrey") +
     scale_x_continuous(#breaks = seq(0,12000, 2000),
       #labels = seq(0,12000, 2000),
-      breaks = seq(0,12000, 500),
-      labels = insert_minor(c(2000*0:6), 3),
+      breaks = seq(0,maxlim, 500),
+      labels = insert_minor(c(2000*0:(maxlim/2000)), 3),
       position = "top",
-      limits = c(0, 10000),
-      expand = c(0, 0)) +
+      limits = c(0, maxlim),
+      expand = c(0, 0)
+      ) +
     scale_y_discrete(expand = c(0.017,0.017)) +
     #coord_cartesian(clip = "off") +
     labs(x = "Antal individer", y = NULL) +
@@ -90,13 +94,16 @@ sebms_specieslist_cum_plots <- function(year = 2021, database = TRUE) {
     ggplot(aes(y = reorder(art, count), x = count)) +
     geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
-    geom_vline(xintercept = seq(0,12000, 2000), colour = "darkgrey") +
+    geom_vline(xintercept = seq(0,maxlim, 2000), colour = "darkgrey") +
     labs(x = "Antal individer", y = NULL) +
-    scale_x_continuous(breaks = seq(0,12000, 500),
-                       labels = insert_minor(c(2000*0:6), 3),
-                       position = "top",
-                       limits = c(0, 10000),
-                       expand = c(0, 0)) +
+    scale_x_continuous(#breaks = seq(0,12000, 2000),
+      #labels = seq(0,12000, 2000),
+      breaks = seq(0,maxlim, 500),
+      labels = insert_minor(c(2000*0:(maxlim/2000)), 3),
+      position = "top",
+      limits = c(0, maxlim),
+      expand = c(0, 0)
+      )  +
     scale_y_discrete(expand = c(0.017,0.017)) +
     theme_sebms2()
   

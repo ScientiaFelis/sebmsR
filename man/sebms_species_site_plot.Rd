@@ -2,7 +2,7 @@
 % Please edit documentation in R/zgeomaps.R
 \name{sebms_species_site_plot}
 \alias{sebms_species_site_plot}
-\title{Swedish Map of SeBMS Site Data}
+\title{Swedish map of SeBMS site/location data, making use of raster grid and point data}
 \usage{
 sebms_species_site_plot(occ_sp, width = 5, height = 3.5)
 }
@@ -17,5 +17,5 @@ sebms_species_site_plot(occ_sp, width = 5, height = 3.5)
 ggplot object
 }
 \description{
-Making use of raster grid and point data
+Swedish map of SeBMS site/location data, making use of raster grid and point data
 }

@@ -14,19 +14,9 @@ sebms_species_site_count <- function(year = 2021){
   
   year <- glue("({paste0({year}, collapse = ',')})")
   
-  q <- glue("SELECT
- 
-          t.speUId,
-          t.Art,
-          t.sitUId,
-          t.Lokalnamn,
-          t.Antal, --t.sumval,
-          t.Datum, --t.date
-          t.sitetype
-          --t.vecka,
-           
-          FROM
-          ( SELECT
+  q <- glue("
+      WITH obssum AS
+        (SELECT
           spe.spe_uid AS speUId,
           spe.spe_semainname As Art,
           sit.sit_uid AS sitUId,
@@ -36,30 +26,41 @@ sebms_species_site_count <- function(year = 2021){
           vis_begintime::date as Datum
           --EXTRACT (week FROM vis_begintime::date) AS vecka,
           
-          FROM obs_observation AS obs
-          INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
-          INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
-          INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
-          INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
-          INNER JOIN spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid      -- så här bör det väl vara?
-          WHERE extract('YEAR' from vis_begintime) IN {year}
-          AND 
+        FROM obs_observation AS obs
+        INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
+        INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
+        INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
+        INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
+        INNER JOIN spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid      -- så här bör det väl vara?
+        
+        WHERE
+          extract('YEAR' from vis_begintime) IN {year}
+          AND
           vis_typ_datasourceid in (54,55,56,63,64,66,67)
-          
-          --AND spv.spv_istrim=TRUE     
-          --AND sit.sit_uid=6
-          --AND spe.spe_uid =7
-          GROUP BY
-            Art, Lokalnamn,Datum, sitetype, speUId, sitUId --, date --, vecka
-          ORDER BY
-          Art, Lokalnamn) AS t --	spe.spe_uid,sit.sit_uid) AS t
-           
-           
-          GROUP BY
-          t.Art, t.Lokalnamn, t.Antal, t.Datum, t.sitUId,t.speUId, t.sitetype --, t.artnamn,t.Lokalnamn,t.date,t.sumval
-          ORDER BY
-            t.Art,t.Lokalnamn, t.Datum-- t.speUId, t.Lokalnamn, t.date
- 
+        
+       GROUP BY
+          Art, Lokalnamn,Datum, sitetype, speUId, sitUId --, date --, vecka
+       ORDER BY
+          Art, Lokalnamn) 
+            
+     SELECT
+      t.speUId,
+      t.Art,
+      t.sitUId,
+      t.Lokalnamn,
+      t.Antal,
+      t.Datum,
+      t.sitetype
+      --t.vecka,
+         
+    FROM obssum AS t
+    
+    GROUP BY -- this grouping seems pointless.
+      t.Art, t.Lokalnamn, t.Antal, t.Datum, t.sitUId,t.speUId, t.sitetype
+    
+    ORDER BY
+      t.Art,t.Lokalnamn, t.Datum-- t.speUId, t.Lokalnamn, t.date
+
  ")
   
   sebms_assert_connection()
@@ -82,49 +83,43 @@ sebms_species_count <- function(year = 2021:2022) {
   
   year <- glue("({paste0({year}, collapse = ',')})")
   
-  q <- glue("SELECT
- 
-        --t.speUId,
-        t.Art,
-        --t.sitUId,
-        --t.Lokalnamn,
-        t.Antal, --t.sumval,
-        t.Datum --t.date
-        --t.vecka,
-       
-      FROM
-      ( SELECT
-      --spe.spe_uid AS speUId,
-      spe.spe_semainname As Art,
-      --sit.sit_uid AS sitUId,
-      --sit.sit_name AS Lokalnamn,
-      SUM(obs.obs_count) AS Antal,
-      vis_begintime::date as Datum
-      --EXTRACT (week FROM vis_begintime::date) AS vecka,
+  q <- glue("
+      WITH obssum AS
+        (SELECT
+          spe.spe_semainname As Art,
+          SUM(obs.obs_count) AS Antal,
+          vis_begintime::date as Datum
+          --EXTRACT (week FROM vis_begintime::date) AS vecka,
+  
+        FROM obs_observation AS obs
+  
+        INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
+        INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
+        INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
+        INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
+        INNER JOIN spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid      -- så här bör det väl vara?
+        
+        WHERE extract('YEAR' from vis_begintime) IN {year}
+        AND 
+          vis_typ_datasourceid in (54,55,56,63,64,66,67)
+        GROUP BY
+          Art, Datum
+        ORDER BY
+          Art)
+
+    SELECT
+      --t.speUId,
+      t.Art,
+      --t.sitUId,
+      --t.Lokalnamn,
+      t.Antal,
+      t.Datum
       
-      FROM obs_observation AS obs
-      INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
-      INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
-      INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
-      INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
-      INNER JOIN spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid      -- så här bör det väl vara?
-      WHERE extract('YEAR' from vis_begintime) IN {year}
-      AND 
-      vis_typ_datasourceid in (54,55,56,63,64,66,67)
-      
-      --AND spv.spv_istrim=TRUE     
-      --AND sit.sit_uid=6
-      --AND spe.spe_uid =7
-      GROUP BY
-        Art, Datum --Lokalnamn, spe.spe_uid, sit.sit_uid, date --, vecka
-      ORDER BY
-      Art) AS t --, Lokalnamn,	spe.spe_uid,sit.sit_uid) AS t
-       
-       
-      GROUP BY
-      t.Art, t.Antal, t.Datum -- t.Lokalnamn, t.speUId, t.artnamn,t.sitUId,t.Lokalnamn,t.date,t.sumval
-      ORDER BY
-        t.Art,t.Datum; -- t.Lokalnamn, t.speUId, t.Lokalnamn, t.date;
+    FROM obssum AS t
+    GROUP BY -- Is this Grouping not pointless? Result is the same without
+      t.Art, t.Antal, t.Datum
+    ORDER BY
+      t.Art,t.Datum;
  ")
   
   sebms_assert_connection()
@@ -142,27 +137,28 @@ sebms_species_count_filtered <- function(year = 2020:2021) {
   
   year <- glue("({paste0({year}, collapse = ',')})")
   
-  q <- glue("SELECT
-        spe.spe_uid AS id,
-        spe.spe_semainname As art,
-        --sit.sit_type AS sitetype,
-        SUM(obs.obs_count) AS antal,
-        --extract('YEAR' from vis_begintime) AS years,
-        vis_begintime::date as Datum
-      FROM obs_observation AS obs
-      INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
-      INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
-      INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
-      INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
-      INNER JOIN  spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid     
-      WHERE
-        extract('YEAR' from vis_begintime) IN {year}
-        AND (spv.spv_istrim=TRUE or spe_uid in (135,131,133) )
-      GROUP BY
-        spe.spe_uid, Datum --, years
-      ORDER BY
-      antal DESC;")
-  
+  q <- glue("
+        SELECT
+          spe.spe_uid AS id,
+          spe.spe_semainname As art,
+          --sit.sit_type AS sitetype,
+          SUM(obs.obs_count) AS antal,
+          --extract('YEAR' from vis_begintime) AS years,
+          vis_begintime::date as Datum
+        FROM obs_observation AS obs
+        INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
+        INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
+        INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
+        INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
+        INNER JOIN  spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid     
+        WHERE
+          extract('YEAR' from vis_begintime) IN {year}
+          AND (spv.spv_istrim=TRUE or spe_uid in (135,131,133) )
+        GROUP BY
+          spe.spe_uid, Datum --, years
+        ORDER BY
+          antal DESC;")
+    
   sebms_assert_connection()
   res <- dbGetQuery(sebms_pool, q)
   as_tibble(res)
@@ -200,7 +196,7 @@ sebms_species_per_year <- function() {
     GROUP BY
       spe.spe_uid, years
     ORDER BY
-    count DESC;")
+      count DESC;")
   
   sebms_assert_connection()
   res <- DBI::dbGetQuery(sebms_pool, q)
@@ -218,7 +214,8 @@ sebms_species_per_year_filtered <- function(year = 2020:2021) {
   
   year <- glue("({paste0({year}, collapse = ',')})")
   
-  q <- glue("SELECT
+  q <- glue("
+      SELECT
         spe.spe_uid AS id,
         spe.spe_semainname As name,
         sit.sit_type AS sitetype,
@@ -231,13 +228,13 @@ sebms_species_per_year_filtered <- function(year = 2020:2021) {
       INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
       INNER JOIN  spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid     
       WHERE
-      sit.sit_reg_countyid = (SELECT reg_uid FROM reg_region WHERE reg_code = '08' AND reg_group = 'C')
-      AND extract('YEAR' from vis_begintime) IN {year}
-      AND spv.spv_istrim=TRUE      -- new
+        sit.sit_reg_countyid = (SELECT reg_uid FROM reg_region WHERE reg_code = '08' AND reg_group = 'C')
+        AND extract('YEAR' from vis_begintime) IN {year}
+        AND spv.spv_istrim=TRUE      -- new
       GROUP BY
         spe.spe_uid, years, sitetype
       ORDER BY
-      count DESC;")
+        count DESC;")
   
   sebms_assert_connection()
   res <- dbGetQuery(sebms_pool, q)
@@ -254,26 +251,27 @@ sebms_species_per_year_filtered <- function(year = 2020:2021) {
 #' @export
 sebms_species_per_year_site_filtered <- function() {
   
-  q <- "SELECT
-  sit.sit_uid AS id,
-  sit.sit_name AS site,
-  sit.sit_type AS sitetype,
-  COUNT(DISTINCT spe.spe_uid) as species
-FROM obs_observation AS obs
-INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
-INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
-INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
-INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
-INNER JOIN  spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid     
-WHERE
-sit.sit_reg_countyid = (SELECT reg_uid FROM reg_region WHERE reg_code = '12' AND reg_group = 'C')
-AND date_trunc('YEAR', vis_begintime) =(DATE '2014-01-01')
-AND spv.spv_istrim=TRUE      -- new
-GROUP BY
-  sit.sit_uid
-ORDER BY
-species DESC;"
-  
+  q <- "
+    SELECT
+      sit.sit_uid AS id,
+      sit.sit_name AS site,
+      sit.sit_type AS sitetype,
+      COUNT(DISTINCT spe.spe_uid) as species
+    FROM obs_observation AS obs
+    INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
+    INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
+    INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
+    INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
+    INNER JOIN  spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid     
+    WHERE
+      sit.sit_reg_countyid = (SELECT reg_uid FROM reg_region WHERE reg_code = '12' AND reg_group = 'C')
+      AND date_trunc('YEAR', vis_begintime) =(DATE '2014-01-01')
+      AND spv.spv_istrim=TRUE      -- new
+    GROUP BY
+      sit.sit_uid
+    ORDER BY
+      species DESC;"
+      
   sebms_assert_connection()
   res <- dbGetQuery(sebms_pool, q)
   as_tibble(res)
@@ -287,26 +285,27 @@ species DESC;"
 #' @export
 sebms_species_per_year_site_counts_filtered <- function() {
   
-  q <- "SELECT
-  sit.sit_uid AS id,
-  sit.sit_name AS site,
-  sit.sit_type AS sitetype,
-  spe.spe_uid AS species,
-  SUM(obs.obs_count) as speciesno
-FROM obs_observation AS obs
-INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
-INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
-INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
-INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
-INNER JOIN  spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid     
-WHERE
-sit.sit_reg_countyid = (SELECT reg_uid FROM reg_region WHERE reg_code = '12' AND reg_group = 'C')
-AND date_trunc('YEAR', vis_begintime) =(DATE '2014-01-01')
-AND spv.spv_istrim=TRUE      -- new
-GROUP BY
-  sit.sit_uid, spe.spe_uid
-ORDER BY
-id , speciesno DESC;"
+  q <- "
+  SELECT
+    sit.sit_uid AS id,
+    sit.sit_name AS site,
+    sit.sit_type AS sitetype,
+    spe.spe_uid AS species,
+    SUM(obs.obs_count) as speciesno
+  FROM obs_observation AS obs
+  INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
+  INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
+  INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
+  INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
+  INNER JOIN  spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid     
+  WHERE
+    sit.sit_reg_countyid = (SELECT reg_uid FROM reg_region WHERE reg_code = '12' AND reg_group = 'C')
+    AND date_trunc('YEAR', vis_begintime) =(DATE '2014-01-01')
+    AND spv.spv_istrim=TRUE      -- new
+  GROUP BY
+    sit.sit_uid, spe.spe_uid
+  ORDER BY
+    id, speciesno DESC;"
   
   sebms_assert_connection()
   res <- dbGetQuery(sebms_pool, q)

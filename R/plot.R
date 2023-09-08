@@ -130,7 +130,9 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, database = TRUE) {
   
   if (database) {
     df <- sebms_species_count(year = year) %>%
-      group_by(year = as.factor(year(datum)), vecka = week(datum)) %>%
+      group_by(year = year(datum)) %>%
+      filter(datum > glue("{year}-04-01"), datum < glue("{year}-09-30")) %>% 
+      group_by(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
   }else {
     df <- 
@@ -155,6 +157,9 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, database = TRUE) {
   }
   
   maxlim <- round_any(max(df$count), 1000, f = ceiling) # Makes a rounded to nearest 1000 of max value to be at top of Y-axis
+  Hweeklim <- max(df$vecka)
+  Lweeklim <- min(df$vecka)
+  
   p <- 
     ggplot(data = df, 
            aes(x = vecka, y = count, fill = year)) +
@@ -165,9 +170,9 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, database = TRUE) {
                        expand = c(0,0.05)) +
     #expand_limits(y=max(df$count)*1.1) +
     scale_x_continuous(
-      breaks = c(10, 14:40),
-      labels = c("Vecka: ", fmt_label(14:40)),
-      limits = c(13.5, 40.4), 
+      breaks = c(10, Lweeklim:Hweeklim),
+      labels = c("Vecka: ", fmt_label(Lweeklim:Hweeklim)),
+      limits = c(Lweeklim - 0.5, Hweeklim + 0.4), 
       expand = c(0, 0) 
     ) +
     scale_fill_manual("Year", values = c(sebms_palette[1], sebms_palette[2])) +
@@ -209,7 +214,7 @@ sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", data
   if (database) {
     df <- sebms_species_count(year = year) %>% 
       filter(str_detect(art, Art)) %>% 
-      mutate(vecka = week(datum)) %>% 
+      mutate(vecka = isoweek(datum)) %>% 
       group_by(art, vecka) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
   }else {
@@ -247,6 +252,8 @@ sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", data
                      between(max(df$count),500,1000) ~ 100,
                      between(max(df$count),1000,10000) ~ 200,
                      TRUE ~1000)
+  Lweeklim <- isoweek(glue("{year}-04-01"))
+  Hweeklim <-  isoweek(glue("{year}-09-30"))
   
   p <- 
     ggplot(data = df, 
@@ -258,9 +265,9 @@ sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", data
                        expand = c(0,0)) +
     #expand_limits(y=max(df$count)*1.1) +
     scale_x_continuous(
-      breaks = c(10, seq(14,40,2)),
-      labels = c("Vecka: ", fmt_label(seq(14,40,2))),
-      limits = c(13.5, 40.4), 
+      breaks = c(10, seq(Lweeklim,Hweeklim,2)),
+      labels = c("Vecka: ", fmt_label(seq(Lweeklim,Hweeklim,2))),
+      limits = c(Lweeklim - 0.5, Hweeklim + 0.4), 
       expand = c(0, 0) 
     ) + 
     labs(y = "Antal", x = NULL, tag = "Vecka:") +

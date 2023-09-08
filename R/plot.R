@@ -7,6 +7,7 @@
 #' @param database logical; if the data should be based on the sebms database
 #'
 #' @import dplyr
+#' @importFrom plyr round_any
 #' @import glue
 #' @import ggplot2
 #' @return a list with two ggplot objects, named p1 and p2
@@ -47,7 +48,7 @@ sebms_specieslist_cum_plots <- function(year = 2021, database = TRUE) {
     theme_sebms() +
       theme(
         axis.text = element_text(color = "black", family = "Arial"),
-        plot.margin = margin(r=3, unit = "mm"),
+        plot.margin = margin(r=5, unit = "mm"),
         panel.grid.major.x = element_blank(), #element_line(color = "darkgrey", size = 0.3),
         #panel.grid.minor.x = element_line(color = "darkgray"),
         panel.grid.major.y = element_blank(),
@@ -69,18 +70,21 @@ sebms_specieslist_cum_plots <- function(year = 2021, database = TRUE) {
     labs[1:(length(labs)-n_minor)]
   }
   
+  maxlim <- round_any(max(s1$count), accuracy = 2000, ceiling)
+  
   p1 <- s1 %>%  
     ggplot(aes(y = reorder(art, count), x = count)) +
     geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
-    geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
-    geom_vline(xintercept = seq(0,12000, 2000), colour = "darkgrey") +
+    geom_text(aes(label = count), colour = "grey10", hjust = -0.2, size = 2.5) +
+    geom_vline(xintercept = seq(0,maxlim, 2000), colour = "darkgrey") +
     scale_x_continuous(#breaks = seq(0,12000, 2000),
       #labels = seq(0,12000, 2000),
-      breaks = seq(0,12000, 500),
-      labels = insert_minor(c(2000*0:6), 3),
+      breaks = seq(0,maxlim, 500),
+      labels = insert_minor(c(2000*0:(maxlim/2000)), 3),
       position = "top",
-      limits = c(0, 10000),
-      expand = c(0, 0)) +
+      limits = c(0, maxlim),
+      expand = c(0, 0)
+      ) +
     scale_y_discrete(expand = c(0.017,0.017)) +
     #coord_cartesian(clip = "off") +
     labs(x = "Antal individer", y = NULL) +
@@ -90,19 +94,22 @@ sebms_specieslist_cum_plots <- function(year = 2021, database = TRUE) {
     ggplot(aes(y = reorder(art, count), x = count)) +
     geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
-    geom_vline(xintercept = seq(0,12000, 2000), colour = "darkgrey") +
+    geom_vline(xintercept = seq(0,maxlim, 2000), colour = "darkgrey") +
     labs(x = "Antal individer", y = NULL) +
-    scale_x_continuous(breaks = seq(0,12000, 500),
-                       labels = insert_minor(c(2000*0:6), 3),
-                       position = "top",
-                       limits = c(0, 10000),
-                       expand = c(0, 0)) +
+    scale_x_continuous(#breaks = seq(0,12000, 2000),
+      #labels = seq(0,12000, 2000),
+      breaks = seq(0,maxlim, 500),
+      labels = insert_minor(c(2000*0:(maxlim/2000)), 3),
+      position = "top",
+      limits = c(0, maxlim),
+      expand = c(0, 0)
+      )  +
     scale_y_discrete(expand = c(0.017,0.017)) +
     theme_sebms2()
   
   res <- list(p1 = p1, p2 = p2)
   name <- list(glue("Öv200_{year}"), glue("Und200_{year}"))
-  map2(res, name, ~sebms_ggsave(.x, "Species_tot_count", width = 18, height=32, weathervar = .y))
+  map2(res, name, ~sebms_ggsave(.x, "Species_tot_count", width = 22, height=32, weathervar = .y))
   
   return(res)
 }
@@ -123,7 +130,9 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, database = TRUE) {
   
   if (database) {
     df <- sebms_species_count(year = year) %>%
-      group_by(year = as.factor(year(datum)), vecka = week(datum)) %>%
+      group_by(year = year(datum)) %>%
+      filter(datum > glue("{year}-04-01"), datum < glue("{year}-09-30")) %>% 
+      group_by(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
   }else {
     df <- 
@@ -148,6 +157,9 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, database = TRUE) {
   }
   
   maxlim <- round_any(max(df$count), 1000, f = ceiling) # Makes a rounded to nearest 1000 of max value to be at top of Y-axis
+  Hweeklim <- max(df$vecka)
+  Lweeklim <- min(df$vecka)
+  
   p <- 
     ggplot(data = df, 
            aes(x = vecka, y = count, fill = year)) +
@@ -158,9 +170,9 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, database = TRUE) {
                        expand = c(0,0.05)) +
     #expand_limits(y=max(df$count)*1.1) +
     scale_x_continuous(
-      breaks = c(10, 14:40),
-      labels = c("Vecka: ", fmt_label(14:40)),
-      limits = c(13.5, 40.4), 
+      breaks = c(10, Lweeklim:Hweeklim),
+      labels = c("Vecka: ", fmt_label(Lweeklim:Hweeklim)),
+      limits = c(Lweeklim - 0.5, Hweeklim + 0.4), 
       expand = c(0, 0) 
     ) +
     scale_fill_manual("Year", values = c(sebms_palette[1], sebms_palette[2])) +
@@ -173,6 +185,7 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, database = TRUE) {
           axis.text.x = element_text(hjust = 0.5, face = "bold", margin = margin(t=3, unit = "mm"), lineheight = 1.3),
           axis.text.y = element_text(face = "bold", margin = margin(r=4, unit = "mm")),
           axis.line = element_line(color = "gray5", linewidth = 0.3),
+          plot.margin = margin(r=7, unit = "mm"),
           plot.title = element_text(hjust = 0.5),
           plot.tag = element_text(vjust = 0),
           plot.tag.position = c(0.06, 0.039))
@@ -201,7 +214,7 @@ sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", data
   if (database) {
     df <- sebms_species_count(year = year) %>% 
       filter(str_detect(art, Art)) %>% 
-      mutate(vecka = week(datum)) %>% 
+      mutate(vecka = isoweek(datum)) %>% 
       group_by(art, vecka) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
   }else {
@@ -239,6 +252,8 @@ sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", data
                      between(max(df$count),500,1000) ~ 100,
                      between(max(df$count),1000,10000) ~ 200,
                      TRUE ~1000)
+  Lweeklim <- isoweek(glue("{year}-04-01"))
+  Hweeklim <-  isoweek(glue("{year}-09-30"))
   
   p <- 
     ggplot(data = df, 
@@ -250,9 +265,9 @@ sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", data
                        expand = c(0,0)) +
     #expand_limits(y=max(df$count)*1.1) +
     scale_x_continuous(
-      breaks = c(10, seq(14,40,2)),
-      labels = c("Vecka: ", fmt_label(seq(14,40,2))),
-      limits = c(13.5, 40.4), 
+      breaks = c(10, seq(Lweeklim,Hweeklim,2)),
+      labels = c("Vecka: ", fmt_label(seq(Lweeklim,Hweeklim,2))),
+      limits = c(Lweeklim - 0.5, Hweeklim + 0.4), 
       expand = c(0, 0) 
     ) + 
     labs(y = "Antal", x = NULL, tag = "Vecka:") +

@@ -327,7 +327,7 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
 #' 
 #' This function makes a plot of the difference between the current years sun hours and the 5-year mean (2017-2021)
 #' 
-#' @inheritParams sebms_sunhour_data
+#' @inheritParams sebms_sunhours_data
 #'  
 #' @importFrom dplyr bind_cols mutate
 #' @importFrom sf st_drop_geometry

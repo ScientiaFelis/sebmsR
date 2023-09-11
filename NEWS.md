@@ -6,6 +6,11 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
 
+# v 1.2.0
+
+* Figures of species numbers now almost the same as in previous reports
+* Possible to filter per *year* and *species* in species plots
+
 # v 1.0.1
 
 * Minor bug fix. Bug caused month name in temperature and precipitation plots follow locale locale. No use the Swedish locale names.

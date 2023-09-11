@@ -96,7 +96,7 @@ sebms_species_count_filtered <- function(year = 2020:2021, Län = "", Landskap =
               WHERE reg_name LIKE '{Kommun}%' AND reg_group = 'M')
             
         SELECT
-          spe.spe_uid AS id,
+          spe.spe_uid AS speuid,
           spe.spe_semainname As art,
           --sit.sit_type AS sitetype,
           SUM(obs.obs_count) AS antal,

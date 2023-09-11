@@ -6,6 +6,12 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
 
+# v 1.3.0
+
+* Add possibility to chose County, Region or Municipality to figures
+* Cleaned up code in SQL queries
+* Minor fixes to plot margins
+
 # v 1.2.0
 
 * Figures of species numbers now almost the same as in previous reports

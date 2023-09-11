@@ -19,21 +19,21 @@
 sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", Kommun = "", database = TRUE) {
   
   if (database) {
-    sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun)
-    
-    s1 <- sp %>% 
+    sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
       group_by(art) %>%
-      summarise(count = as.double(sum(antal, na.rm = T))) %>% 
-      filter(count >= 200) 
+      summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop") 
     
-    s2 <- sp %>% 
-      group_by(art) %>%
-      summarise(count = as.double(sum(antal, na.rm = T))) %>% 
-      filter(count < 200) 
-    
+    #if (sp$count > 200) {
+      
+      s1 <- sp %>% 
+        filter(count >= 200) 
+      
+      s2 <- sp %>% 
+        filter(count < 200, !str_detect(art, "[Nn]oll")) 
+   # }
     
   }else {
-    n <- nrow(sebms_data_specieslist_cum)
+   # n <- nrow(sebms_data_specieslist_cum)
     
     s1 <- 
       sebms_data_specieslist_cum %>% 
@@ -87,7 +87,7 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", K
       position = "top",
       limits = c(0, maxlim),
       expand = c(0, 0)
-      ) +
+    ) +
     scale_y_discrete(expand = c(0.017,0.017)) +
     #coord_cartesian(clip = "off") +
     labs(x = "Antal individer", y = NULL) +
@@ -106,7 +106,7 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", K
       position = "top",
       limits = c(0, maxlim),
       expand = c(0, 0)
-      )  +
+    )  +
     scale_y_discrete(expand = c(0.017,0.017)) +
     theme_sebms2()
   
@@ -350,7 +350,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = "", Landskap = 
   # 
   # r <- rbind(unique(df$interval),matrix(rep(c(""), 10),ncol=length(unique(df$interval))))
   # labname <- c("", r)
-
+  
   p <- df %>% 
     ggplot(aes(x = reorder(interval, sortorder), y = site_count)) +
     geom_col(aes(fill = forcats::fct_rev(sitetype)), 
@@ -370,8 +370,8 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = "", Landskap = 
                        labels = seq(0,120,20),
                        limits = c(0, 120),
                        expand = c(0, 0)) +
-     # scale_x_discrete(breaks = sort(c(unique(df$x1), x_tick)),
-     #                  labels = labname) +
+    # scale_x_discrete(breaks = sort(c(unique(df$x1), x_tick)),
+    #                  labels = labname) +
     scale_fill_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +
     scale_colour_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +
     labs(x = "Antal arter på lokalen", y = "Antal lokaler") +

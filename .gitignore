@@ -10,3 +10,4 @@ sites.txt
 vignettes/.build.timestamp
 vignettes/sebms-intro.R
 *.png
+Test_SQL.rmd

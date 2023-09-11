@@ -4,10 +4,22 @@
 \alias{sebms_specieslist_cum_plots}
 \title{Cumulative Species List Plots}
 \usage{
-sebms_specieslist_cum_plots(year = 2021, database = TRUE)
+sebms_specieslist_cum_plots(
+  year = 2021,
+  Län = "",
+  Landskap = "",
+  Kommun = "",
+  database = TRUE
+)
 }
 \arguments{
 \item{year}{year to use for plot}
+
+\item{Län}{character; which county you want the data from}
+
+\item{Landskap}{character; which region you want the data from}
+
+\item{Kommun}{character; which municipality you want the data from}
 
 \item{database}{logical; if the data should be based on the sebms database}
 }

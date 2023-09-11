@@ -4,7 +4,13 @@
 \alias{sebms_species_per_sitetype_plot}
 \title{Species per Site and Site Type Plot}
 \usage{
-sebms_species_per_sitetype_plot(year = 2021, database = TRUE)
+sebms_species_per_sitetype_plot(
+  year = 2021,
+  Län = "",
+  Landskap = "",
+  Kommun = "",
+  database = TRUE
+)
 }
 \description{
 Show the number of sites within a range of species number found at the site. Also show the mean number of species per site in each site type.

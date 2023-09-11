@@ -4,7 +4,12 @@
 \alias{sebms_species_count_filtered}
 \title{Retrieve Filtered Species List per Year}
 \usage{
-sebms_species_count_filtered(year = 2020:2021)
+sebms_species_count_filtered(
+  year = 2020:2021,
+  Län = "",
+  Landskap = "",
+  Kommun = ""
+)
 }
 \description{
 Retrieve Filtered Species List per Year

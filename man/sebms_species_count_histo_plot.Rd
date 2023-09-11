@@ -4,10 +4,22 @@
 \alias{sebms_species_count_histo_plot}
 \title{Butterfly Number Histogram  Plot}
 \usage{
-sebms_species_count_histo_plot(year = 2021:2022, database = TRUE)
+sebms_species_count_histo_plot(
+  year = 2021:2022,
+  Län = "",
+  Landskap = "",
+  Kommun = "",
+  database = TRUE
+)
 }
 \arguments{
 \item{year}{year to use for plot}
+
+\item{Län}{character; which county you want the data from}
+
+\item{Landskap}{character; which region you want the data from}
+
+\item{Kommun}{character; which municipality you want the data from}
 
 \item{database}{logical; if the data should be based on the sebms database}
 }

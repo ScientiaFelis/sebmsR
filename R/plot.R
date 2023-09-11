@@ -4,6 +4,9 @@
 #' Produce a plot with number of individuals per species a given year
 #' 
 #' @param year year to use for plot
+#' @param Län character; which county you want the data from
+#' @param Landskap character; which region you want the data from
+#' @param Kommun character; which municipality you want the data from
 #' @param database logical; if the data should be based on the sebms database
 #'
 #' @import dplyr
@@ -13,10 +16,10 @@
 #' @return a list with two ggplot objects, named p1 and p2
 #' @export
 #' 
-sebms_specieslist_cum_plots <- function(year = 2021, database = TRUE) {
+sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", Kommun = "", database = TRUE) {
   
   if (database) {
-    sp <- sebms_species_count_filtered(year = year)
+    sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun)
     
     s1 <- sp %>% 
       group_by(art) %>%
@@ -126,10 +129,10 @@ sebms_specieslist_cum_plots <- function(year = 2021, database = TRUE) {
 #' @importFrom lubridate month weeks ymd
 #' @export
 #' 
-sebms_species_count_histo_plot <- function(year = 2021:2022, database = TRUE) {
+sebms_species_count_histo_plot <- function(year = 2021:2022, Län = "", Landskap = "", Kommun = "", database = TRUE) {
   
   if (database) {
-    df <- sebms_species_count(year = year) %>%
+    df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
       group_by(year = year(datum)) %>%
       filter(datum > glue("{year}-04-01"), datum < glue("{year}-09-30")) %>% 
       group_by(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
@@ -156,7 +159,7 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, database = TRUE) {
             paste(w))
   }
   
-  maxlim <- round_any(max(df$count), 1000, f = ceiling) # Makes a rounded to nearest 1000 of max value to be at top of Y-axis
+  maxlim <- round_any(max(df$count), 2000, f = ceiling) # Makes a rounded to nearest 1000 of max value to be at top of Y-axis
   Hweeklim <- max(df$vecka)
   Lweeklim <- min(df$vecka)
   
@@ -185,7 +188,7 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, database = TRUE) {
           axis.text.x = element_text(hjust = 0.5, face = "bold", margin = margin(t=3, unit = "mm"), lineheight = 1.3),
           axis.text.y = element_text(face = "bold", margin = margin(r=4, unit = "mm")),
           axis.line = element_line(color = "gray5", linewidth = 0.3),
-          plot.margin = margin(r=7, unit = "mm"),
+          plot.margin = margin(t=2, r=7, b=2, l=1, unit = "mm"),
           plot.title = element_text(hjust = 0.5),
           plot.tag = element_text(vjust = 0),
           plot.tag.position = c(0.06, 0.039))
@@ -209,10 +212,10 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, database = TRUE) {
 #' @importFrom lubridate month weeks ymd
 #' @export
 #' 
-sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", database = TRUE) {
+sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", Län = "", Landskap = "", Kommun = "", database = TRUE) {
   
   if (database) {
-    df <- sebms_species_count(year = year) %>% 
+    df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
       filter(str_detect(art, Art)) %>% 
       mutate(vecka = isoweek(datum)) %>% 
       group_by(art, vecka) %>%
@@ -298,14 +301,14 @@ sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", data
 #' @import ggplot2
 #' @export
 #' 
-sebms_species_per_sitetype_plot <- function(year = 2021, database = TRUE) {
+sebms_species_per_sitetype_plot <- function(year = 2021,  Län = "", Landskap = "", Kommun = "", database = TRUE) {
   
   b <- seq(1, 50, by = 5)
   l <- paste0(b, "-", b + 4)
   
   if (database) {
     
-    df <- sebms_species_site_count(year = year) %>% 
+    df <- sebms_species_site_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
       group_by(situid, lokalnamn, sitetype) %>% 
       summarise(species = n_distinct(speuid), .groups = "drop") %>% 
       group_by(sitetype) %>% 

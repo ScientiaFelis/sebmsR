@@ -26,10 +26,10 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", K
     #if (sp$count > 200) {
       
       s1 <- sp %>% 
-        filter(count >= 200) 
+        filter(count >= median(count)) 
       
       s2 <- sp %>% 
-        filter(count < 200, !str_detect(art, "[Nn]oll")) 
+        filter(count < median(count), !str_detect(art, "[Nn]oll")) 
    # }
     
   }else {
@@ -73,17 +73,21 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", K
     labs[1:(length(labs)-n_minor)]
   }
   
-  maxlim <- round_any(max(s1$count), accuracy = 2000, ceiling)
+  #QUESTION: Is this the correct steps?
+  acc <- case_when(max(s1$count) >4000 ~ 2000,
+                   between(max(s1$count), 1000,4000) ~ 500,
+                   TRUE ~ 10)
+  maxlim <- round_any(max(s1$count), accuracy = acc, ceiling)
   
   p1 <- s1 %>%  
     ggplot(aes(y = reorder(art, count), x = count)) +
     geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.2, size = 2.5) +
-    geom_vline(xintercept = seq(0,maxlim, 2000), colour = "darkgrey") +
+    geom_vline(xintercept = seq(0,maxlim, acc), colour = "darkgrey") +
     scale_x_continuous(#breaks = seq(0,12000, 2000),
       #labels = seq(0,12000, 2000),
-      breaks = seq(0,maxlim, 500),
-      labels = insert_minor(c(2000*0:(maxlim/2000)), 3),
+      breaks = seq(0,maxlim, acc/4),
+      labels = insert_minor(c(acc*0:(maxlim/acc)), 3),
       position = "top",
       limits = c(0, maxlim),
       expand = c(0, 0)
@@ -97,12 +101,12 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", K
     ggplot(aes(y = reorder(art, count), x = count)) +
     geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
-    geom_vline(xintercept = seq(0,maxlim, 2000), colour = "darkgrey") +
+    geom_vline(xintercept = seq(0,maxlim, acc), colour = "darkgrey") +
     labs(x = "Antal individer", y = NULL) +
     scale_x_continuous(#breaks = seq(0,12000, 2000),
       #labels = seq(0,12000, 2000),
-      breaks = seq(0,maxlim, 500),
-      labels = insert_minor(c(2000*0:(maxlim/2000)), 3),
+      breaks = seq(0,maxlim, acc/4),
+      labels = insert_minor(c(acc*0:(maxlim/acc)), 3),
       position = "top",
       limits = c(0, maxlim),
       expand = c(0, 0)
@@ -159,7 +163,17 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, Län = "", Landskap
             paste(w))
   }
   
-  maxlim <- round_any(max(df$count), 2000, f = ceiling) # Makes a rounded to nearest 1000 of max value to be at top of Y-axis
+  #QUESTION: Is this the correct steps?
+  steps <- case_when(max(df$count) <600 ~ 100,
+                   between(max(df$count), 600,10000) ~ 10,
+                   between(max(df$count), 10001,40000) ~ 100,
+                   TRUE ~ 20)
+  
+  acc <- case_when(max(df$count) >4000 ~ 2000,
+                   between(max(df$count), 1000,4000) ~ 500,
+                   TRUE ~ 10)
+  
+  maxlim <- round_any(max(df$count), acc, f = ceiling) # Makes a rounded to nearest 1000 of max value to be at top of Y-axis
   Hweeklim <- max(df$vecka)
   Lweeklim <- min(df$vecka)
   
@@ -169,7 +183,7 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, Län = "", Landskap
     geom_bar(stat = 'identity', position = position_dodge(), width = 0.7) +
     scale_y_continuous(limits = c(0, max(10, maxlim)), # Set Y-axis limits to 10 or the max value of the butterfly count
                        # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
-                       breaks = seq(0,max(10, maxlim), 10^ceiling(log10(max(df$count)/100))*2), # Make breaks at even 200 0r 2000 marks depending on max number
+                       breaks = seq(0,max(10, maxlim), 10^ceiling(log10(max(df$count)/(steps)))*2), # Make breaks at even 200 0r 2000 marks depending on max number
                        expand = c(0,0.05)) +
     #expand_limits(y=max(df$count)*1.1) +
     scale_x_continuous(
@@ -253,7 +267,7 @@ sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", Län
                      between(max(df$count),60,100) ~ 10,
                      between(max(df$count),110,500) ~ 20,
                      between(max(df$count),500,1000) ~ 100,
-                     between(max(df$count),1000,10000) ~ 200,
+                     between(max(df$count),1000,5000) ~ 200,
                      TRUE ~1000)
   Lweeklim <- isoweek(glue("{year}-04-01"))
   Hweeklim <-  isoweek(glue("{year}-09-30"))

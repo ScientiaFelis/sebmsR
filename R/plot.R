@@ -226,14 +226,14 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, Län = "", Landskap
 #' @importFrom lubridate month weeks ymd
 #' @export
 #' 
-sebms_species_histo_plot <- function(year = 2021, Art = 1:200, Län = "", Landskap = "", Kommun = "", database = TRUE) {
+sebms_species_histo_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
   
   if (database) {
     df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
       #filter(str_detect(art, Art)) %>% 
       filter(#speuid %in% Art,
-             !str_detect(art, "[Nn]oll"), 
-             !speuid %in% c(131,133)) %>% 
+        !str_detect(art, "[Nn]oll"), 
+        !speuid %in% c(131,133)) %>% 
       mutate(vecka = isoweek(datum)) %>% 
       group_by(art, vecka) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")

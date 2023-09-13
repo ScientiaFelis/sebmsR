@@ -77,9 +77,10 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = "", Landskap =
 #' @import glue
 #' @importFrom DBI dbGetQuery
 #' @export
-sebms_species_count_filtered <- function(year = 2020:2021, Län = "", Landskap = "", Kommun = "") {
+sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "", Landskap = "", Kommun = "") {
   
   year <- glue("({paste0({year}, collapse = ',')})")
+  Art <- glue("({paste0({Art}, collapse = ',')})")
   
   q <- glue("
             WITH reg AS
@@ -117,7 +118,8 @@ sebms_species_count_filtered <- function(year = 2020:2021, Län = "", Landskap =
         INNER JOIN mun ON sit.sit_reg_municipalityid = mun.kommun_id
         WHERE
           extract('YEAR' from vis_begintime) IN {year}
-          AND (spv.spv_istrim=TRUE or spe_uid in (135,131,133) )
+          AND (spv.spv_istrim=TRUE or spe_uid IN (135,131,133) )
+          AND spe.spe_uid IN {Art}
         
         GROUP BY
           spe.spe_uid, Datum, reg.reg_id, reg.reg_name, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun --, years

@@ -219,7 +219,7 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, Län = "", Landskap
 #' Show the number of individuals per week of a given species and year.
 #' 
 #' @inheritParams sebms_specieslist_cum_plots
-#' @param Art The species of interest
+#' @param Art The species id of interest
 #' 
 #' @import dplyr
 #' @import ggplot2
@@ -229,9 +229,9 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, Län = "", Landskap
 sebms_species_histo_plot <- function(year = 2021, Art = 1:200, Län = "", Landskap = "", Kommun = "", database = TRUE) {
   
   if (database) {
-    df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
+    df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
       #filter(str_detect(art, Art)) %>% 
-      filter(speuid %in% Art,
+      filter(#speuid %in% Art,
              !str_detect(art, "[Nn]oll"), 
              !speuid %in% c(131,133)) %>% 
       mutate(vecka = isoweek(datum)) %>% 

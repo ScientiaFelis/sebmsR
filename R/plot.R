@@ -257,6 +257,9 @@ sebms_species_histo_plot <- function(year = 2021, Art = 1:200, Län = ".", Lands
             paste(w))
   }
   
+  Lweeklim <- min(isoweek(glue("{year}-04-01")))
+  Hweeklim <- max(isoweek(glue("{year}-09-30")))
+  
   plotSP <- function(df){
     # This makes a rounded to nearest 10, 100 or 1000 of max value to be at top of Y-axis to align with gridline at top
     maxlim <-  case_when(max(df$count) < 100 ~ round_any(max(df$count), 10, f = ceiling),
@@ -275,10 +278,6 @@ sebms_species_histo_plot <- function(year = 2021, Art = 1:200, Län = ".", Lands
                        between(max(df$count),600,1000) ~ 100,
                        between(max(df$count),1000,5000) ~ 200,
                        TRUE ~1000)
-    Lweeklim <- isoweek(glue("{year}-04-01"))
-    Hweeklim <-  isoweek(glue("{year}-09-30"))
-    
-    #TODO: Make the plotting iterate over species (use map as in the soltimmar plot for years)
     
     ggplot(data = df, 
            aes(x = vecka, y = count)) +

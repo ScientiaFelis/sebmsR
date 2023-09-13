@@ -10,24 +10,44 @@
 #' @import glue
 #' @importFrom DBI dbGetQuery
 #' @export
-sebms_species_site_count_filtered <- function(year = 2021, Län = "", Landskap = "", Kommun = ""){
+sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap = ".", Kommun = "."){
   
-  year <- glue("({paste0({year}, collapse = ',')})")
+  year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
+  
+  Län <- paste0(str_to_title(Län),collapse = "|") # Make the list of Län to s regex statement
+  Landskap <- paste0(str_to_title(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
+  Kommun <- paste0(str_to_title(Kommun),collapse = "|") # Make the list of Kommun to s regex statement
+  
+  county <- regID %>% 
+    filter(str_detect(reg_name, Län)) %>% # Filter out matching Län from a look up table
+    pull(reg_uid) %>% # pull out the id-numbers
+    paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
+  
+  region <- regID %>% 
+    filter(str_detect(reg_name, Landskap)) %>% 
+    pull(reg_uid) %>% 
+    paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
+  
+  municipality <- regID %>% 
+    filter(str_detect(reg_name, Kommun)) %>% 
+    pull(reg_uid) %>% 
+    paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
+  
   
   q <- glue("
-            WITH reg AS
+           WITH reg AS
             (SELECT reg_uid AS reg_id, reg_name
               FROM reg_region
-              WHERE reg_name LIKE '{Län}%' AND reg_group = 'C'),
+              WHERE reg_uid IN ({county}) AND reg_group = 'C'),
             lsk AS
             (SELECT reg_uid AS landskaps_id, reg_name AS landskap
               FROM reg_region
-              WHERE reg_name LIKE '{Landskap}%' AND reg_group = 'P'),
+              WHERE reg_uid IN ({region}) AND reg_group = 'P'),
             mun AS
             (SELECT reg_uid AS kommun_id, reg_name AS kommun
               FROM reg_region
-              WHERE reg_name LIKE '{Kommun}%' AND reg_group = 'M')
-            
+              WHERE reg_uid IN ({municipality}) AND reg_group = 'M')
+   
         SELECT
           spe.spe_uid AS speUId,
           spe.spe_semainname As Art,
@@ -60,15 +80,12 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = "", Landskap =
        GROUP BY
           Art, Lokalnamn,Datum, sitetype, speUId, sitUId, reg.reg_id, reg.reg_name, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun --, date --, vecka
        ORDER BY
-          Art, Lokalnamn, Datum;")
+          Antal DESC, Lokalnamn, Art, Datum;")
   
   sebms_assert_connection()
   res <- DBI::dbGetQuery(sebms_pool, q)
   as_tibble(res)
 }
-
-
-
 
 
 #' Retrieve Filtered Species List per Year
@@ -77,24 +94,44 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = "", Landskap =
 #' @import glue
 #' @importFrom DBI dbGetQuery
 #' @export
-sebms_species_count_filtered <- function(year = 2020:2021, Län = "", Landskap = "", Kommun = "") {
+sebms_species_count_filtered <- function(year = 2020:2021, Län = ".", Landskap = ".", Kommun = ".") {
   
-  year <- glue("({paste0({year}, collapse = ',')})")
+  year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
+  
+  Län <- paste0(str_to_title(Län),collapse = "|") # Make the list of Län to s regex statement
+  Landskap <- paste0(str_to_title(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
+  Kommun <- paste0(str_to_title(Kommun),collapse = "|") # Make the list of Kommun to s regex statement
+  
+  county <- regID %>% 
+    filter(str_detect(reg_name, Län)) %>% # Filter out matching Län from a look up table
+    pull(reg_uid) %>% # pull out the id-numbers
+    paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
+  
+  region <- regID %>% 
+    filter(str_detect(reg_name, Landskap)) %>% 
+    pull(reg_uid) %>% 
+    paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
+  
+  municipality <- regID %>% 
+    filter(str_detect(reg_name, Kommun)) %>% 
+    pull(reg_uid) %>% 
+    paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
+  
   
   q <- glue("
-            WITH reg AS
+           WITH reg AS
             (SELECT reg_uid AS reg_id, reg_name
               FROM reg_region
-              WHERE reg_name LIKE '{Län}%' AND reg_group = 'C'),
+              WHERE reg_uid IN ({county}) AND reg_group = 'C'),
             lsk AS
             (SELECT reg_uid AS landskaps_id, reg_name AS landskap
               FROM reg_region
-              WHERE reg_name LIKE '{Landskap}%' AND reg_group = 'P'),
+              WHERE reg_uid IN ({region}) AND reg_group = 'P'),
             mun AS
             (SELECT reg_uid AS kommun_id, reg_name AS kommun
               FROM reg_region
-              WHERE reg_name LIKE '{Kommun}%' AND reg_group = 'M')
-            
+              WHERE reg_uid IN ({municipality}) AND reg_group = 'M')
+   
         SELECT
           spe.spe_uid AS speuid,
           spe.spe_semainname As art,
@@ -123,7 +160,7 @@ sebms_species_count_filtered <- function(year = 2020:2021, Län = "", Landskap =
           spe.spe_uid, Datum, reg.reg_id, reg.reg_name, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun --, years
         ORDER BY
           antal DESC;")
-    
+  
   sebms_assert_connection()
   res <- dbGetQuery(sebms_pool, q)
   as_tibble(res)
@@ -198,7 +235,7 @@ sebms_species_per_year_site_filtered <- function() {
       sit.sit_uid
     ORDER BY
       species DESC;"
-      
+  
   sebms_assert_connection()
   res <- dbGetQuery(sebms_pool, q)
   as_tibble(res)

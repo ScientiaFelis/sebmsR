@@ -16,7 +16,7 @@
 #' @return a list with two ggplot objects, named p1 and p2
 #' @export
 #' 
-sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", Kommun = "", database = TRUE) {
+sebms_specieslist_cum_plots <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
   
   if (database) {
     sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
@@ -74,10 +74,10 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", K
   }
   
   #QUESTION: Is this the correct steps?
-  acc <- case_when(max(s1$count) >4000 ~ 2000,
-                   between(max(s1$count), 1000,4000) ~ 500,
-                   TRUE ~ 10)
-  maxlim <- round_any(max(s1$count), accuracy = acc, ceiling)
+  acc <- case_when(max(sp$count) >4000 ~ 2000,
+                   between(max(sp$count), 1000,4000) ~ 500,
+                   TRUE ~ 100)
+  maxlim <- round_any(max(sp$count), accuracy = acc, ceiling)
   
   p1 <- s1 %>%  
     ggplot(aes(y = reorder(art, count), x = count)) +

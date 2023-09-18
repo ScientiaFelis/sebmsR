@@ -6,6 +6,14 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
 
+# v 1.3.5
+
+* Make possibility to chose species via `Art` argument **on species id** in `sebms_species_histo_plot()`
+* Possible to chose several species and get one figure per species
+* SQL now filter the species, not R
+* SQL match on `reg_uid` from a look up table
+* Change the steps and limits on *y-axis* and *x-axis* to fit different max counts.
+
 # v 1.3.0
 
 * Add possibility to chose County, Region or Municipality to figures

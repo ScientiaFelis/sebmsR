@@ -165,13 +165,24 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, Län = ".", Landska
   }
   
   #QUESTION: Is this the correct steps?
-  steps <- case_when(max(df$count) <600 ~ 100,
-                     between(max(df$count), 600,10000) ~ 10,
-                     between(max(df$count), 10001,40000) ~ 100,
-                     TRUE ~ 20)
   
-  acc <- case_when(max(df$count) >4000 ~ 2000,
-                   between(max(df$count), 1000,4000) ~ 500,
+  steps <- case_when(max(df$count) < 12 ~ 1,
+                     between(max(df$count),12,30) ~ 2,
+                     between(max(df$count),30,60) ~ 5,
+                     between(max(df$count),60,100) ~ 10,
+                     between(max(df$count),110,300) ~ 20,
+                     between(max(df$count),300,600) ~ 50,
+                     between(max(df$count),600,1000) ~ 100,
+                     between(max(df$count),1000,5000) ~ 200,
+                     TRUE ~1000)
+  # 
+  # steps <- case_when(max(df$count) <600 ~ 100,
+  #                    between(max(df$count), 600,10000) ~ 10,
+  #                    between(max(df$count), 10001,40000) ~ 100,
+  #                    TRUE ~ 20)
+  
+  acc <- case_when(between(max(df$count), 1000,4000) ~ 500,
+                   max(df$count) >4000 ~ 2000,
                    TRUE ~ 10)
   
   maxlim <- round_any(max(df$count), acc, f = ceiling) # Makes a rounded to nearest 1000 of max value to be at top of Y-axis
@@ -184,7 +195,7 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, Län = ".", Landska
     geom_bar(stat = 'identity', position = position_dodge(), width = 0.7) +
     scale_y_continuous(limits = c(0, max(10, maxlim)), # Set Y-axis limits to 10 or the max value of the butterfly count
                        # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
-                       breaks = seq(0,max(10, maxlim), 10^ceiling(log10(max(df$count)/(steps)))*2), # Make breaks at even 200 0r 2000 marks depending on max number
+                       breaks = seq(0,max(10, maxlim), steps), #10^ceiling(log10(max(df$count)/(steps)))*2), # Make breaks at even 200 0r 2000 marks depending on max number
                        expand = c(0,0.05)) +
     #expand_limits(y=max(df$count)*1.1) +
     scale_x_continuous(

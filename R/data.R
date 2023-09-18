@@ -35,19 +35,19 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
   
   
   q <- glue("
-           WITH reg AS
-            (SELECT reg_uid AS reg_id, reg_name
-              FROM reg_region
-              WHERE reg_uid IN ({county}) AND reg_group = 'C'),
-            lsk AS
-            (SELECT reg_uid AS landskaps_id, reg_name AS landskap
-              FROM reg_region
-              WHERE reg_uid IN ({region}) AND reg_group = 'P'),
-            mun AS
-            (SELECT reg_uid AS kommun_id, reg_name AS kommun
-              FROM reg_region
-              WHERE reg_uid IN ({municipality}) AND reg_group = 'M')
-   
+          WITH reg AS
+           (SELECT reg_uid AS reg_id, reg_name AS län
+             FROM reg_region
+             WHERE reg_uid IN ({county}) AND reg_group = 'C'),
+           lsk AS
+           (SELECT reg_uid AS landskaps_id, reg_name AS landskap
+             FROM reg_region
+             WHERE reg_uid IN ({region}) AND reg_group = 'P'),
+           mun AS
+           (SELECT reg_uid AS kommun_id, reg_name AS kommun
+             FROM reg_region
+             WHERE reg_uid IN ({municipality}) AND reg_group = 'M')
+
         SELECT
           spe.spe_uid AS speUId,
           spe.spe_semainname As Art,
@@ -57,7 +57,7 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
           SUM(obs.obs_count) AS Antal,
           vis_begintime::date as Datum,
           --EXTRACT (week FROM vis_begintime::date) AS vecka,
-          reg.reg_name AS län,
+          reg.län,
           lsk.landskap,
           mun.kommun
         
@@ -78,7 +78,7 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
           AND (spv.spv_istrim=TRUE or spe_uid in (135,131,133) )
         
        GROUP BY
-          Art, Lokalnamn,Datum, sitetype, speUId, sitUId, reg.reg_id, reg.reg_name, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun --, date --, vecka
+          Art, Lokalnamn,Datum, sitetype, speUId, sitUId, reg.reg_id, reg.län, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun --, date --, vecka
        ORDER BY
           Antal DESC, Lokalnamn, Art, Datum;")
   
@@ -120,18 +120,18 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
   
   
   q <- glue("
-           WITH reg AS
-            (SELECT reg_uid AS reg_id, reg_name
-              FROM reg_region
-              WHERE reg_uid IN ({county}) AND reg_group = 'C'),
-            lsk AS
-            (SELECT reg_uid AS landskaps_id, reg_name AS landskap
-              FROM reg_region
-              WHERE reg_uid IN ({region}) AND reg_group = 'P'),
-            mun AS
-            (SELECT reg_uid AS kommun_id, reg_name AS kommun
-              FROM reg_region
-              WHERE reg_uid IN ({municipality}) AND reg_group = 'M')
+          WITH reg AS
+           (SELECT reg_uid AS reg_id, reg_name AS län
+             FROM reg_region
+             WHERE reg_uid IN ({county}) AND reg_group = 'C'),
+           lsk AS
+           (SELECT reg_uid AS landskaps_id, reg_name AS landskap
+             FROM reg_region
+             WHERE reg_uid IN ({region}) AND reg_group = 'P'),
+           mun AS
+           (SELECT reg_uid AS kommun_id, reg_name AS kommun
+             FROM reg_region
+             WHERE reg_uid IN ({municipality}) AND reg_group = 'M')
    
         SELECT
           spe.spe_uid AS speuid,
@@ -140,7 +140,7 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
           SUM(obs.obs_count) AS antal,
           --extract('YEAR' from vis_begintime) AS years,
           vis_begintime::date as Datum,
-          reg.reg_name AS län,
+          reg.län,
           lsk.landskap,
           mun.kommun
         FROM obs_observation AS obs
@@ -159,7 +159,7 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
           AND spe.spe_uid IN {Art}
         
         GROUP BY
-          spe.spe_uid, Datum, reg.reg_id, reg.reg_name, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun --, years
+          spe.spe_uid, Datum, reg.reg_id, reg.län, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun --, years
         ORDER BY
           antal DESC;")
   
@@ -184,7 +184,7 @@ sebms_species_per_year_filtered <- function(year = 2020:2021) {
       SELECT
         spe.spe_uid AS id,
         spe.spe_semainname As name,
-        sit.sit_type AS sitetype,
+        --sit.sit_type AS sitetype,
         SUM(obs.obs_count) AS count,
         extract('YEAR' from vis_begintime) AS years
       FROM obs_observation AS obs
@@ -198,9 +198,9 @@ sebms_species_per_year_filtered <- function(year = 2020:2021) {
         AND extract('YEAR' from vis_begintime) IN {year}
         AND (spv.spv_istrim=TRUE or spe_uid in (135,131,133) )     -- new
       GROUP BY
-        spe.spe_uid, years, sitetype
+        spe.spe_uid, years --, sitetype
       ORDER BY
-        count DESC;")
+        name,count DESC;")
   
   sebms_assert_connection()
   res <- dbGetQuery(sebms_pool, q)

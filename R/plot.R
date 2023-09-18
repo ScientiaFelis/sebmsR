@@ -123,7 +123,7 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", K
 
 #' Butterfly Number Histogram  Plot
 #' 
-#' Show the number of found butterflies per week
+#' Show the number of found butterflies per week, compared between two years.
 #' 
 #' @inheritParams sebms_specieslist_cum_plots
 #' 
@@ -133,13 +133,14 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", K
 #' @importFrom lubridate month weeks ymd
 #' @export
 #' 
-sebms_species_count_histo_plot <- function(year = 2021:2022, Län = "", Landskap = "", Kommun = "", database = TRUE) {
+sebms_species_count_histo_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
   
   if (database) {
+    #TODO perhaps make a week var on each year and filter on min, max week instead?
     df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
       group_by(year = year(datum)) %>%
       filter(datum > glue("{year}-04-01"), datum < glue("{year}-09-30")) %>% 
-      group_by(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
+      group_by(year = as.factor(year), vecka = isoweek(datum)) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
   }else {
     df <- 
@@ -231,7 +232,7 @@ sebms_species_histo_plot <- function(year = 2021, Art = 1:200, Län = ".", Lands
   if (database) {
     df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
       #filter(str_detect(art, Art)) %>% 
-      filter(#speuid %in% Art,
+      filter(#speuid %in% Art, # Make the filter in the SQL query instead
         !str_detect(art, "[Nn]oll"), 
         !speuid %in% c(131,133)) %>% 
       mutate(vecka = isoweek(datum)) %>% 
@@ -260,7 +261,9 @@ sebms_species_histo_plot <- function(year = 2021, Art = 1:200, Län = ".", Lands
   Lweeklim <- min(isoweek(glue("{year}-04-01")))
   Hweeklim <- max(isoweek(glue("{year}-09-30")))
   
+  # Plotting function that make all limit and steps per species
   plotSP <- function(df){
+    
     # This makes a rounded to nearest 10, 100 or 1000 of max value to be at top of Y-axis to align with gridline at top
     maxlim <-  case_when(max(df$count) < 100 ~ round_any(max(df$count), 10, f = ceiling),
                          max(df$count) < 1000 ~ round_any(max(df$count), 100, f = ceiling),
@@ -319,16 +322,16 @@ sebms_species_histo_plot <- function(year = 2021, Art = 1:200, Län = ".", Lands
 
 #' Species per Site and Site Type Plot
 #' 
-#' Show the number of sites within a range of species number found at the site. Also show the mean number of species per site in each site type.
+#' Show the number of sites within a range of species richness found at the site. Also show the mean number of species per site in each site type.
 #'  
-#'  @inheritParams sebms_specieslist_cum_plots
+#' @inheritParams sebms_specieslist_cum_plots
 #'  
 #' @import dplyr
 #' @import forcats
 #' @import ggplot2
 #' @export
 #' 
-sebms_species_per_sitetype_plot <- function(year = 2021,  Län = "", Landskap = "", Kommun = "", database = TRUE) {
+sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
   
   b <- seq(1, 50, by = 5)
   l <- paste0(b, "-", b + 4)
@@ -337,9 +340,9 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = "", Landskap = 
     
     df <- sebms_species_site_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
       group_by(situid, lokalnamn, sitetype) %>% 
-      summarise(species = n_distinct(speuid), .groups = "drop") %>% 
+      summarise(species = n_distinct(speuid), .groups = "drop") %>% # Number of species per site and site type 
       group_by(sitetype) %>% 
-      mutate(medel = mean(species)) %>% 
+      mutate(medel = mean(species)) %>% # mean number of species per site type
       ungroup() %>% 
       mutate(interval = l[findInterval(species, b)],
              sortorder = findInterval(species, b)) %>%

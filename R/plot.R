@@ -16,7 +16,7 @@
 #' @return a list with two ggplot objects, named p1 and p2
 #' @export
 #' 
-sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", Kommun = "", database = TRUE) {
+sebms_specieslist_cum_plots <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
   
   if (database) {
     sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
@@ -24,16 +24,16 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", K
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop") 
     
     #if (sp$count > 200) {
-      
-      s1 <- sp %>% 
-        filter(count >= 200) 
-      
-      s2 <- sp %>% 
-        filter(count < 200, !str_detect(art, "[Nn]oll")) 
-   # }
+    
+    s1 <- sp %>% 
+      filter(count >= median(count)) 
+    
+    s2 <- sp %>% 
+      filter(count < median(count), !str_detect(art, "[Nn]oll")) 
+    # }
     
   }else {
-   # n <- nrow(sebms_data_specieslist_cum)
+    # n <- nrow(sebms_data_specieslist_cum)
     
     s1 <- 
       sebms_data_specieslist_cum %>% 
@@ -73,17 +73,21 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", K
     labs[1:(length(labs)-n_minor)]
   }
   
-  maxlim <- round_any(max(s1$count), accuracy = 2000, ceiling)
+  #QUESTION: Is this the correct steps?
+  acc <- case_when(max(sp$count) >4000 ~ 2000,
+                   between(max(sp$count), 1000,4000) ~ 500,
+                   TRUE ~ 100)
+  maxlim <- round_any(max(sp$count), accuracy = acc, ceiling)
   
   p1 <- s1 %>%  
     ggplot(aes(y = reorder(art, count), x = count)) +
     geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.2, size = 2.5) +
-    geom_vline(xintercept = seq(0,maxlim, 2000), colour = "darkgrey") +
+    geom_vline(xintercept = seq(0,maxlim, acc), colour = "darkgrey") +
     scale_x_continuous(#breaks = seq(0,12000, 2000),
       #labels = seq(0,12000, 2000),
-      breaks = seq(0,maxlim, 500),
-      labels = insert_minor(c(2000*0:(maxlim/2000)), 3),
+      breaks = seq(0,maxlim, acc/4),
+      labels = insert_minor(c(acc*0:(maxlim/acc)), 3),
       position = "top",
       limits = c(0, maxlim),
       expand = c(0, 0)
@@ -97,12 +101,12 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", K
     ggplot(aes(y = reorder(art, count), x = count)) +
     geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
-    geom_vline(xintercept = seq(0,maxlim, 2000), colour = "darkgrey") +
+    geom_vline(xintercept = seq(0,maxlim, acc), colour = "darkgrey") +
     labs(x = "Antal individer", y = NULL) +
     scale_x_continuous(#breaks = seq(0,12000, 2000),
       #labels = seq(0,12000, 2000),
-      breaks = seq(0,maxlim, 500),
-      labels = insert_minor(c(2000*0:(maxlim/2000)), 3),
+      breaks = seq(0,maxlim, acc/4),
+      labels = insert_minor(c(acc*0:(maxlim/acc)), 3),
       position = "top",
       limits = c(0, maxlim),
       expand = c(0, 0)
@@ -119,7 +123,7 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", K
 
 #' Butterfly Number Histogram  Plot
 #' 
-#' Show the number of found butterflies per week
+#' Show the number of found butterflies per week, compared between two years.
 #' 
 #' @inheritParams sebms_specieslist_cum_plots
 #' 
@@ -129,13 +133,14 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = "", Landskap = "", K
 #' @importFrom lubridate month weeks ymd
 #' @export
 #' 
-sebms_species_count_histo_plot <- function(year = 2021:2022, Län = "", Landskap = "", Kommun = "", database = TRUE) {
+sebms_species_count_histo_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
   
   if (database) {
+    #TODO perhaps make a week var on each year and filter on min, max week instead?
     df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
       group_by(year = year(datum)) %>%
       filter(datum > glue("{year}-04-01"), datum < glue("{year}-09-30")) %>% 
-      group_by(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
+      group_by(year = as.factor(year), vecka = isoweek(datum)) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
   }else {
     df <- 
@@ -159,7 +164,28 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, Län = "", Landskap
             paste(w))
   }
   
-  maxlim <- round_any(max(df$count), 2000, f = ceiling) # Makes a rounded to nearest 1000 of max value to be at top of Y-axis
+  #QUESTION: Is this the correct steps?
+  
+  steps <- case_when(max(df$count) < 12 ~ 1,
+                     between(max(df$count),12,30) ~ 2,
+                     between(max(df$count),30,60) ~ 5,
+                     between(max(df$count),60,100) ~ 10,
+                     between(max(df$count),110,300) ~ 20,
+                     between(max(df$count),300,600) ~ 50,
+                     between(max(df$count),600,1000) ~ 100,
+                     between(max(df$count),1000,5000) ~ 200,
+                     TRUE ~1000)
+  # 
+  # steps <- case_when(max(df$count) <600 ~ 100,
+  #                    between(max(df$count), 600,10000) ~ 10,
+  #                    between(max(df$count), 10001,40000) ~ 100,
+  #                    TRUE ~ 20)
+  
+  acc <- case_when(between(max(df$count), 1000,4000) ~ 500,
+                   max(df$count) >4000 ~ 2000,
+                   TRUE ~ 10)
+  
+  maxlim <- round_any(max(df$count), acc, f = ceiling) # Makes a rounded to nearest 1000 of max value to be at top of Y-axis
   Hweeklim <- max(df$vecka)
   Lweeklim <- min(df$vecka)
   
@@ -169,7 +195,7 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, Län = "", Landskap
     geom_bar(stat = 'identity', position = position_dodge(), width = 0.7) +
     scale_y_continuous(limits = c(0, max(10, maxlim)), # Set Y-axis limits to 10 or the max value of the butterfly count
                        # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
-                       breaks = seq(0,max(10, maxlim), 10^ceiling(log10(max(df$count)/100))*2), # Make breaks at even 200 0r 2000 marks depending on max number
+                       breaks = seq(0,max(10, maxlim), steps), #10^ceiling(log10(max(df$count)/(steps)))*2), # Make breaks at even 200 0r 2000 marks depending on max number
                        expand = c(0,0.05)) +
     #expand_limits(y=max(df$count)*1.1) +
     scale_x_continuous(
@@ -205,18 +231,21 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, Län = "", Landskap
 #' Show the number of individuals per week of a given species and year.
 #' 
 #' @inheritParams sebms_specieslist_cum_plots
-#' @param Art The species of interest
+#' @param Art The species id of interest
 #' 
 #' @import dplyr
 #' @import ggplot2
 #' @importFrom lubridate month weeks ymd
 #' @export
 #' 
-sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", Län = "", Landskap = "", Kommun = "", database = TRUE) {
+sebms_species_histo_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
   
   if (database) {
-    df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
-      filter(str_detect(art, Art)) %>% 
+    df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
+      #filter(str_detect(art, Art)) %>% 
+      filter(#speuid %in% Art, # Make the filter in the SQL query instead
+        !str_detect(art, "[Nn]oll"), 
+        !speuid %in% c(131,133)) %>% 
       mutate(vecka = isoweek(datum)) %>% 
       group_by(art, vecka) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
@@ -240,68 +269,80 @@ sebms_species_histo_plot <- function(year = 2021, Art = "Luktgräsfjäril", Län
             paste(w))
   }
   
-  # This makes a rounded to nearest 10, 100 or 1000 of max value to be at top of Y-axis to align with gridline at top
-  maxlim <-  case_when(max(df$count) < 100 ~ round_any(max(df$count), 10, f = ceiling),
-                       max(df$count) < 10000 ~ round_any(max(df$count), 200, f = ceiling),
-                       max(df$count) > 10000 ~ round_any(max(df$count), 1000, f = ceiling)
-  )
+  Lweeklim <- min(isoweek(glue("{year}-04-01")))
+  Hweeklim <- max(isoweek(glue("{year}-09-30")))
   
-  # This makes the steps right between labels
-  steps <- case_when(max(df$count) < 12 ~ 1,
-                     between(max(df$count),12,30) ~ 2,
-                     between(max(df$count),30,60) ~ 5,
-                     between(max(df$count),60,100) ~ 10,
-                     between(max(df$count),110,500) ~ 20,
-                     between(max(df$count),500,1000) ~ 100,
-                     between(max(df$count),1000,10000) ~ 200,
-                     TRUE ~1000)
-  Lweeklim <- isoweek(glue("{year}-04-01"))
-  Hweeklim <-  isoweek(glue("{year}-09-30"))
-  
-  p <- 
+  # Plotting function that make all limit and steps per species
+  plotSP <- function(df){
+    
+    # This makes a rounded to nearest 10, 100 or 1000 of max value to be at top of Y-axis to align with gridline at top
+    maxlim <-  case_when(max(df$count) < 100 ~ round_any(max(df$count), 10, f = ceiling),
+                         max(df$count) < 1000 ~ round_any(max(df$count), 100, f = ceiling),
+                         max(df$count) < 10000 ~ round_any(max(df$count), 200, f = ceiling),
+                         max(df$count) > 10000 ~ round_any(max(df$count), 1000, f = ceiling)
+    )
+    
+    # This makes the steps right between labels
+    steps <- case_when(max(df$count) < 12 ~ 1,
+                       between(max(df$count),12,30) ~ 2,
+                       between(max(df$count),30,60) ~ 5,
+                       between(max(df$count),60,100) ~ 10,
+                       between(max(df$count),110,300) ~ 20,
+                       between(max(df$count),300,600) ~ 50,
+                       between(max(df$count),600,1000) ~ 100,
+                       between(max(df$count),1000,5000) ~ 200,
+                       TRUE ~1000)
+    
     ggplot(data = df, 
            aes(x = vecka, y = count)) +
-    geom_bar(stat = 'identity', color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
-    scale_y_continuous(limits = c(0, maxlim), #nice_lim(df$count),#c(0, max(10, max(df$count)*1.2)), # Set Y-axis limits to 10 or the max value of the butterfly count
-                       # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
-                       breaks = seq(0,maxlim, steps), #10^ceiling(log10(max(df$count)/100))*2), # 
-                       expand = c(0,0)) +
-    #expand_limits(y=max(df$count)*1.1) +
-    scale_x_continuous(
-      breaks = c(10, seq(Lweeklim,Hweeklim,2)),
-      labels = c("Vecka: ", fmt_label(seq(Lweeklim,Hweeklim,2))),
-      limits = c(Lweeklim - 0.5, Hweeklim + 0.4), 
-      expand = c(0, 0) 
-    ) + 
-    labs(y = "Antal", x = NULL, tag = "Vecka:") +
-    theme_sebms(y_title_sz = 18, fontfamily = "Arial") +
-    theme(panel.grid.major.y = element_line(color = "gray"),
-          axis.ticks.x = element_line(color = "gray5"),
-          axis.ticks.length = unit(0, "cm"),
-          axis.text.x = element_text(hjust = 0.5, face = "bold", margin = margin(t=4, unit = "mm"), family = "Arial", size = 14, lineheight = 1.3),
-          axis.text.y = element_text(face = "bold", margin = margin(r=4, unit = "mm")),
-          axis.line = element_line(color = "gray5", linewidth = 0.3),
-          plot.title = element_text(hjust = 0.5),
-          plot.tag = element_text(vjust = 0, size = 14),
-          plot.tag.position = c(0.05, 0.039))
+      geom_bar(stat = 'identity', color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
+      scale_y_continuous(limits = c(0, maxlim), #nice_lim(df$count),#c(0, max(10, max(df$count)*1.2)), # Set Y-axis limits to 10 or the max value of the butterfly count
+                         # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
+                         breaks = seq(0,maxlim, steps), #10^ceiling(log10(max(df$count)/100))*2), # 
+                         expand = c(0,0)) +
+      #expand_limits(y=max(df$count)*1.1) +
+      scale_x_continuous(
+        breaks = c(10, seq(Lweeklim,Hweeklim,2)),
+        labels = c("Vecka: ", fmt_label(seq(Lweeklim,Hweeklim,2))),
+        limits = c(Lweeklim - 0.5, Hweeklim + 0.4), 
+        expand = c(0, 0) 
+      ) + 
+      labs(y = "Antal", x = NULL, tag = "Vecka:") +
+      theme_sebms(y_title_sz = 18, fontfamily = "Arial") +
+      theme(panel.grid.major.y = element_line(color = "gray"),
+            axis.ticks.x = element_line(color = "gray5"),
+            axis.ticks.length = unit(0, "cm"),
+            axis.text.x = element_text(hjust = 0.5, face = "bold", margin = margin(t=4, unit = "mm"), family = "Arial", size = 14, lineheight = 1.3),
+            axis.text.y = element_text(face = "bold", margin = margin(r=4, unit = "mm")),
+            axis.line = element_line(color = "gray5", linewidth = 0.3),
+            plot.title = element_text(hjust = 0.5),
+            plot.tag = element_text(vjust = 0, size = 14),
+            plot.tag.position = c(0.05, 0.039))
+  }  
   
-  sebms_ggsave(p, Art, width = 26, height = 12, weathervar = year)
-  return(p)
+  ggs <- df %>% 
+    nest(.by = art) %>% 
+    mutate(plots = map(data, ~plotSP(df=.x)))
+  
+  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, filename = .y, width = 26, height = 12, weathervar = year))
+  
+  #sebms_ggsave(p, Art, width = 26, height = 12, weathervar = year)
+  return(ggs$plots)
 }
 
 
 #' Species per Site and Site Type Plot
 #' 
-#' Show the number of sites within a range of species number found at the site. Also show the mean number of species per site in each site type.
+#' Show the number of sites within a range of species richness found at the site. Also show the mean number of species per site in each site type.
 #'  
-#'  @inheritParams sebms_specieslist_cum_plots
+#' @inheritParams sebms_specieslist_cum_plots
 #'  
 #' @import dplyr
 #' @import forcats
 #' @import ggplot2
 #' @export
 #' 
-sebms_species_per_sitetype_plot <- function(year = 2021,  Län = "", Landskap = "", Kommun = "", database = TRUE) {
+sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
   
   b <- seq(1, 50, by = 5)
   l <- paste0(b, "-", b + 4)
@@ -310,9 +351,9 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = "", Landskap = 
     
     df <- sebms_species_site_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
       group_by(situid, lokalnamn, sitetype) %>% 
-      summarise(species = n_distinct(speuid), .groups = "drop") %>% 
+      summarise(species = n_distinct(speuid), .groups = "drop") %>% # Number of species per site and site type 
       group_by(sitetype) %>% 
-      mutate(medel = mean(species)) %>% 
+      mutate(medel = mean(species)) %>% # mean number of species per site type
       ungroup() %>% 
       mutate(interval = l[findInterval(species, b)],
              sortorder = findInterval(species, b)) %>%

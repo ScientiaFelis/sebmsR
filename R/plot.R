@@ -63,7 +63,7 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = ".", Landskap = ".",
         axis.ticks.x.top = element_line(color = "darkgray"),
         axis.ticks.length.x = unit(-1, "mm"),
         axis.text.y = element_text(size = 10, margin = margin(0,2,0,0, unit = "mm")),
-        axis.ticks.y = element_line(colour = "darkgrey"),
+        axis.ticks.y = element_blank(),
         axis.line = element_line(color = "darkgray", size = 0.35),
         plot.title = element_text(hjust = 0.5, size = 6, margin = margin(0,0,2,0, unit = "mm"))) 
   }
@@ -79,21 +79,30 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = ".", Landskap = ".",
                    TRUE ~ 100)
   maxlim <- round_any(max(sp$count), accuracy = acc, ceiling)
   
+  tickmarks1 <- length(unique(s1$art))-0.5
+  tickmarks2 <- length(unique(s2$art))-0.5
+  
   p1 <- s1 %>%  
     ggplot(aes(y = reorder(art, count), x = count)) +
     geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.2, size = 2.5) +
     geom_vline(xintercept = seq(0,maxlim, acc), colour = "darkgrey") +
+    geom_segment(aes(y = stage(reorder(art, count), after_scale = seq(0.5, tickmarks1,1)),
+                     yend = stage(reorder(art, count), after_scale = seq(0.5, tickmarks1,1)),
+                     x = -maxlim*0.005,
+                     xend = 0),
+                 linewidth = 0.5,
+                 colour = "darkgrey") +
     scale_x_continuous(#breaks = seq(0,12000, 2000),
       #labels = seq(0,12000, 2000),
       breaks = seq(0,maxlim, acc/4),
       labels = insert_minor(c(acc*0:(maxlim/acc)), 3),
       position = "top",
-      limits = c(0, maxlim),
+     # limits = c(0, maxlim),
       expand = c(0, 0)
     ) +
     scale_y_discrete(expand = c(0.017,0.017)) +
-    #coord_cartesian(clip = "off") +
+    coord_cartesian(xlim = c(0,maxlim), clip = "off") +
     labs(x = "Antal individer", y = NULL) +
     theme_sebms2()
   
@@ -102,16 +111,23 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = ".", Landskap = ".",
     geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
     geom_vline(xintercept = seq(0,maxlim, acc), colour = "darkgrey") +
+    geom_segment(aes(y = stage(reorder(art, count), after_scale = seq(0.5, tickmarks2,1)),
+                     yend = stage(reorder(art, count), after_scale = seq(0.5, tickmarks2,1)),
+                     x = -maxlim*0.005,
+                     xend = 0),
+                 linewidth = 0.5,
+                 colour = "darkgrey") +
     labs(x = "Antal individer", y = NULL) +
     scale_x_continuous(#breaks = seq(0,12000, 2000),
       #labels = seq(0,12000, 2000),
       breaks = seq(0,maxlim, acc/4),
       labels = insert_minor(c(acc*0:(maxlim/acc)), 3),
       position = "top",
-      limits = c(0, maxlim),
+  #  limits = c(0, maxlim),
       expand = c(0, 0)
     )  +
     scale_y_discrete(expand = c(0.017,0.017)) +
+    coord_cartesian(xlim = c(0,maxlim), clip = "off") +
     theme_sebms2()
   
   res <- list(p1 = p1, p2 = p2)

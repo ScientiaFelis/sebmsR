@@ -369,7 +369,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
       group_by(sitetype) %>%
       fill(medel, .direction = "down") %>%
       ungroup()
-
+    
   }else{
     df <- sebms_data_species_per_site_sitetype %>%
       mutate(
@@ -398,9 +398,10 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   # 
   # r <- rbind(unique(df$interval),matrix(rep(c(""), 10),ncol=length(unique(df$interval))))
   # labname <- c("", r)
+  tickmarks <- (df %>% distinct(interval, sitetype) %>% pull(interval) %>% length()) /2 +0.5
   
   p <- df %>% 
-    ggplot(aes(x = reorder(interval, sortorder), y = site_count)) +
+    ggplot(aes(x = fct_reorder(interval, sortorder), y = site_count)) +
     geom_col(aes(fill = forcats::fct_rev(sitetype)), 
              position = position_dodge(preserve = "single"), width = 0.7) +
     stat_summary(aes(x = l[findInterval(medel, b)], y = 104, colour = sitetype, fill = sitetype),
@@ -414,10 +415,15 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
               position = position_dodge2(width = 1.3),
               fontface = "bold",
               inherit.aes = F) +
+    geom_segment(aes(x = stage(reorder(interval, sortorder), after_scale = rep(seq(1.5, tickmarks,1), each=2)),
+                     xend = stage(reorder(interval, sortorder), after_scale = rep(seq(1.5, tickmarks,1), each=2)),
+                     y = -1,
+                     yend = 0)) + # Making segments between groups on x-axis.
     scale_y_continuous(breaks = seq(0,120,20),
                        labels = seq(0,120,20),
-                       limits = c(0, 120),
+                       #limits = c(0, 120),
                        expand = c(0, 0)) +
+    coord_cartesian(ylim = c(0,120), clip = "off") +
     # scale_x_discrete(breaks = sort(c(unique(df$x1), x_tick)),
     #                  labels = labname) +
     scale_fill_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +
@@ -425,10 +431,11 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
     labs(x = "Antal arter på lokalen", y = "Antal lokaler") +
     theme_sebms(fontfamily = "Arial") +
     theme(panel.grid.major.y = element_line(color = "gray"),
-          axis.ticks.x = element_line(linewidth = 1, colour = "black"),
+          axis.ticks.x =  element_blank(),#element_line(linewidth = 1, colour = "black"),
           axis.ticks.y = element_blank(),
           axis.line = element_line(color = "gray5", linewidth = 0.21),
           axis.text = element_text(face = "bold"),
+          #axis.text.x = element_text(margin = margin(t = 3, r = 0, b = 0, l = 0, unit = "mm")),
           axis.title.x = element_text(margin = margin(t = 9)),
           panel.border = element_rect(colour = "black", linewidth = 1)
     )

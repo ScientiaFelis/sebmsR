@@ -152,11 +152,10 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = ".", Landskap = ".",
 sebms_species_count_histo_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
   
   if (database) {
-    #TODO perhaps make a week var on each year and filter on min, max week instead?
     df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
-      group_by(year = year(datum)) %>%
-      filter(datum > glue("{year}-04-01"), datum < glue("{year}-09-30")) %>% 
-      group_by(year = as.factor(year), vecka = isoweek(datum)) %>%
+      mutate(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
+      filter(datum > ymd(glue("{year}-04-01")), datum < ymd(glue("{year}-09-30"))) %>% 
+      group_by(year, vecka) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
   }else {
     df <- 

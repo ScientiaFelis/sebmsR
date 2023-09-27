@@ -14,9 +14,9 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   
-  Län <- paste0(str_to_title(Län),collapse = "|") # Make the list of Län to s regex statement
-  Landskap <- paste0(str_to_title(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
-  Kommun <- paste0(str_to_title(Kommun),collapse = "|") # Make the list of Kommun to s regex statement
+  Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement
+  Landskap <- paste0(str_to_lower(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
+  Kommun <- paste0(str_to_lower(Kommun),collapse = "|") # Make the list of Kommun to s regex statement
   
   county <- regID %>% 
     filter(str_detect(reg_name, Län)) %>% # Filter out matching Län from a look up table
@@ -99,9 +99,9 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   Art <- glue("({paste0({Art}, collapse = ',')})")
   
-  Län <- paste0(str_to_title(Län),collapse = "|") # Make the list of Län to s regex statement
-  Landskap <- paste0(str_to_title(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
-  Kommun <- paste0(str_to_title(Kommun),collapse = "|") # Make the list of Kommun to s regex statement
+  Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement
+  Landskap <- paste0(str_to_lower(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
+  Kommun <- paste0(str_to_lower(Kommun),collapse = "|") # Make the list of Kommun to s regex statement
   
   county <- regID %>% 
     filter(str_detect(reg_name, Län)) %>% # Filter out matching Län from a look up table

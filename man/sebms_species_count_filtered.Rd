@@ -6,9 +6,10 @@
 \usage{
 sebms_species_count_filtered(
   year = 2020:2021,
-  Län = "",
-  Landskap = "",
-  Kommun = ""
+  Art = 1:200,
+  Län = ".",
+  Landskap = ".",
+  Kommun = "."
 )
 }
 \description{

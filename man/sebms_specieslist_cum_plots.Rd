@@ -6,9 +6,9 @@
 \usage{
 sebms_specieslist_cum_plots(
   year = 2021,
-  Län = "",
-  Landskap = "",
-  Kommun = "",
+  Län = ".",
+  Landskap = ".",
+  Kommun = ".",
   database = TRUE
 )
 }

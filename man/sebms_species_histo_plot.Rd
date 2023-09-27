@@ -6,17 +6,17 @@
 \usage{
 sebms_species_histo_plot(
   year = 2021,
-  Art = "Luktgräsfjäril",
-  Län = "",
-  Landskap = "",
-  Kommun = "",
+  Art = 1:200,
+  Län = ".",
+  Landskap = ".",
+  Kommun = ".",
   database = TRUE
 )
 }
 \arguments{
 \item{year}{year to use for plot}
 
-\item{Art}{The species of interest}
+\item{Art}{The species id of interest}
 
 \item{Län}{character; which county you want the data from}
 

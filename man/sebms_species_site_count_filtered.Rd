@@ -6,9 +6,9 @@
 \usage{
 sebms_species_site_count_filtered(
   year = 2021,
-  Län = "",
-  Landskap = "",
-  Kommun = ""
+  Län = ".",
+  Landskap = ".",
+  Kommun = "."
 )
 }
 \arguments{

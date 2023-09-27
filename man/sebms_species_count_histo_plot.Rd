@@ -6,9 +6,9 @@
 \usage{
 sebms_species_count_histo_plot(
   year = 2021:2022,
-  Län = "",
-  Landskap = "",
-  Kommun = "",
+  Län = ".",
+  Landskap = ".",
+  Kommun = ".",
   database = TRUE
 )
 }
@@ -24,5 +24,5 @@ sebms_species_count_histo_plot(
 \item{database}{logical; if the data should be based on the sebms database}
 }
 \description{
-Show the number of found butterflies per week
+Show the number of found butterflies per week, compared between two years.
 }

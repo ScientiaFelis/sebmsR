@@ -63,7 +63,7 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = ".", Landskap = ".",
         axis.ticks.x.top = element_line(color = "darkgray"),
         axis.ticks.length.x = unit(-1, "mm"),
         axis.text.y = element_text(size = 10, margin = margin(0,2,0,0, unit = "mm")),
-        axis.ticks.y = element_line(colour = "darkgrey"),
+        axis.ticks.y = element_blank(),
         axis.line = element_line(color = "darkgray", size = 0.35),
         plot.title = element_text(hjust = 0.5, size = 6, margin = margin(0,0,2,0, unit = "mm"))) 
   }
@@ -79,21 +79,30 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = ".", Landskap = ".",
                    TRUE ~ 100)
   maxlim <- round_any(max(sp$count), accuracy = acc, ceiling)
   
+  tickmarks1 <- length(unique(s1$art))-0.5
+  tickmarks2 <- length(unique(s2$art))-0.5
+  
   p1 <- s1 %>%  
     ggplot(aes(y = reorder(art, count), x = count)) +
     geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.2, size = 2.5) +
     geom_vline(xintercept = seq(0,maxlim, acc), colour = "darkgrey") +
+    geom_segment(aes(y = stage(reorder(art, count), after_scale = seq(0.5, tickmarks1,1)),
+                     yend = stage(reorder(art, count), after_scale = seq(0.5, tickmarks1,1)),
+                     x = -maxlim*0.005,
+                     xend = 0),
+                 linewidth = 0.5,
+                 colour = "darkgrey") +
     scale_x_continuous(#breaks = seq(0,12000, 2000),
       #labels = seq(0,12000, 2000),
       breaks = seq(0,maxlim, acc/4),
       labels = insert_minor(c(acc*0:(maxlim/acc)), 3),
       position = "top",
-      limits = c(0, maxlim),
+     # limits = c(0, maxlim),
       expand = c(0, 0)
     ) +
     scale_y_discrete(expand = c(0.017,0.017)) +
-    #coord_cartesian(clip = "off") +
+    coord_cartesian(xlim = c(0,maxlim), clip = "off") +
     labs(x = "Antal individer", y = NULL) +
     theme_sebms2()
   
@@ -102,16 +111,23 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = ".", Landskap = ".",
     geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
     geom_vline(xintercept = seq(0,maxlim, acc), colour = "darkgrey") +
+    geom_segment(aes(y = stage(reorder(art, count), after_scale = seq(0.5, tickmarks2,1)),
+                     yend = stage(reorder(art, count), after_scale = seq(0.5, tickmarks2,1)),
+                     x = -maxlim*0.005,
+                     xend = 0),
+                 linewidth = 0.5,
+                 colour = "darkgrey") +
     labs(x = "Antal individer", y = NULL) +
     scale_x_continuous(#breaks = seq(0,12000, 2000),
       #labels = seq(0,12000, 2000),
       breaks = seq(0,maxlim, acc/4),
       labels = insert_minor(c(acc*0:(maxlim/acc)), 3),
       position = "top",
-      limits = c(0, maxlim),
+  #  limits = c(0, maxlim),
       expand = c(0, 0)
     )  +
     scale_y_discrete(expand = c(0.017,0.017)) +
+    coord_cartesian(xlim = c(0,maxlim), clip = "off") +
     theme_sebms2()
   
   res <- list(p1 = p1, p2 = p2)
@@ -136,11 +152,10 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = ".", Landskap = ".",
 sebms_species_count_histo_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
   
   if (database) {
-    #TODO perhaps make a week var on each year and filter on min, max week instead?
     df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
-      group_by(year = year(datum)) %>%
-      filter(datum > glue("{year}-04-01"), datum < glue("{year}-09-30")) %>% 
-      group_by(year = as.factor(year), vecka = isoweek(datum)) %>%
+      mutate(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
+      filter(datum > ymd(glue("{year}-04-01")), datum < ymd(glue("{year}-09-30"))) %>% 
+      group_by(year, vecka) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
   }else {
     df <- 
@@ -360,8 +375,15 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
       group_by(interval, sortorder, sitetype) %>%
       summarize(site_count = n_distinct(situid),
                 medel = mean(medel), .groups = "drop") %>%
-      arrange(-desc(sortorder)) %>%
-      select(interval, sortorder, sitetype, site_count, medel)
+      arrange(sortorder) %>%
+      select(interval, sortorder, sitetype, site_count, medel) %>% 
+      complete(interval, sitetype) %>%
+      mutate(site_count=replace_na(site_count, 0)) %>%
+      group_by(interval) %>%
+      fill(sortorder, .direction = "updown") %>%
+      group_by(sitetype) %>%
+      fill(medel, .direction = "down") %>%
+      ungroup()
     
   }else{
     df <- sebms_data_species_per_site_sitetype %>%
@@ -391,9 +413,10 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   # 
   # r <- rbind(unique(df$interval),matrix(rep(c(""), 10),ncol=length(unique(df$interval))))
   # labname <- c("", r)
+  tickmarks <- (df %>% distinct(interval, sitetype) %>% pull(interval) %>% length()) /2 +0.5
   
   p <- df %>% 
-    ggplot(aes(x = reorder(interval, sortorder), y = site_count)) +
+    ggplot(aes(x = fct_reorder(interval, sortorder), y = site_count)) +
     geom_col(aes(fill = forcats::fct_rev(sitetype)), 
              position = position_dodge(preserve = "single"), width = 0.7) +
     stat_summary(aes(x = l[findInterval(medel, b)], y = 104, colour = sitetype, fill = sitetype),
@@ -407,10 +430,15 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
               position = position_dodge2(width = 1.3),
               fontface = "bold",
               inherit.aes = F) +
+    geom_segment(aes(x = stage(reorder(interval, sortorder), after_scale = rep(seq(1.5, tickmarks,1), each=2)),
+                     xend = stage(reorder(interval, sortorder), after_scale = rep(seq(1.5, tickmarks,1), each=2)),
+                     y = -1,
+                     yend = 0)) + # Making segments between groups on x-axis.
     scale_y_continuous(breaks = seq(0,120,20),
                        labels = seq(0,120,20),
-                       limits = c(0, 120),
+                       #limits = c(0, 120),
                        expand = c(0, 0)) +
+    coord_cartesian(ylim = c(0,120), clip = "off") +
     # scale_x_discrete(breaks = sort(c(unique(df$x1), x_tick)),
     #                  labels = labname) +
     scale_fill_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +
@@ -418,10 +446,11 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
     labs(x = "Antal arter på lokalen", y = "Antal lokaler") +
     theme_sebms(fontfamily = "Arial") +
     theme(panel.grid.major.y = element_line(color = "gray"),
-          axis.ticks.x = element_line(linewidth = 1, colour = "black"),
+          axis.ticks.x =  element_blank(),#element_line(linewidth = 1, colour = "black"),
           axis.ticks.y = element_blank(),
           axis.line = element_line(color = "gray5", linewidth = 0.21),
           axis.text = element_text(face = "bold"),
+          #axis.text.x = element_text(margin = margin(t = 3, r = 0, b = 0, l = 0, unit = "mm")),
           axis.title.x = element_text(margin = margin(t = 9)),
           panel.border = element_rect(colour = "black", linewidth = 1)
     )

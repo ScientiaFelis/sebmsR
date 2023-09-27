@@ -12,6 +12,17 @@ sebms_species_per_sitetype_plot(
   database = TRUE
 )
 }
+\arguments{
+\item{year}{year to use for plot}
+
+\item{Län}{character; which county you want the data from}
+
+\item{Landskap}{character; which region you want the data from}
+
+\item{Kommun}{character; which municipality you want the data from}
+
+\item{database}{logical; if the data should be based on the sebms database}
+}
 \description{
 Show the number of sites within a range of species richness found at the site. Also show the mean number of species per site in each site type.
 }

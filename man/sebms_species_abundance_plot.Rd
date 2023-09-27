@@ -14,7 +14,17 @@ sebms_species_abundance_plot(
 )
 }
 \arguments{
+\item{year}{year to use for plot}
+
 \item{Art}{The species id of interest}
+
+\item{Län}{character; which county you want the data from}
+
+\item{Landskap}{character; which region you want the data from}
+
+\item{Kommun}{character; which municipality you want the data from}
+
+\item{database}{logical; if the data should be based on the sebms database}
 }
 \description{
 Show the number of individuals per week of a given species and year.

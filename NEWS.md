@@ -6,6 +6,12 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
 
+# v 1.3.6
+
+* Complete missing zero data for `species_per_sitetype_plot()` species nr groups for site type
+* Add tick marks between groups on x-axis for `species_per_sitetype_plot( )` and between species names on y-axis in `specieslist_cum_plots()`
+* Fix small error in date filter in `species_count_histo_plot()`
+
 # v 1.3.5
 
 * Make possibility to chose species via `Art` argument **on species id** in `sebms_species_histo_plot()`

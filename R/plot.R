@@ -16,7 +16,7 @@
 #' @return a list with two ggplot objects, named p1 and p2
 #' @export
 #' 
-sebms_specieslist_cum_plots <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
+sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
   
   if (database) {
     sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
@@ -141,7 +141,7 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = ".", Landskap = ".",
 #' 
 #' Show the number of found butterflies per week, compared between two years.
 #' 
-#' @inheritParams sebms_specieslist_cum_plots
+#' @inheritParams sebms_abundance_per_species_plot
 #' 
 #' @import dplyr
 #' @importFrom plyr round_any
@@ -149,7 +149,7 @@ sebms_specieslist_cum_plots <- function(year = 2021, Län = ".", Landskap = ".",
 #' @importFrom lubridate month weeks ymd
 #' @export
 #' 
-sebms_species_count_histo_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
+sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
   
   if (database) {
     df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
@@ -245,7 +245,7 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, Län = ".", Landska
 #' 
 #' Show the number of individuals per week of a given species and year.
 #' 
-#' @inheritParams sebms_specieslist_cum_plots
+#' @inheritParams sebms_abundance_per_species_plot
 #' @param Art The species id of interest
 #' 
 #' @import dplyr
@@ -253,7 +253,7 @@ sebms_species_count_histo_plot <- function(year = 2021:2022, Län = ".", Landska
 #' @importFrom lubridate month weeks ymd
 #' @export
 #' 
-sebms_species_histo_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
+sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
   
   if (database) {
     df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
@@ -350,7 +350,7 @@ sebms_species_histo_plot <- function(year = 2021, Art = 1:200, Län = ".", Lands
 #' 
 #' Show the number of sites within a range of species richness found at the site. Also show the mean number of species per site in each site type.
 #'  
-#' @inheritParams sebms_specieslist_cum_plots
+#' @inheritParams sebms_abundance_per_species_plot
 #'  
 #' @import dplyr
 #' @import forcats

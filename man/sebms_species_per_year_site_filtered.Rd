@@ -2,7 +2,7 @@
 % Please edit documentation in R/data.R
 \name{sebms_species_per_year_site_filtered}
 \alias{sebms_species_per_year_site_filtered}
-\title{Retrieve Filtered Species List per Year and Site}
+\title{Retrieve Filtered Species List per Year, Site type and Site}
 \usage{
 sebms_species_per_year_site_filtered()
 }

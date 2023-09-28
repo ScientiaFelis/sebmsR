@@ -1,8 +1,9 @@
 #TODO: Streamline the functions to the ones necessary and so the output variables of the same kind is named consequently.
-#' Retrieve Total Species List per Site from SeBMS
+
+#' Retrieve Species Abundance List per Site, Site type, and Date
 #' 
-#' Gives a list of species counts per site and date.
-#' This is used eg for the histograms
+#' Returns a data frame of counts per species, site, site type, and date.
+#' This is used for the `sebms_species_per_sitetype_plot()`
 #'
 #' @param year the year of interest
 #'  
@@ -87,8 +88,12 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
   as_tibble(res)
 }
 
-
-#' Retrieve Filtered Species List per Year
+#' Retrieve Species Abundance List per Date
+#' 
+#' Returns a data frame with counts per species and date.
+#' This is used in most plot functions:
+#' `sebms_abundance_per_species_plot()`, `sebms_abundance_year_compare_plot()`,
+#' and `sebms_species_abundance_plot()`
 #' 
 #' @import tibble
 #' @import glue
@@ -170,7 +175,9 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
 } 
 
 
-#' Retrieve Filtered Species List per Year
+#' Retrieve Species Abundance List per Year
+#' 
+#' Return a data frame with abunadance data per species and year.
 #' 
 #' @import tibble
 #' @import glue
@@ -194,13 +201,13 @@ sebms_species_per_year_filtered <- function(year = 2020:2021) {
       INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
       INNER JOIN  spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid     
       WHERE
-        sit.sit_reg_countyid = (SELECT reg_uid FROM reg_region WHERE reg_code = '08' AND reg_group = 'C')
-        AND extract('YEAR' from vis_begintime) IN {year}
+        --sit.sit_reg_countyid = (SELECT reg_uid FROM reg_region WHERE reg_code = '08' AND reg_group = 'C')
+        extract('YEAR' from vis_begintime) IN {year}
         AND (spv.spv_istrim=TRUE or spe_uid in (135,131,133) )     -- new
       GROUP BY
         spe.spe_uid, years --, sitetype
       ORDER BY
-        name,count DESC;")
+        count DESC, name;")
   
   sebms_assert_connection()
   res <- dbGetQuery(sebms_pool, q)
@@ -208,7 +215,7 @@ sebms_species_per_year_filtered <- function(year = 2020:2021) {
   
 } 
 
-#' Retrieve Filtered Species List per Year and Site
+#' Retrieve Filtered Species List per Year, Site type and Site
 #' 
 #' Count the number of species per year and site 
 #' and filter for approved ones 
@@ -256,7 +263,7 @@ sebms_species_per_year_site_counts_filtered <- function() {
     sit.sit_uid AS id,
     sit.sit_name AS site,
     sit.sit_type AS sitetype,
-    spe.spe_uid AS species,
+    spe.spe_uid AS speciesID,
     SUM(obs.obs_count) as speciesno
   FROM obs_observation AS obs
   INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid

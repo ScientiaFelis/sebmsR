@@ -2,7 +2,7 @@
 % Please edit documentation in R/data.R
 \name{sebms_species_count_filtered}
 \alias{sebms_species_count_filtered}
-\title{Retrieve Filtered Species List per Year}
+\title{Retrieve Species Abundance List per Date}
 \usage{
 sebms_species_count_filtered(
   year = 2020:2021,
@@ -13,5 +13,8 @@ sebms_species_count_filtered(
 )
 }
 \description{
-Retrieve Filtered Species List per Year
+Returns a data frame with counts per species and date.
+This is used in most plot functions:
+`sebms_abundance_per_species_plot()`, `sebms_abundance_year_compare_plot()`,
+and `sebms_species_abundance_plot()`
 }

@@ -177,7 +177,7 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
 
 #' Retrieve Species Abundance List per Year
 #' 
-#' Return a data frame with abunadance data per species and year.
+#' Return a data frame with abundance data per species and year.
 #' 
 #' @import tibble
 #' @import glue
@@ -237,8 +237,8 @@ sebms_species_per_year_site_filtered <- function() {
     INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
     INNER JOIN  spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid     
     WHERE
-      sit.sit_reg_countyid = (SELECT reg_uid FROM reg_region WHERE reg_code = '12' AND reg_group = 'C')
-      AND date_trunc('YEAR', vis_begintime) =(DATE '2014-01-01')
+      --sit.sit_reg_countyid = (SELECT reg_uid FROM reg_region WHERE reg_code = '12' AND reg_group = 'C')
+      date_trunc('YEAR', vis_begintime) =(DATE '2014-01-01')
       AND spv.spv_istrim=TRUE      -- new
     GROUP BY
       sit.sit_uid

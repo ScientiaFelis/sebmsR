@@ -7,5 +7,5 @@
 sebms_species_per_year_filtered(year = 2020:2021)
 }
 \description{
-Return a data frame with abunadance data per species and year.
+Return a data frame with abundance data per species and year.
 }

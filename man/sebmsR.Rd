@@ -68,6 +68,28 @@ This package contains functions to make figures used in e.g. the reports of the 
   }
 }
 
+\section{Data retrieval functions}{
+ 
+
+ \tabular{ll}{
+ 
+ \code{\link{sebms_species_site_count_filtered}} return a data frame with 
+ species abundance per site, site type, and date. \cr
+ 
+ \code{\link{sebms_species_count_filtered}} return a data frame with
+ species abundance per date. \cr
+ 
+ \code{\link{sebms_species_per_year_filtered}} return a data frame with
+ abundance data per species and year. \cr
+ 
+ \code{\link{sebms_species_per_year_site_filtered}} return a data frame with
+ number of species per site and site type. \cr
+ 
+ }
+ 
+ ------------------------------------------------------------------------\cr
+}
+
 \section{Miscellaneous functions}{
  
  

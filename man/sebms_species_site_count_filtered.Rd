@@ -2,7 +2,7 @@
 % Please edit documentation in R/data.R
 \name{sebms_species_site_count_filtered}
 \alias{sebms_species_site_count_filtered}
-\title{Retrieve Total Species List per Site from SeBMS}
+\title{Retrieve Species Abundance List per Site, Site type, and Date}
 \usage{
 sebms_species_site_count_filtered(
   year = 2021,
@@ -15,6 +15,6 @@ sebms_species_site_count_filtered(
 \item{year}{the year of interest}
 }
 \description{
-Gives a list of species counts per site and date.
-This is used eg for the histograms
+Returns a data frame of counts per species, site, site type, and date.
+This is used for the `sebms_species_per_sitetype_plot()`
 }

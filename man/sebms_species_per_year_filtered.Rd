@@ -2,10 +2,10 @@
 % Please edit documentation in R/data.R
 \name{sebms_species_per_year_filtered}
 \alias{sebms_species_per_year_filtered}
-\title{Retrieve Filtered Species List per Year}
+\title{Retrieve Species Abundance List per Year}
 \usage{
 sebms_species_per_year_filtered(year = 2020:2021)
 }
 \description{
-Retrieve Filtered Species List per Year
+Return a data frame with abunadance data per species and year.
 }

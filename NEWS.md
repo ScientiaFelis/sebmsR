@@ -6,6 +6,13 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
 
+# v 1.3.7
+
+* Rename functions to a bit more describing names. There is still room for improval.
+* Add function list and description to package documentation. 
+* Fixed some descriptions of the data retrieval functions.
+* Changed some of the SQL query in a couple of data retrieval functions which filtered on some specific counties.
+
 # v 1.3.6
 
 * Complete missing zero data for `species_per_sitetype_plot()` species nr groups for site type

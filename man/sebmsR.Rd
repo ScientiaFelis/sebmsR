@@ -51,13 +51,13 @@ This package contains functions to make figures used in e.g. the reports of the 
  
   
  \tabular{ll}{
- \code{\link{sebms_specieslist_cum_plots}} produce a bar plot with
+ \code{\link{sebms_abundance_per_species_plot}} produce a bar plot with
  number of individuals per species a given year. \cr
  
- \code{\link{sebms_species_count_histo_plot}} produce a bar plot with 
+ \code{\link{sebms_abundance_year_compare_plot}} produce a bar plot with 
  the number of found butterflies per week, compared between two years. \cr
  
- \code{\link{sebms_species_histo_plot}} produce a bar plot with
+ \code{\link{sebms_species_abundance_plot}} produce a bar plot with
  the number of individuals per week of a given species and year. \cr
  
  \code{\link{sebms_species_per_sitetype_plot}} produce a bar plot with

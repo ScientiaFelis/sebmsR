@@ -13,7 +13,8 @@
 #' @importFrom plyr round_any
 #' @import glue
 #' @import ggplot2
-#' @return a list with two ggplot objects, named p1 and p2
+#' @return two png figures with the abundance data for each species.
+#' One for species count below the median for that year and one for above median.
 #' @export
 #' 
 sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
@@ -23,23 +24,18 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
       group_by(art) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop") 
     
-    #if (sp$count > 200) {
-    
+    # Split data on the median to get to pngs that can be inserted in the report
     s1 <- sp %>% 
       filter(count >= median(count)) 
-    
     s2 <- sp %>% 
       filter(count < median(count), !str_detect(art, "[Nn]oll")) 
-    # }
     
   }else {
     # n <- nrow(sebms_data_specieslist_cum)
-    
     s1 <- 
       sebms_data_specieslist_cum %>% 
       filter(count >= 200)
     #  slice(1 : floor(n/2))
-    
     s2 <- 
       sebms_data_specieslist_cum %>% 
       filter(count < 200)
@@ -142,7 +138,7 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
     theme_sebms2()
   
   res <- list(p1 = p1, p2 = p2)
-  name <- list(glue("Öv200_{year}"), glue("Und200_{year}"))
+  name <- list(glue("Above-median_{year}"), glue("Below-median_{year}"))
   map2(res, name, ~sebms_ggsave(.x, "Species_tot_count", width = 22, height=32, weathervar = .y))
   
   return(res)

@@ -10,6 +10,7 @@ sebms_species_abundance_plot(
   Län = ".",
   Landskap = ".",
   Kommun = ".",
+  plotname = FALSE,
   database = TRUE
 )
 }
@@ -23,6 +24,8 @@ sebms_species_abundance_plot(
 \item{Landskap}{character; which region you want the data from}
 
 \item{Kommun}{character; which municipality you want the data from}
+
+\item{plotname}{logical; if you want the species name inside the plot}
 
 \item{database}{logical; if the data should be based on the sebms database}
 }

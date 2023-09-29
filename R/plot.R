@@ -98,7 +98,7 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
       breaks = seq(0,maxlim, acc/4),
       labels = insert_minor(c(acc*0:(maxlim/acc)), 3),
       position = "top",
-     # limits = c(0, maxlim),
+      # limits = c(0, maxlim),
       expand = c(0, 0)
     ) +
     scale_y_discrete(expand = c(0.017,0.017)) +
@@ -123,7 +123,7 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
       breaks = seq(0,maxlim, acc/4),
       labels = insert_minor(c(acc*0:(maxlim/acc)), 3),
       position = "top",
-  #  limits = c(0, maxlim),
+      #  limits = c(0, maxlim),
       expand = c(0, 0)
     )  +
     scale_y_discrete(expand = c(0.017,0.017)) +
@@ -323,12 +323,13 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
         expand = c(0, 0) 
       ) + 
       labs(y = "Antal", x = NULL, tag = "Vecka:") +
-      theme_sebms(y_title_sz = 18, fontfamily = "Arial") +
+      theme_sebms() +
       theme(panel.grid.major.y = element_line(color = "gray"),
             axis.ticks.x = element_line(color = "gray5"),
             axis.ticks.length = unit(0, "cm"),
-            axis.text.x = element_text(hjust = 0.5, face = "bold", margin = margin(t=4, unit = "mm"), family = "Arial", size = 14, lineheight = 1.3),
-            axis.text.y = element_text(face = "bold", margin = margin(r=4, unit = "mm")),
+            axis.title.y = element_text(size = 16),
+            axis.text.x = element_text(hjust = 0.5, face = "bold", margin = margin(t=4, unit = "mm"), size = 14, family = "Arial", lineheight = 1.3),
+            axis.text.y = element_text(family = "Arial", face = "bold", size = 14, margin = margin(r=4, unit = "mm")),
             axis.line = element_line(color = "gray5", linewidth = 0.3),
             plot.title = element_text(hjust = 0.5),
             plot.tag = element_text(vjust = 0, size = 14),

@@ -1,4 +1,4 @@
-#' Theme for Swedish Butterfly Monitoring scheme for use in ggplot
+#' Theme for Swedish Butterfly Monitoring Scheme for Weather Figures
 #' 
 #' @param title_sz font size for title
 #' @param x_title_sz font size for x axis title
@@ -41,3 +41,65 @@ theme_sebms <- function(title_sz = 24,
   return(theme_sb)
 }
 
+#' Theme for Swedish Butterfly Monitoring Scheme for Species Figures
+#' 
+#' @param title_sz font size for title
+#' @param x_title_sz font size for x axis title
+#' @param y_title_sz font size for y axis title
+#' @param x_sz font size for x axis text
+#' @param y_sz font size for y axis text
+#' @param legend_position char indicating legend_position such as "none"
+#' @return a theme that can be used for ggplot plot objects
+#' @import ggplot2
+#' @export
+theme_sebms_species <- function(title_sz = 24, 
+                                x_title_sz = 16, y_title_sz = 16, 
+                                x_sz = 14, y_sz = 14,
+                                legend_position = "none", fontfamily = "Arial") 
+{
+  
+  theme_sb <- theme_bw() +
+    theme(
+      plot.title = element_text(family = fontfamily,
+                                face = "bold",
+                                size = title_sz,
+                                colour = "black",
+                                hjust = 0.5,
+                                margin = margin(0, 0, 25, 0)),
+      plot.tag = element_text(vjust = 0, size = 14),
+      plot.tag.position = c(0.05, 0.039),
+      axis.title.x = element_text(family = fontfamily,
+                                  face = "bold",
+                                  size = x_title_sz, 
+                                  colour = "black",
+                                  margin = margin(9, 20, 0, 0)),
+      axis.title.y = element_text(family = fontfamily,
+                                  face = "bold",
+                                  size = y_title_sz,
+                                  colour = "black",
+                                  margin = margin(0, 15, 0, 0), angle = 90),
+      axis.text.x = element_text(family = fontfamily,
+                                 face = "bold",
+                                 size = x_sz,
+                                 colour = "black",
+                                 margin = margin(5, 0, 0, 0),
+                                 lineheight = 1.3),
+      axis.text.y = element_text(family = fontfamily,
+                                 face = "bold",
+                                 size = y_sz,
+                                 colour = "black",
+                                 margin = margin(0, 4, 0, 0)),
+      axis.ticks = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      panel.grid.major.y = element_line(size = 0.5, colour = "grey"),
+      panel.background = element_rect(size = 0.5),
+      panel.border = element_rect(color = "black", linewidth = 0.8),
+      strip.background = element_blank(),
+      strip.text.x = element_text(size = 16, margin = margin(t = 0, b = 15)),
+      legend.position = legend_position
+    )
+  
+  return(theme_sb)
+}

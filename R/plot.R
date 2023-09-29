@@ -336,11 +336,13 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
             plot.tag.position = c(0.05, 0.039))
   }  
   
+  
   ggs <- df %>% 
     nest(.by = art) %>% 
-    mutate(plots = map(data, ~plotSP(df=.x)))
+    mutate(plots = map(data, ~plotSP(df=.x), .progress = "Creating individual species plots...."))
   
-  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, filename = .y, width = 26, height = 12, weathervar = year))
+  
+  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, filename = .y, width = 26, height = 12, weathervar = year), .progress = "Saving individual species plots as png.....")
   
   #sebms_ggsave(p, Art, width = 26, height = 12, weathervar = year)
   return(ggs$plots)

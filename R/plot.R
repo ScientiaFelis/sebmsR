@@ -257,12 +257,9 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
   
   if (database) {
     df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
-      #filter(str_detect(art, Art)) %>% 
-      filter(#speuid %in% Art, # Make the filter in the SQL query instead
-        !str_detect(art, "[Nn]oll"), 
-        !speuid %in% c(131,133)) %>% 
-      mutate(vecka = isoweek(datum)) %>% 
-      group_by(art, vecka) %>%
+      filter(!str_detect(art, "[Nn]oll"), 
+             !speuid %in% c(131,133)) %>%
+      group_by(art, vecka = isoweek(datum)) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
   }else {
     df <- 
@@ -271,6 +268,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
       summarise(count = sum(sumval))
   }
   
+  # Week / month label to get label of month below first week in month.
   fmt_label <- function(w) {
     
     # se_months <- c(
@@ -284,20 +282,22 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
             paste(w))
   }
   
+  # Make week limits
+  # QUESTION: add filter of week in df instead?
   Lweeklim <- min(isoweek(glue("{year}-04-01")))
   Hweeklim <- max(isoweek(glue("{year}-09-30")))
   
-  # Plotting function that make all limit and steps per species
-  plotSP <- function(df){
+  # Plotting function, making all limit and steps per species
+  plotSP <- function(df, Art){
     
-    # This makes a rounded to nearest 10, 100 or 1000 of max value to be at top of Y-axis to align with gridline at top
+    # This round max value to nearest 10, 100 or 1000 to be at top of Y-axis and align with gridline at top
     maxlim <-  case_when(max(df$count) < 100 ~ round_any(max(df$count), 10, f = ceiling),
                          max(df$count) < 1000 ~ round_any(max(df$count), 100, f = ceiling),
                          max(df$count) < 10000 ~ round_any(max(df$count), 200, f = ceiling),
                          max(df$count) > 10000 ~ round_any(max(df$count), 1000, f = ceiling)
     )
     
-    # This makes the steps right between labels
+    # This makes the steps between labels correct based on max value of count.
     steps <- case_when(max(df$count) < 12 ~ 1,
                        between(max(df$count),12,30) ~ 2,
                        between(max(df$count),30,60) ~ 5,
@@ -310,7 +310,8 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
     
     ggplot(data = df, 
            aes(x = vecka, y = count)) +
-      geom_bar(stat = 'identity', color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
+      geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
+      geom_text(aes(label = art)) +
       scale_y_continuous(limits = c(0, maxlim), #nice_lim(df$count),#c(0, max(10, max(df$count)*1.2)), # Set Y-axis limits to 10 or the max value of the butterfly count
                          # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
                          breaks = seq(0,maxlim, steps), #10^ceiling(log10(max(df$count)/100))*2), # 

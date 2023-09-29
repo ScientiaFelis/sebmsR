@@ -247,13 +247,14 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
 #' 
 #' @inheritParams sebms_abundance_per_species_plot
 #' @param Art The species id of interest
+#' @param plotname logical; if you want the species name inside the plot 
 #' 
 #' @import dplyr
 #' @import ggplot2
 #' @importFrom lubridate month weeks ymd
 #' @export
 #' 
-sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
+sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", plotname = FALSE, database = TRUE) {
   
   if (database) {
     df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
@@ -311,7 +312,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
     ggplot(data = df, 
            aes(x = vecka, y = count)) +
       geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
-      geom_text(aes(label = art)) +
+      geom_text(aes(x = Lweeklim+1, y = maxlim*0.99,label = unique(Art)), family = "Arial", size = 4, hjust = 0, vjust = 1, check_overlap = T) +
       scale_y_continuous(limits = c(0, maxlim), #nice_lim(df$count),#c(0, max(10, max(df$count)*1.2)), # Set Y-axis limits to 10 or the max value of the butterfly count
                          # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
                          breaks = seq(0,maxlim, steps), #10^ceiling(log10(max(df$count)/100))*2), # 
@@ -337,11 +338,18 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
             plot.tag.position = c(0.05, 0.039))
   }  
   
-  
-  ggs <- df %>% 
-    nest(.by = art) %>% 
-    mutate(plots = map(data, ~plotSP(df=.x), .progress = "Creating individual species plots...."))
-  
+  ## Add Species name to plot if requested
+  if (plotname) {
+    
+    ggs <- df %>% 
+      nest(.by = art) %>% 
+      mutate(plots = map2(data, art, ~plotSP(df=.x, Art = .y), .progress = "Creating individual species plots...."))
+  }else {
+    ggs <- df %>% 
+      nest(.by = art) %>% 
+      mutate(plots = map(data, ~plotSP(df=.x, Art = NA), .progress = "Creating individual species plots...."))
+    
+  }
   
   map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, filename = .y, width = 26, height = 12, weathervar = year), .progress = "Saving individual species plots as png.....")
   

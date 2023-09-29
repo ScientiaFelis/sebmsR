@@ -50,22 +50,33 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
   theme_sebms2 <- function() {
     theme_sebms() +
       theme(
-        axis.text = element_text(color = "black", family = "Arial"),
         plot.margin = margin(r=5, unit = "mm"),
+        plot.title = element_text(hjust = 0.5, size = 6, margin = margin(0,0,2,0, unit = "mm")),
         panel.grid.major.x = element_blank(), #element_line(color = "darkgrey", size = 0.3),
         #panel.grid.minor.x = element_line(color = "darkgray"),
         panel.grid.major.y = element_blank(),
         panel.border = element_blank(),
-        axis.title.x.top = element_text(size = 10, margin = margin(b=5, unit = "mm")),
+        axis.title.x.top = element_text(family = "Arial",
+                                        face = "bold",
+                                        size = 10,
+                                        colour = "black",
+                                        margin = margin(b=5, unit = "mm")),
         # adjust X-axis labels; also adjust their position using margin (acts like a bounding box)
         # using margin was needed because of the inwards placement of ticks
-        axis.text.x.top = element_text(size = 8, margin = margin(t = 0, r = 0, b = 3, l = 0, unit = "mm")),
+        axis.text.x.top = element_text(family = "Arial",
+                                       #face = "bold",
+                                       size = 8,
+                                       colour = "black",
+                                       margin = margin(t = 0, r = 0, b = 3, l = 0, unit = "mm")),
+        axis.text.y = element_text(family = "Arial",
+                                   #face = "bold",
+                                   size = 10,
+                                   colour = "black",
+                                   margin = margin(0,2,0,0, unit = "mm")),
         axis.ticks.x.top = element_line(color = "darkgray"),
         axis.ticks.length.x = unit(-1, "mm"),
-        axis.text.y = element_text(size = 10, margin = margin(0,2,0,0, unit = "mm")),
         axis.ticks.y = element_blank(),
-        axis.line = element_line(color = "darkgray", size = 0.35),
-        plot.title = element_text(hjust = 0.5, size = 6, margin = margin(0,0,2,0, unit = "mm"))) 
+        axis.line = element_line(color = "darkgray", size = 0.35)) 
   }
   
   insert_minor <- function(major_labs, n_minor) {
@@ -175,7 +186,7 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
     #   "oktober", "november", "december")
     
     if_else(is.na(lag(w)) | !month(ymd("2021-01-01") + weeks(lag(w))) == month(ymd("2021-01-01") + weeks(w)), 
-            paste0(sprintf("%2i", w), "\n      ", month(ymd("2021-01-01") + weeks(w), label = T, abbr = F, locale = "sv_SE.UTF-8")),
+            paste0(sprintf("%2i", w), "\n      ", month(ymd("2021-01-01") + weeks(w), label = T, abbr = T, locale = "sv_SE.UTF-8")),
             paste(w))
   }
   
@@ -221,18 +232,36 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
     ) +
     scale_fill_manual("Year", values = c(sebms_palette[1], sebms_palette[2])) +
     labs(y = "Antal individer", x = NULL, tag = "Vecka:") +
-    theme_sebms(y_title_sz = 16) +
-    theme(panel.grid.major.y = element_line(color = "gray"),
+    theme_sebms() +
+    theme(plot.margin = margin(t=2, r=7, b=2, l=1, unit = "mm"),
+          plot.title = element_text(family = "Arial",
+                                    face = "bold",
+                                    size = 24,
+                                    colour = "black",
+                                    hjust = 0.5),
+          plot.tag = element_text(vjust = 0),
+          plot.tag.position = c(0.06, 0.039),
+          panel.grid.major.y = element_line(color = "gray"),
           panel.border = element_rect(colour = "black", linewidth = 0.8),
           axis.ticks.x = element_line(color = "gray5"),
           axis.ticks.length = unit(0, "cm"),
-          axis.text.x = element_text(hjust = 0.5, face = "bold", margin = margin(t=3, unit = "mm"), lineheight = 1.3),
-          axis.text.y = element_text(face = "bold", margin = margin(r=4, unit = "mm")),
-          axis.line = element_line(color = "gray5", linewidth = 0.3),
-          plot.margin = margin(t=2, r=7, b=2, l=1, unit = "mm"),
-          plot.title = element_text(hjust = 0.5),
-          plot.tag = element_text(vjust = 0),
-          plot.tag.position = c(0.06, 0.039))
+          axis.title.y = element_text(family = "Arial",
+                                      face = "bold",
+                                      size = 16,
+                                      colour = "black"),
+          axis.text.x = element_text(family = "Arial",
+                                     face = "bold",
+                                     size = 14,
+                                     colour = "black",
+                                     hjust = 0.5,
+                                     margin = margin(t=3, unit = "mm"),
+                                     lineheight = 1.3),
+          axis.text.y = element_text(family = "Arial",
+                                     face = "bold",
+                                     size = 14,
+                                     colour = "black",
+                                     margin = margin(r=4, unit = "mm")),
+          axis.line = element_line(color = "gray5", linewidth = 0.3))
   
   yearname <- paste0(year, collapse = ":")
   sebms_ggsave(p, "Butterflynumber", width = 28, height = 16, weathervar = yearname)
@@ -308,7 +337,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
                        between(max(df$count),600,1000) ~ 100,
                        between(max(df$count),1000,5000) ~ 200,
                        TRUE ~1000)
-    
+    #FIXME: Add species name as title or subtitle instead of inside plot
     ggplot(data = df, 
            aes(x = vecka, y = count)) +
       geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
@@ -326,16 +355,29 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
       ) + 
       labs(y = "Antal", x = NULL, tag = "Vecka:") +
       theme_sebms() +
-      theme(panel.grid.major.y = element_line(color = "gray"),
+      theme(plot.title = element_text(hjust = 0.5),
+            plot.tag = element_text(vjust = 0, size = 14),
+            plot.tag.position = c(0.05, 0.039),
+            panel.grid.major.y = element_line(color = "gray"),
+            axis.title.y = element_text(family = "Arial",
+                                        face = "bold",
+                                        size = 16,
+                                        colour = "black"),
+            axis.text.x = element_text(family = "Arial",
+                                       face = "bold",
+                                       size = 14,
+                                       colour = "black",
+                                       hjust = 0.5,
+                                       margin = margin(t=4, unit = "mm"),
+                                       lineheight = 1.3),
+            axis.text.y = element_text(family = "Arial",
+                                       face = "bold",
+                                       size = 14,
+                                       colour = "black",
+                                       margin = margin(r=4, unit = "mm")),
             axis.ticks.x = element_line(color = "gray5"),
             axis.ticks.length = unit(0, "cm"),
-            axis.title.y = element_text(size = 16),
-            axis.text.x = element_text(hjust = 0.5, face = "bold", margin = margin(t=4, unit = "mm"), size = 14, family = "Arial", lineheight = 1.3),
-            axis.text.y = element_text(family = "Arial", face = "bold", size = 14, margin = margin(r=4, unit = "mm")),
-            axis.line = element_line(color = "gray5", linewidth = 0.3),
-            plot.title = element_text(hjust = 0.5),
-            plot.tag = element_text(vjust = 0, size = 14),
-            plot.tag.position = c(0.05, 0.039))
+            axis.line = element_line(color = "gray5", linewidth = 0.3))
   }  
   
   ## Add Species name to plot if requested
@@ -456,18 +498,32 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
     scale_fill_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +
     scale_colour_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +
     labs(x = "Antal arter på lokalen", y = "Antal lokaler") +
-    theme_sebms(fontfamily = "Arial") +
+    theme_sebms() +
     theme(panel.grid.major.y = element_line(color = "gray"),
-          axis.ticks.x =  element_blank(),#element_line(linewidth = 1, colour = "black"),
+          axis.ticks.x =  element_blank(),
           axis.ticks.y = element_blank(),
           axis.line = element_line(color = "gray5", linewidth = 0.21),
-          axis.text = element_text(face = "bold"),
-          #axis.text.x = element_text(margin = margin(t = 3, r = 0, b = 0, l = 0, unit = "mm")),
-          axis.title.x = element_text(margin = margin(t = 9)),
+          axis.text.x = element_text(family = "Arial",
+                                     face = "bold",
+                                     size = 14,
+                                     colour = "black"),
+          axis.text.y = element_text(family = "Arial",
+                                     face = "bold",
+                                     size = 14,
+                                     colour = "black"),
+          axis.title.x = element_text(family = "Arial",
+                                      face = "bold",
+                                      size = 16,
+                                      colour = "black",
+                                      margin = margin(t = 9)),
+          axis.title.y = element_text(family = "Arial",
+                                      face = "bold",
+                                      size = 16,
+                                      colour = "black"),
           panel.border = element_rect(colour = "black", linewidth = 1)
     )
   
-  sebms_ggsave(p, "Species_per_site", width = 16, height = 12, weathervar = year)
+  sebms_ggsave(p, "Species_per_site", width = 18, height = 13, weathervar = year)
   return(p)
   
   options(OutDec = ".") # Restore decimal separator to dot

@@ -208,8 +208,8 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
                    TRUE ~ 10)
   
   maxlim <- round_any(max(df$count), acc, f = ceiling) # Makes a rounded to nearest 1000 of max value to be at top of Y-axis
-  Hweeklim <- max(df$vecka)
-  Lweeklim <- min(df$vecka)
+  Hweeklim <- 40 #max(df$vecka)
+  Lweeklim <- 13 #min(df$vecka)
   
   p <- 
     ggplot(data = df, 
@@ -278,14 +278,14 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
     #   "oktober", "november", "december")
     
     if_else(is.na(lag(w)) | !month(ymd("2021-01-01") + weeks(lag(w))) == month(ymd("2021-01-01") + weeks(w)), 
-            paste0(sprintf("%2i", w), "\n   ", month(ymd("2021-01-01") + weeks(w), label = T, abbr = T, locale = "sv_SE.UTF-8")),
+            paste0(sprintf("%2i", w), "\n", month(ymd("2021-01-01") + weeks(w), label = T, abbr = T, locale = "sv_SE.UTF-8")),
             paste(w))
   }
   
   # Make week limits
   # QUESTION: add filter of week in df instead?
-  Lweeklim <- min(isoweek(glue("{year}-04-01")))
-  Hweeklim <- max(isoweek(glue("{year}-09-30")))
+  Lweeklim <- 14 #min(isoweek(glue("{year}-04-01")))
+  Hweeklim <- 40 #max(isoweek(glue("{year}-09-30")))
   
   # Plotting function, making all limit and steps per species
   plotSP <- function(df, Art){

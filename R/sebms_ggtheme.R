@@ -52,7 +52,7 @@ theme_sebms <- function(title_sz = 24,
 #' @return a theme that can be used for ggplot plot objects
 #' @import ggplot2
 #' @export
-theme_sebms_species <- function(title_sz = 24, 
+theme_sebms_species <- function(title_sz = 18, 
                                 x_title_sz = 16, y_title_sz = 16, 
                                 x_sz = 16, y_sz = 16,
                                 legend_position = "none", fontfamily = "Arial") 
@@ -65,7 +65,7 @@ theme_sebms_species <- function(title_sz = 24,
                                 size = title_sz,
                                 colour = "black",
                                 hjust = 0.5,
-                                margin = margin(0, 0, 25, 0)),
+                                margin = margin(0, 0, 5, 0)),
       plot.tag = element_text(vjust = 0, size = 14),
       plot.tag.position = c(0.05, 0.039),
       axis.title.x = element_text(family = fontfamily,

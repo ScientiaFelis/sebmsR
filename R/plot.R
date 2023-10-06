@@ -311,7 +311,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
     ggplot(data = df, 
            aes(x = vecka, y = count)) +
       geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.6) +
-      geom_text(aes(x = Lweeklim+1, y = maxlim*0.99,label = unique(Art)), family = "Arial", size = 4, hjust = 0, vjust = 1, check_overlap = T) +
+      #geom_text(aes(x = Lweeklim+1, y = maxlim*0.99,label = unique(Art)), family = "Arial", size = 4, hjust = 0, vjust = 1, check_overlap = T) +
       scale_y_continuous(limits = c(0, maxlim), #nice_lim(df$count),#c(0, max(10, max(df$count)*1.2)), # Set Y-axis limits to 10 or the max value of the butterfly count
                          # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
                          breaks = seq(0,maxlim, steps), #10^ceiling(log10(max(df$count)/100))*2), # 
@@ -323,7 +323,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
         limits = c(Lweeklim - 0.5, Hweeklim + 0.4), 
         expand = c(0, 0) 
       ) + 
-      labs(y = "Antal", x = NULL, tag = "Vecka:") +
+      labs(y = "Antal", x = NULL, tag = "Vecka:", title = glue::glue("{unique(Art)}")) +
       theme_sebms_species() +
       theme(axis.ticks = element_blank(),
             axis.line = element_line(color = "gray5",
@@ -339,7 +339,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
   }else {
     ggs <- df %>% 
       nest(.by = art) %>% 
-      mutate(plots = map(data, ~plotSP(df=.x, Art = ""), .progress = "Creating individual species plots...."))
+      mutate(plots = map(data, ~plotSP(df=.x, Art = NULL), .progress = "Creating individual species plots...."))
     
   }
   

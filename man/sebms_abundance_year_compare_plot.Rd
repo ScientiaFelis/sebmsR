@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{sebms_abundance_year_compare_plot}
 \alias{sebms_abundance_year_compare_plot}
-\title{Butterfly Number Histogram  Plot}
+\title{Butterfly Number Two Year Comparison Plot}
 \usage{
 sebms_abundance_year_compare_plot(
   year = 2021:2022,
@@ -13,15 +13,18 @@ sebms_abundance_year_compare_plot(
 )
 }
 \arguments{
-\item{year}{year to use for plot}
+\item{year}{two years to compare, e.g. 2021:2022}
 
-\item{Län}{character; which county you want the data from}
+\item{Län}{character or regular expression; which county you want the data from}
 
-\item{Landskap}{character; which region you want the data from}
+\item{Landskap}{character or reg ex; which region you want the data from}
 
-\item{Kommun}{character; which municipality you want the data from}
+\item{Kommun}{character or reg ex; which municipality you want the data from}
 
 \item{database}{logical; if the data should be based on the sebms database}
+}
+\value{
+A png figure with the number of individuals found each of the comparing years per week,
 }
 \description{
 Show the number of found butterflies per week, compared between two years.

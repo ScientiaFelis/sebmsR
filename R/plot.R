@@ -1,20 +1,20 @@
 
-#' Cumulative Species List Plots
+#' Individuals per Species Plots
 #' 
 #' Produce a plot with number of individuals per species a given year
 #' 
 #' @param year year to use for plot
-#' @param Län character; which county you want the data from
-#' @param Landskap character; which region you want the data from
-#' @param Kommun character; which municipality you want the data from
+#' @param Län character or regular expression; which county you want the data from
+#' @param Landskap character or reg ex; which region you want the data from
+#' @param Kommun character or reg ex; which municipality you want the data from
 #' @param database logical; if the data should be based on the sebms database
 #'
 #' @import dplyr
 #' @importFrom plyr round_any
 #' @import glue
 #' @import ggplot2
-#' @return two png figures with the abundance data for each species.
-#' One for species count below the median for that year and one for above median.
+#' @return Two png figures with the abundance data for each species.
+#' One for species count below the median for that year and one for species above median.
 #' @export
 #' 
 sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
@@ -144,16 +144,19 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
   return(res)
 }
 
-#' Butterfly Number Histogram  Plot
+#' Butterfly Number Two Year Comparison Plot
 #' 
 #' Show the number of found butterflies per week, compared between two years.
 #' 
 #' @inheritParams sebms_abundance_per_species_plot
+#' @param year two years to compare, e.g. 2021:2022
 #' 
 #' @import dplyr
 #' @importFrom plyr round_any
 #' @import ggplot2
 #' @importFrom lubridate month weeks ymd
+#' 
+#' @return A png figure with the number of individuals found each of the comparing years per week, 
 #' @export
 #' 
 sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
@@ -245,12 +248,14 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
 #' Show the number of individuals per week of a given species and year.
 #' 
 #' @inheritParams sebms_abundance_per_species_plot
-#' @param Art The species id of interest
+#' @param Art integer; the species id of interest
 #' @param plotname logical; if you want the species name inside the plot 
 #' 
 #' @import dplyr
 #' @import ggplot2
 #' @importFrom lubridate month weeks ymd
+#' 
+#' @return A png per species showing the number of individuals per week.
 #' @export
 #' 
 sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", plotname = FALSE, database = TRUE) {
@@ -350,7 +355,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
 }
 
 
-#' Species per Site and Site Type Plot
+#' Number of Sites per Species Number Category and Site Type
 #' 
 #' Show the number of sites within a range of species richness found at the site. Also show the mean number of species per site in each site type.
 #'  
@@ -359,6 +364,8 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
 #' @import dplyr
 #' @import forcats
 #' @import ggplot2
+#' 
+#' @returns A png with the number of sites within each category of number of species, for both slingor and transects. It also shows the mean number of species per site type.
 #' @export
 #' 
 sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {

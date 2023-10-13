@@ -22,13 +22,13 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
   if (database) {
     sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
       group_by(art) %>%
-      summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop") 
+      summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
     
     # Split data on the median to get to pngs that can be inserted in the report
-    s1 <- sp %>% 
-      filter(count >= median(count)) 
-    s2 <- sp %>% 
-      filter(count < median(count), !str_detect(art, "[Nn]oll")) 
+    s1 <- sp %>%
+      filter(count >= median(count))
+    s2 <- sp %>%
+      filter(count < median(count), !str_detect(art, "[Nn]oll"))
     
   }else {
     # n <- nrow(sebms_data_specieslist_cum)
@@ -75,17 +75,20 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
         axis.line = element_line(color = "darkgray", size = 0.35)) 
   }
   
+  # A function that makes tickmarks without labels between the labels.
   insert_minor <- function(major_labs, n_minor) {
     labs <- c( sapply( major_labs, function(x) c(x, rep("", n_minor) ) ) )
     labs[1:(length(labs)-n_minor)]
   }
   
+  # Make accurate distances between x-axis numbers based on max counts
   #QUESTION: Is this the correct steps?
   acc <- case_when(max(sp$count) >4000 ~ 2000,
                    between(max(sp$count), 1000,4000) ~ 500,
                    TRUE ~ 100)
   maxlim <- round_any(max(sp$count), accuracy = acc, ceiling)
   
+  # To make tickmarks between the species on y-axis by using geom_segment().
   tickmarks1 <- length(unique(s1$art))-0.5
   tickmarks2 <- length(unique(s2$art))-0.5
   
@@ -137,6 +140,7 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
     coord_cartesian(xlim = c(0,maxlim), clip = "off") +
     theme_sebms2()
   
+  # Make correct file name for png.
   res <- list(p1 = p1, p2 = p2)
   name <- list(glue("Above-median_{year}"), glue("Below-median_{year}"))
   map2(res, name, ~sebms_ggsave(.x, "Species_tot_count", width = 22, height=32, weathervar = .y))
@@ -189,8 +193,8 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
             paste(w))
   }
   
+  # To produce the correct steps betweeen y-axis number.
   #QUESTION: Is this the correct steps?
-  
   steps <- case_when(max(df$count) < 12 ~ 1,
                      between(max(df$count),12,30) ~ 2,
                      between(max(df$count),30,60) ~ 5,
@@ -234,7 +238,7 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
     theme_sebms_species() +
     theme(plot.margin = margin(t=2, r=7, b=2, l=1, unit = "mm"),
           axis.line = element_line(color = "gray5", linewidth = 0.3)
-          )
+    )
   
   yearname <- paste0(year, collapse = ":")
   sebms_ggsave(p, "Butterflynumber", width = 28, height = 16, weathervar = yearname)
@@ -370,8 +374,8 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
 #' 
 sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
   
-  b <- seq(1, 50, by = 5)
-  l <- paste0(b, "-", b + 4)
+  b<- seq(1, 50, by = 5) # make the start of species number groups
+  l <- paste0(b, "-", b + 4) # This maes the group intervals
   
   if (database) {
     
@@ -410,6 +414,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   
   options(OutDec = ",") # Set decimal separator to comma
   
+  
   lab <- df %>% distinct(sitetype, medel) # unique mean labels
   
   # insert_minor <- function(major_labs, n_minor) {
@@ -424,7 +429,9 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   # 
   # r <- rbind(unique(df$interval),matrix(rep(c(""), 10),ncol=length(unique(df$interval))))
   # labname <- c("", r)
-  tickmarks <- (df %>% distinct(interval, sitetype) %>% pull(interval) %>% length()) /2 +0.5
+  
+  
+  tickmarks <- (df %>% distinct(interval, sitetype) %>% pull(interval) %>% length()) /2 +0.5 # Produce the correct numbet of tickmarks
   
   p <- df %>% 
     ggplot(aes(x = fct_reorder(interval, sortorder), y = site_count)) +
@@ -441,10 +448,10 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
               position = position_dodge2(width = 1.3),
               fontface = "bold",
               inherit.aes = F) +
-    geom_segment(aes(x = stage(reorder(interval, sortorder), after_scale = rep(seq(1.5, tickmarks,1), each=2)),
+    geom_segment(aes(x = stage(reorder(interval, sortorder), after_scale = rep(seq(1.5, tickmarks,1), each=2)), # This adds a segment, that looks like a tickmark, after each group
                      xend = stage(reorder(interval, sortorder), after_scale = rep(seq(1.5, tickmarks,1), each=2)),
-                     y = -1,
-                     yend = 0)) + # Making segments between groups on x-axis.
+                     y = -1, # How long the tickmark is, we want negative as it should go down
+                     yend = 0)) + # The start of the tickmark
     scale_y_continuous(breaks = seq(0,120,20),
                        labels = seq(0,120,20),
                        #limits = c(0, 120),

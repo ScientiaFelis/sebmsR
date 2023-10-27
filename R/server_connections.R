@@ -30,7 +30,7 @@ sebms_connect <- function() {
   tryCatch(
     pool <- pool::dbPool(
       drv = config$sebms$driver, 
-      dbname =config$sebms$database,
+      dbname = config$sebms$database,
       host = config$sebms$server, 
       port = config$sebms$port,
       user = config$sebms$dbuser,
@@ -40,12 +40,17 @@ sebms_connect <- function() {
       #e$message <- paste("Error connecting to SeBMS ", e, sep = " ")
       #warning(e)
       message("Config file used: ", cfgfile, ", timestamp: ", Sys.time())
-      message("Using dbuser: ", config$sebms$dbuser, 
-              " with more connection details in the config file")
+      message("Using driver: ", config$sebms$driver, 
+              "\nUsing database: ", config$sebms$database,
+              "\nUsing server: ", config$sebms$server,
+              "\nUsing port: ", config$sebms$port,
+              "\nUsing dbuser: ", config$sebms$dbuser
+             )
+      
       message("Now proceeding without valid db connection...")
     })
   
-  return (pool)
+  return(pool)
 }
 
 #' Connection pool used for db connections

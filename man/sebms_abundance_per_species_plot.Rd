@@ -9,7 +9,8 @@ sebms_abundance_per_species_plot(
   Län = ".",
   Landskap = ".",
   Kommun = ".",
-  database = TRUE
+  database = TRUE,
+  source = c(54, 55, 56, 63, 64, 66, 67)
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ sebms_abundance_per_species_plot(
 \item{Kommun}{character or reg ex; which municipality you want the data from}
 
 \item{database}{logical; if the data should be based on the sebms database}
+
+\item{source}{the database sources as id numbers}
 }
 \value{
 Two png figures with the abundance data for each species.

@@ -8,7 +8,8 @@ sebms_species_site_count_filtered(
   year = 2021,
   Län = ".",
   Landskap = ".",
-  Kommun = "."
+  Kommun = ".",
+  source = c(54, 55, 56, 63, 64, 66, 67)
 )
 }
 \arguments{

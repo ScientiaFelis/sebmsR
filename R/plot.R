@@ -8,6 +8,7 @@
 #' @param Landskap character or reg ex; which region you want the data from
 #' @param Kommun character or reg ex; which municipality you want the data from
 #' @param database logical; if the data should be based on the sebms database
+#' @param source the database sources as id numbers
 #'
 #' @import dplyr
 #' @importFrom plyr round_any
@@ -17,10 +18,10 @@
 #' One for species count below the median for that year and one for species above median.
 #' @export
 #' 
-sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
+sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67)) {
   
   if (database) {
-    sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
+    sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
       group_by(art) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
     
@@ -163,10 +164,10 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
 #' @return A png figure with the number of individuals found each of the comparing years per week, 
 #' @export
 #' 
-sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
+sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67)) {
 
   if (database) {
-    df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
+    df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
       mutate(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
       filter(datum > ymd(glue("{year}-04-01")), datum < ymd(glue("{year}-09-30"))) %>% 
       group_by(year, vecka) %>%
@@ -266,10 +267,10 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
 #' @return A png per species showing the number of individuals per week.
 #' @export
 #' 
-sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", plotname = FALSE, database = TRUE) {
+sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", plotname = FALSE, database = TRUE, source = c(54,55,56,63,64,66,67)) {
   
   if (database) {
-    df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
+    df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
       filter(!str_detect(art, "[Nn]oll"), 
              !speuid %in% c(131,133)) %>%
       group_by(art, vecka = isoweek(datum)) %>%
@@ -377,14 +378,14 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
 #' @returns A png with the number of sites within each category of number of species, for both slingor and transects. It also shows the mean number of species per site type.
 #' @export
 #' 
-sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
+sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67)) {
   
-  b<- seq(1, 50, by = 5) # make the start of species number groups
+  b <- seq(1, 50, by = 5) # make the start of species number groups
   l <- paste0(b, "-", b + 4) # This maes the group intervals
   
   if (database) {
     
-    df <- sebms_species_site_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
+    df <- sebms_species_site_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
       group_by(situid, lokalnamn, sitetype) %>% 
       summarise(species = n_distinct(speuid), .groups = "drop") %>% # Number of species per site and site type 
       group_by(sitetype) %>% 

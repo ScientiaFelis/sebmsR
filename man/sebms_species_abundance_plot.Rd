@@ -11,7 +11,8 @@ sebms_species_abundance_plot(
   Landskap = ".",
   Kommun = ".",
   plotname = FALSE,
-  database = TRUE
+  database = TRUE,
+  source = c(54, 55, 56, 63, 64, 66, 67)
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ sebms_species_abundance_plot(
 \item{plotname}{logical; if you want the species name inside the plot}
 
 \item{database}{logical; if the data should be based on the sebms database}
+
+\item{source}{the database sources as id numbers}
 }
 \value{
 A png per species showing the number of individuals per week.

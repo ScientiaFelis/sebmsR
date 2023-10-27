@@ -37,10 +37,11 @@ editcred <- function(homepath = "~/") {
 #' @import glue
 #' @importFrom DBI dbGetQuery
 #' @export
-sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap = ".", Kommun = "."){
+sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", source = c(54,55,56,63,64,66,67)){
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
-  
+  source <- glue("({paste0({source}, collapse = ',')})")
+                 
   Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement
   Landskap <- paste0(str_to_lower(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
   Kommun <- paste0(str_to_lower(Kommun),collapse = "|") # Make the list of Kommun to s regex statement
@@ -100,8 +101,8 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
         
         WHERE
           extract('YEAR' from vis_begintime) IN {year}
-          --AND
-          --vis_typ_datasourceid in (54,55,56,63,64,66,67)
+          AND
+          vis_typ_datasourceid IN {source}
           AND (spv.spv_istrim=TRUE or spe_uid in (135,131,133) )
         
        GROUP BY
@@ -125,10 +126,11 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
 #' @import glue
 #' @importFrom DBI dbGetQuery
 #' @export
-sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".") {
+sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", source = c(54,55,56,63,64,66,67)) {
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   Art <- glue("({paste0({Art}, collapse = ',')})")
+  source <- glue("({paste0({source}, collapse = ',')})")
   
   Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement
   Landskap <- paste0(str_to_lower(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
@@ -186,6 +188,7 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
         INNER JOIN mun ON sit.sit_reg_municipalityid = mun.kommun_id
         WHERE
           extract('YEAR' from vis_begintime) IN {year}
+          AND vis_typ_datasourceid IN {source}
           AND (spv.spv_istrim=TRUE or spe_uid IN (135,131,133) )
           AND spe.spe_uid IN {Art}
         

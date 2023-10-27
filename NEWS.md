@@ -6,6 +6,24 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
 
+# v 1.4.0
+
+This version come with a new theme for some of the plot functions.
+This theme`theme_sebms_species()` reduce the theme ad on requirements after the 
+theme_sebms()`.
+There is also a number of detail changes in figure looks which makes it as close to
+the report figures as possible.
+
+* New theme `theme_sebms_species()` which takes care of most differences between some of the species plots.
+* A progress bar now show the progress for the processes in plot functions when there are many figures to make and save.
+* The species species name can now be added as the plot title in `sebms_species_abundance_plot()` by setting `plotname=TRUE`
+* The weeks are now set to always be between 14 and 40 for both `sebms_species_abundance_plot()` and `sebms_abundance_year_compare_plot()`.
+* Axis text are no longer bold and it is a bit larger.
+* Gridlines are a bit thicker and darker.
+* Bars in `sebms_species_abundance_plot()` is a bit wider.
+* More documentation and comments in scripts.
+
+
 # v 1.3.7
 
 * Rename functions to a bit more describing names. There is still room for improval.

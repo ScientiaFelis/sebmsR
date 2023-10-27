@@ -2,7 +2,7 @@
 % Please edit documentation in R/sebms_ggtheme.R
 \name{theme_sebms}
 \alias{theme_sebms}
-\title{Theme for Swedish Butterfly Monitoring scheme for use in ggplot}
+\title{Theme for Swedish Butterfly Monitoring Scheme for Weather Figures}
 \usage{
 theme_sebms(
   title_sz = 24,
@@ -31,5 +31,5 @@ theme_sebms(
 a theme that can be used for ggplot plot objects
 }
 \description{
-Theme for Swedish Butterfly Monitoring scheme for use in ggplot
+Theme for Swedish Butterfly Monitoring Scheme for Weather Figures
 }

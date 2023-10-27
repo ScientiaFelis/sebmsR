@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{sebms_abundance_per_species_plot}
 \alias{sebms_abundance_per_species_plot}
-\title{Cumulative Species List Plots}
+\title{Individuals per Species Plots}
 \usage{
 sebms_abundance_per_species_plot(
   year = 2021,
@@ -15,16 +15,17 @@ sebms_abundance_per_species_plot(
 \arguments{
 \item{year}{year to use for plot}
 
-\item{Län}{character; which county you want the data from}
+\item{Län}{character or regular expression; which county you want the data from}
 
-\item{Landskap}{character; which region you want the data from}
+\item{Landskap}{character or reg ex; which region you want the data from}
 
-\item{Kommun}{character; which municipality you want the data from}
+\item{Kommun}{character or reg ex; which municipality you want the data from}
 
 \item{database}{logical; if the data should be based on the sebms database}
 }
 \value{
-a list with two ggplot objects, named p1 and p2
+Two png figures with the abundance data for each species.
+One for species count below the median for that year and one for species above median.
 }
 \description{
 Produce a plot with number of individuals per species a given year

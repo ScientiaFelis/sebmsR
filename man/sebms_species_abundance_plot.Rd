@@ -10,21 +10,27 @@ sebms_species_abundance_plot(
   Län = ".",
   Landskap = ".",
   Kommun = ".",
+  plotname = FALSE,
   database = TRUE
 )
 }
 \arguments{
 \item{year}{year to use for plot}
 
-\item{Art}{The species id of interest}
+\item{Art}{integer; the species id of interest}
 
-\item{Län}{character; which county you want the data from}
+\item{Län}{character or regular expression; which county you want the data from}
 
-\item{Landskap}{character; which region you want the data from}
+\item{Landskap}{character or reg ex; which region you want the data from}
 
-\item{Kommun}{character; which municipality you want the data from}
+\item{Kommun}{character or reg ex; which municipality you want the data from}
+
+\item{plotname}{logical; if you want the species name inside the plot}
 
 \item{database}{logical; if the data should be based on the sebms database}
+}
+\value{
+A png per species showing the number of individuals per week.
 }
 \description{
 Show the number of individuals per week of a given species and year.

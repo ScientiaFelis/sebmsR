@@ -1,19 +1,20 @@
 
-#' Cumulative Species List Plots
+#' Individuals per Species Plots
 #' 
 #' Produce a plot with number of individuals per species a given year
 #' 
 #' @param year year to use for plot
-#' @param Län character; which county you want the data from
-#' @param Landskap character; which region you want the data from
-#' @param Kommun character; which municipality you want the data from
+#' @param Län character or regular expression; which county you want the data from
+#' @param Landskap character or reg ex; which region you want the data from
+#' @param Kommun character or reg ex; which municipality you want the data from
 #' @param database logical; if the data should be based on the sebms database
 #'
 #' @import dplyr
 #' @importFrom plyr round_any
 #' @import glue
 #' @import ggplot2
-#' @return a list with two ggplot objects, named p1 and p2
+#' @return Two png figures with the abundance data for each species.
+#' One for species count below the median for that year and one for species above median.
 #' @export
 #' 
 sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
@@ -21,25 +22,20 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
   if (database) {
     sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
       group_by(art) %>%
-      summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop") 
+      summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
     
-    #if (sp$count > 200) {
-    
-    s1 <- sp %>% 
-      filter(count >= median(count)) 
-    
-    s2 <- sp %>% 
-      filter(count < median(count), !str_detect(art, "[Nn]oll")) 
-    # }
+    # Split data on the median to get to pngs that can be inserted in the report
+    s1 <- sp %>%
+      filter(count >= median(count))
+    s2 <- sp %>%
+      filter(count < median(count), !str_detect(art, "[Nn]oll"))
     
   }else {
     # n <- nrow(sebms_data_specieslist_cum)
-    
     s1 <- 
       sebms_data_specieslist_cum %>% 
       filter(count >= 200)
     #  slice(1 : floor(n/2))
-    
     s2 <- 
       sebms_data_specieslist_cum %>% 
       filter(count < 200)
@@ -48,45 +44,59 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
   
   # Modify theme
   theme_sebms2 <- function() {
-    theme_sebms() +
+    theme_sebms_species() +
       theme(
-        axis.text = element_text(color = "black", family = "Arial"),
         plot.margin = margin(r=5, unit = "mm"),
+        plot.title = element_text(hjust = 0.5, size = 6, margin = margin(0,0,2,0, unit = "mm")),
         panel.grid.major.x = element_blank(), #element_line(color = "darkgrey", size = 0.3),
         #panel.grid.minor.x = element_line(color = "darkgray"),
         panel.grid.major.y = element_blank(),
         panel.border = element_blank(),
-        axis.title.x.top = element_text(size = 10, margin = margin(b=5, unit = "mm")),
+        axis.title.x.top = element_text(family = "Arial",
+                                        face = "bold",
+                                        size = 10,
+                                        colour = "black",
+                                        margin = margin(b=5, unit = "mm")),
         # adjust X-axis labels; also adjust their position using margin (acts like a bounding box)
         # using margin was needed because of the inwards placement of ticks
-        axis.text.x.top = element_text(size = 8, margin = margin(t = 0, r = 0, b = 3, l = 0, unit = "mm")),
+        axis.text.x.top = element_text(family = "Arial",
+                                       face = "plain",
+                                       size = 10,
+                                       colour = "black",
+                                       margin = margin(t = 0, r = 0, b = 3, l = 0, unit = "mm")),
+        axis.text.y = element_text(family = "Arial",
+                                   face = "plain",
+                                   size = 10,
+                                   colour = "black",
+                                   margin = margin(0,2,0,0, unit = "mm")),
         axis.ticks.x.top = element_line(color = "darkgray"),
         axis.ticks.length.x = unit(-1, "mm"),
-        axis.text.y = element_text(size = 10, margin = margin(0,2,0,0, unit = "mm")),
         axis.ticks.y = element_blank(),
-        axis.line = element_line(color = "darkgray", size = 0.35),
-        plot.title = element_text(hjust = 0.5, size = 6, margin = margin(0,0,2,0, unit = "mm"))) 
+        axis.line = element_line(color = "darkgray", size = 0.35)) 
   }
   
+  # A function that makes tickmarks without labels between the labels.
   insert_minor <- function(major_labs, n_minor) {
     labs <- c( sapply( major_labs, function(x) c(x, rep("", n_minor) ) ) )
     labs[1:(length(labs)-n_minor)]
   }
   
+  # Make accurate distances between x-axis numbers based on max counts
   #QUESTION: Is this the correct steps?
   acc <- case_when(max(sp$count) >4000 ~ 2000,
                    between(max(sp$count), 1000,4000) ~ 500,
                    TRUE ~ 100)
   maxlim <- round_any(max(sp$count), accuracy = acc, ceiling)
   
+  # To make tickmarks between the species on y-axis by using geom_segment().
   tickmarks1 <- length(unique(s1$art))-0.5
   tickmarks2 <- length(unique(s2$art))-0.5
   
   p1 <- s1 %>%  
     ggplot(aes(y = reorder(art, count), x = count)) +
-    geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
-    geom_text(aes(label = count), colour = "grey10", hjust = -0.2, size = 2.5) +
     geom_vline(xintercept = seq(0,maxlim, acc), colour = "darkgrey") +
+    geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
+    geom_text(aes(label = count), colour = "grey10", hjust = -0.2, size = 3) +
     geom_segment(aes(y = stage(reorder(art, count), after_scale = seq(0.5, tickmarks1,1)),
                      yend = stage(reorder(art, count), after_scale = seq(0.5, tickmarks1,1)),
                      x = -maxlim*0.005,
@@ -98,7 +108,7 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
       breaks = seq(0,maxlim, acc/4),
       labels = insert_minor(c(acc*0:(maxlim/acc)), 3),
       position = "top",
-     # limits = c(0, maxlim),
+      # limits = c(0, maxlim),
       expand = c(0, 0)
     ) +
     scale_y_discrete(expand = c(0.017,0.017)) +
@@ -108,9 +118,9 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
   
   p2 <- s2 %>% 
     ggplot(aes(y = reorder(art, count), x = count)) +
-    geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
-    geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 2.5) +
     geom_vline(xintercept = seq(0,maxlim, acc), colour = "darkgrey") +
+    geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
+    geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 3) +
     geom_segment(aes(y = stage(reorder(art, count), after_scale = seq(0.5, tickmarks2,1)),
                      yend = stage(reorder(art, count), after_scale = seq(0.5, tickmarks2,1)),
                      x = -maxlim*0.005,
@@ -123,34 +133,38 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
       breaks = seq(0,maxlim, acc/4),
       labels = insert_minor(c(acc*0:(maxlim/acc)), 3),
       position = "top",
-  #  limits = c(0, maxlim),
+      #  limits = c(0, maxlim),
       expand = c(0, 0)
     )  +
     scale_y_discrete(expand = c(0.017,0.017)) +
     coord_cartesian(xlim = c(0,maxlim), clip = "off") +
     theme_sebms2()
   
+  # Make correct file name for png.
   res <- list(p1 = p1, p2 = p2)
-  name <- list(glue("Öv200_{year}"), glue("Und200_{year}"))
-  map2(res, name, ~sebms_ggsave(.x, "Species_tot_count", width = 22, height=32, weathervar = .y))
+  name <- list(glue("Above-median_{year}"), glue("Below-median_{year}"))
+  map2(res, name, ~sebms_ggsave(.x, "Species_tot_count", width = 22, height=32, weathervar = .y, text.factor = 4))
   
   return(res)
 }
 
-#' Butterfly Number Histogram  Plot
+#' Butterfly Number Two Year Comparison Plot
 #' 
 #' Show the number of found butterflies per week, compared between two years.
 #' 
 #' @inheritParams sebms_abundance_per_species_plot
+#' @param year two years to compare, e.g. 2021:2022
 #' 
 #' @import dplyr
 #' @importFrom plyr round_any
 #' @import ggplot2
 #' @importFrom lubridate month weeks ymd
+#' 
+#' @return A png figure with the number of individuals found each of the comparing years per week, 
 #' @export
 #' 
 sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
-  
+
   if (database) {
     df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
       mutate(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
@@ -163,8 +177,8 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
       group_by(artnamn, vecka) %>%
       summarise(count = sum(sumval))
   }
-  
-  
+
+
   # This makes a label that have a row of weeks and then a row of months in text 
   fmt_label <- function(w) {
     
@@ -173,14 +187,15 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
     #   "april", "maj", "juni",
     #   "juli","augusti", "september",
     #   "oktober", "november", "december")
-    
     if_else(is.na(lag(w)) | !month(ymd("2021-01-01") + weeks(lag(w))) == month(ymd("2021-01-01") + weeks(w)), 
-            paste0(sprintf("%2i", w), "\n      ", month(ymd("2021-01-01") + weeks(w), label = T, abbr = F, locale = "sv_SE.UTF-8")),
+            paste0(sprintf("%2i", w), "\n      ", month(ymd("2021-01-01") + weeks(w), label = T, abbr = T, locale = "sv_SE.UTF-8")),
             paste(w))
   }
-  
+  # Hard coded labesl instead
+  #veckamån <- c("Vecka: \n\n", "13",  "14\n   apr", "15","16","17","18\n   maj","19","20","21","22\n   jun","23","24", "25","26\n   jul","27","28","29","30","31\n   aug","32","33","34","35\n   sep","36","37","38","39\n   okt","40")
+
+  # To produce the correct steps betweeen y-axis number.
   #QUESTION: Is this the correct steps?
-  
   steps <- case_when(max(df$count) < 12 ~ 1,
                      between(max(df$count),12,30) ~ 2,
                      between(max(df$count),30,60) ~ 5,
@@ -189,20 +204,20 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
                      between(max(df$count),300,600) ~ 50,
                      between(max(df$count),600,1000) ~ 100,
                      between(max(df$count),1000,5000) ~ 200,
-                     TRUE ~1000)
+                     TRUE ~2000)
   # 
   # steps <- case_when(max(df$count) <600 ~ 100,
   #                    between(max(df$count), 600,10000) ~ 10,
   #                    between(max(df$count), 10001,40000) ~ 100,
   #                    TRUE ~ 20)
-  
+
   acc <- case_when(between(max(df$count), 1000,4000) ~ 500,
                    max(df$count) >4000 ~ 2000,
                    TRUE ~ 10)
   
   maxlim <- round_any(max(df$count), acc, f = ceiling) # Makes a rounded to nearest 1000 of max value to be at top of Y-axis
-  Hweeklim <- max(df$vecka)
-  Lweeklim <- min(df$vecka)
+  Hweeklim <- 40 #max(df$vecka)
+  Lweeklim <- 13 #min(df$vecka)
   
   p <- 
     ggplot(data = df, 
@@ -214,29 +229,24 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
                        expand = c(0,0.05)) +
     #expand_limits(y=max(df$count)*1.1) +
     scale_x_continuous(
-      breaks = c(10, Lweeklim:Hweeklim),
-      labels = c("Vecka: ", fmt_label(Lweeklim:Hweeklim)),
+      breaks = c(Lweeklim:Hweeklim),
+      labels = c(fmt_label(Lweeklim:Hweeklim)),
+      #labels = c(veckamån),
       limits = c(Lweeklim - 0.5, Hweeklim + 0.4), 
       expand = c(0, 0) 
     ) +
     scale_fill_manual("Year", values = c(sebms_palette[1], sebms_palette[2])) +
     labs(y = "Antal individer", x = NULL, tag = "Vecka:") +
-    theme_sebms(y_title_sz = 16) +
-    theme(panel.grid.major.y = element_line(color = "gray"),
-          panel.border = element_rect(colour = "black", linewidth = 0.8),
-          axis.ticks.x = element_line(color = "gray5"),
-          axis.ticks.length = unit(0, "cm"),
-          axis.text.x = element_text(hjust = 0.5, face = "bold", margin = margin(t=3, unit = "mm"), lineheight = 1.3),
-          axis.text.y = element_text(face = "bold", margin = margin(r=4, unit = "mm")),
+    theme_sebms_species() +
+    theme(plot.margin = margin(t=2, r=7, b=2, l=1, unit = "mm"),
           axis.line = element_line(color = "gray5", linewidth = 0.3),
-          plot.margin = margin(t=2, r=7, b=2, l=1, unit = "mm"),
-          plot.title = element_text(hjust = 0.5),
-          plot.tag = element_text(vjust = 0),
-          plot.tag.position = c(0.06, 0.039))
-  
+          axis.text.y = element_text(size = 18),
+          plot.tag.position = c(0.05,0.075)
+    )
+ 
   yearname <- paste0(year, collapse = ":")
-  sebms_ggsave(p, "Butterflynumber", width = 28, height = 16, weathervar = yearname)
-  
+  sebms_ggsave(p, "Butterflynumber", width = 30, height = 15, weathervar = yearname)
+ 
   return(p)
 }
 
@@ -246,23 +256,23 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
 #' Show the number of individuals per week of a given species and year.
 #' 
 #' @inheritParams sebms_abundance_per_species_plot
-#' @param Art The species id of interest
+#' @param Art integer; the species id of interest
+#' @param plotname logical; if you want the species name inside the plot 
 #' 
 #' @import dplyr
 #' @import ggplot2
 #' @importFrom lubridate month weeks ymd
+#' 
+#' @return A png per species showing the number of individuals per week.
 #' @export
 #' 
-sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
+sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", plotname = FALSE, database = TRUE) {
   
   if (database) {
     df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
-      #filter(str_detect(art, Art)) %>% 
-      filter(#speuid %in% Art, # Make the filter in the SQL query instead
-        !str_detect(art, "[Nn]oll"), 
-        !speuid %in% c(131,133)) %>% 
-      mutate(vecka = isoweek(datum)) %>% 
-      group_by(art, vecka) %>%
+      filter(!str_detect(art, "[Nn]oll"), 
+             !speuid %in% c(131,133)) %>%
+      group_by(art, vecka = isoweek(datum)) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
   }else {
     df <- 
@@ -271,6 +281,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
       summarise(count = sum(sumval))
   }
   
+  # Week / month label to get label of month below first week in month.
   fmt_label <- function(w) {
     
     # se_months <- c(
@@ -280,24 +291,26 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
     #   "oktober", "november", "december")
     
     if_else(is.na(lag(w)) | !month(ymd("2021-01-01") + weeks(lag(w))) == month(ymd("2021-01-01") + weeks(w)), 
-            paste0(sprintf("%2i", w), "\n   ", month(ymd("2021-01-01") + weeks(w), label = T, abbr = T, locale = "sv_SE.UTF-8")),
+            paste0(sprintf("%2i", w), "\n  ", month(ymd("2021-01-01") + weeks(w), label = T, abbr = T, locale = "sv_SE.UTF-8")),
             paste(w))
   }
   
-  Lweeklim <- min(isoweek(glue("{year}-04-01")))
-  Hweeklim <- max(isoweek(glue("{year}-09-30")))
+  # Make week limits
+  # QUESTION: add filter of week in df instead?
+  Lweeklim <- 14 #min(isoweek(glue("{year}-04-01")))
+  Hweeklim <- 40 #max(isoweek(glue("{year}-09-30")))
   
-  # Plotting function that make all limit and steps per species
-  plotSP <- function(df){
+  # Plotting function, making all limit and steps per species
+  plotSP <- function(df, Art){
     
-    # This makes a rounded to nearest 10, 100 or 1000 of max value to be at top of Y-axis to align with gridline at top
+    # This round max value to nearest 10, 100 or 1000 to be at top of Y-axis and align with gridline at top
     maxlim <-  case_when(max(df$count) < 100 ~ round_any(max(df$count), 10, f = ceiling),
                          max(df$count) < 1000 ~ round_any(max(df$count), 100, f = ceiling),
                          max(df$count) < 10000 ~ round_any(max(df$count), 200, f = ceiling),
                          max(df$count) > 10000 ~ round_any(max(df$count), 1000, f = ceiling)
     )
     
-    # This makes the steps right between labels
+    # This makes the steps between labels correct based on max value of count.
     steps <- case_when(max(df$count) < 12 ~ 1,
                        between(max(df$count),12,30) ~ 2,
                        between(max(df$count),30,60) ~ 5,
@@ -307,46 +320,51 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
                        between(max(df$count),600,1000) ~ 100,
                        between(max(df$count),1000,5000) ~ 200,
                        TRUE ~1000)
-    
+    #FIXME: Add species name as title or subtitle instead of inside plot
     ggplot(data = df, 
            aes(x = vecka, y = count)) +
-      geom_bar(stat = 'identity', color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
+      geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.6) +
+      #geom_text(aes(x = Lweeklim+1, y = maxlim*0.99,label = unique(Art)), family = "Arial", size = 4, hjust = 0, vjust = 1, check_overlap = T) +
       scale_y_continuous(limits = c(0, maxlim), #nice_lim(df$count),#c(0, max(10, max(df$count)*1.2)), # Set Y-axis limits to 10 or the max value of the butterfly count
                          # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
                          breaks = seq(0,maxlim, steps), #10^ceiling(log10(max(df$count)/100))*2), # 
                          expand = c(0,0)) +
       #expand_limits(y=max(df$count)*1.1) +
       scale_x_continuous(
-        breaks = c(10, seq(Lweeklim,Hweeklim,2)),
-        labels = c("Vecka: ", fmt_label(seq(Lweeklim,Hweeklim,2))),
+        breaks = c(seq(Lweeklim,Hweeklim,2)),
+        labels = c(fmt_label(seq(Lweeklim,Hweeklim,2))),
         limits = c(Lweeklim - 0.5, Hweeklim + 0.4), 
         expand = c(0, 0) 
       ) + 
-      labs(y = "Antal", x = NULL, tag = "Vecka:") +
-      theme_sebms(y_title_sz = 18, fontfamily = "Arial") +
-      theme(panel.grid.major.y = element_line(color = "gray"),
-            axis.ticks.x = element_line(color = "gray5"),
-            axis.ticks.length = unit(0, "cm"),
-            axis.text.x = element_text(hjust = 0.5, face = "bold", margin = margin(t=4, unit = "mm"), family = "Arial", size = 14, lineheight = 1.3),
-            axis.text.y = element_text(face = "bold", margin = margin(r=4, unit = "mm")),
-            axis.line = element_line(color = "gray5", linewidth = 0.3),
-            plot.title = element_text(hjust = 0.5),
-            plot.tag = element_text(vjust = 0, size = 14),
-            plot.tag.position = c(0.05, 0.039))
+      labs(y = "Antal", x = NULL, tag = "Vecka:", title = glue::glue("{unique(Art)}")) +
+      theme_sebms_species() +
+      theme(axis.ticks = element_blank(),
+            axis.line = element_line(color = "gray5",
+                                     linewidth = 0.3),
+            plot.tag.position = c(0.05, 0.08))
   }  
   
-  ggs <- df %>% 
-    nest(.by = art) %>% 
-    mutate(plots = map(data, ~plotSP(df=.x)))
+  ## Add Species name to plot if requested
+  if (plotname) {
+    
+    ggs <- df %>% 
+      nest(.by = art) %>% 
+      mutate(plots = map2(data, art, ~plotSP(df=.x, Art = .y), .progress = "Creating individual species plots...."))
+  }else {
+    ggs <- df %>% 
+      nest(.by = art) %>% 
+      mutate(plots = map(data, ~plotSP(df=.x, Art = NULL), .progress = "Creating individual species plots...."))
+    
+  }
   
-  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, filename = .y, width = 26, height = 12, weathervar = year))
+  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, filename = .y, width = 24, height = 14, weathervar = year), .progress = "Saving individual species plots as png.....")
   
   #sebms_ggsave(p, Art, width = 26, height = 12, weathervar = year)
   return(ggs$plots)
 }
 
 
-#' Species per Site and Site Type Plot
+#' Number of Sites per Species Number Category and Site Type
 #' 
 #' Show the number of sites within a range of species richness found at the site. Also show the mean number of species per site in each site type.
 #'  
@@ -355,12 +373,14 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
 #' @import dplyr
 #' @import forcats
 #' @import ggplot2
+#' 
+#' @returns A png with the number of sites within each category of number of species, for both slingor and transects. It also shows the mean number of species per site type.
 #' @export
 #' 
 sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
   
-  b <- seq(1, 50, by = 5)
-  l <- paste0(b, "-", b + 4)
+  b<- seq(1, 50, by = 5) # make the start of species number groups
+  l <- paste0(b, "-", b + 4) # This maes the group intervals
   
   if (database) {
     
@@ -399,6 +419,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   
   options(OutDec = ",") # Set decimal separator to comma
   
+  
   lab <- df %>% distinct(sitetype, medel) # unique mean labels
   
   # insert_minor <- function(major_labs, n_minor) {
@@ -413,7 +434,9 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   # 
   # r <- rbind(unique(df$interval),matrix(rep(c(""), 10),ncol=length(unique(df$interval))))
   # labname <- c("", r)
-  tickmarks <- (df %>% distinct(interval, sitetype) %>% pull(interval) %>% length()) /2 +0.5
+  
+  
+  tickmarks <- (df %>% distinct(interval, sitetype) %>% pull(interval) %>% length()) /2 +0.5 # Produce the correct numbet of tickmarks
   
   p <- df %>% 
     ggplot(aes(x = fct_reorder(interval, sortorder), y = site_count)) +
@@ -423,17 +446,18 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
                  position = position_dodge(width = 1.1),
                  fun = "mean",
                  geom = "point",
-                 size = 4,
+                 size = 5,
                  shape = 25) +
     geom_text(aes(x = l[findInterval(medel, b)], y = 113, label = format(round(medel, 1), nsmall = 1)),
               data = lab,
-              position = position_dodge2(width = 1.3),
-              fontface = "bold",
+              position = position_dodge2(width = 1.4),
+              fontface = "plain",
+              size = 5,
               inherit.aes = F) +
-    geom_segment(aes(x = stage(reorder(interval, sortorder), after_scale = rep(seq(1.5, tickmarks,1), each=2)),
+    geom_segment(aes(x = stage(reorder(interval, sortorder), after_scale = rep(seq(1.5, tickmarks,1), each=2)), # This adds a segment, that looks like a tickmark, after each group
                      xend = stage(reorder(interval, sortorder), after_scale = rep(seq(1.5, tickmarks,1), each=2)),
-                     y = -1,
-                     yend = 0)) + # Making segments between groups on x-axis.
+                     y = -1.1, # How long the tickmark is, we want negative as it should go down
+                     yend = 0)) + # The start of the tickmark
     scale_y_continuous(breaks = seq(0,120,20),
                        labels = seq(0,120,20),
                        #limits = c(0, 120),
@@ -444,18 +468,9 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
     scale_fill_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +
     scale_colour_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +
     labs(x = "Antal arter på lokalen", y = "Antal lokaler") +
-    theme_sebms(fontfamily = "Arial") +
-    theme(panel.grid.major.y = element_line(color = "gray"),
-          axis.ticks.x =  element_blank(),#element_line(linewidth = 1, colour = "black"),
-          axis.ticks.y = element_blank(),
-          axis.line = element_line(color = "gray5", linewidth = 0.21),
-          axis.text = element_text(face = "bold"),
-          #axis.text.x = element_text(margin = margin(t = 3, r = 0, b = 0, l = 0, unit = "mm")),
-          axis.title.x = element_text(margin = margin(t = 9)),
-          panel.border = element_rect(colour = "black", linewidth = 1)
-    )
+    theme_sebms_species(x_sz = 12, y_sz = 12)
   
-  sebms_ggsave(p, "Species_per_site", width = 16, height = 12, weathervar = year)
+  sebms_ggsave(p, "Species_per_site", width = 22, height = 13, weathervar = year)
   return(p)
   
   options(OutDec = ".") # Restore decimal separator to dot

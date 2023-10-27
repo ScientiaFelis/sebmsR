@@ -40,11 +40,11 @@ sebms_connect <- function() {
       #e$message <- paste("Error connecting to SeBMS ", e, sep = " ")
       #warning(e)
       message("Config file used: ", cfgfile, ", timestamp: ", Sys.time())
-      message("Using driver: ", config$sebms$driver) 
       message("Using database: ", config$sebms$database)
       message("Using server: ", config$sebms$server)
       message("Using port: ", config$sebms$port)
       message("Using dbuser: ", config$sebms$dbuser)
+      message("Using driver: ", config$sebms$driver)
       
       message("Now proceeding without valid db connection...")
     })

@@ -110,7 +110,7 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
        ORDER BY
           Antal DESC, Lokalnamn, Art, Datum;")
   
-  sebms_assert_connection()
+  sebms_pool <- sebms_assert_connection()
   res <- DBI::dbGetQuery(sebms_pool, q)
   as_tibble(res)
 }
@@ -197,7 +197,7 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
         ORDER BY
           antal DESC;")
   
-  sebms_assert_connection()
+  sebms_pool <- sebms_assert_connection()
   res <- dbGetQuery(sebms_pool, q)
   as_tibble(res)
   

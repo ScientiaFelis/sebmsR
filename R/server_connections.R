@@ -70,6 +70,7 @@ sebms_assert_connection <- function(pool) {
     else
       message("Connected!")
   }
+  return(sebms_pool)
 }
 
 #' Get user data

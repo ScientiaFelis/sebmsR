@@ -296,6 +296,9 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
             paste(w))
   }
   
+   # Hard coded labesl instead
+  veckamån <- c("14\n   apr", "16","18\n   maj","20", "22\n   jun","24", "26\n   jul","28", "30\n   aug","32","34\n   sep","36","38\n  okt", "40")
+
   # Make week limits
   # QUESTION: add filter of week in df instead?
   Lweeklim <- 14 #min(isoweek(glue("{year}-04-01")))
@@ -333,7 +336,8 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
       #expand_limits(y=max(df$count)*1.1) +
       scale_x_continuous(
         breaks = c(seq(Lweeklim,Hweeklim,2)),
-        labels = c(fmt_label(seq(Lweeklim,Hweeklim,2))),
+        #labels = c(fmt_label(seq(Lweeklim,Hweeklim,2))),
+        labels = veckamån,
         limits = c(Lweeklim - 0.5, Hweeklim + 0.4), 
         expand = c(0, 0) 
       ) + 

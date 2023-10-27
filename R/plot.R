@@ -164,7 +164,7 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
 #' @export
 #' 
 sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE) {
-  
+
   if (database) {
     df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
       mutate(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
@@ -177,8 +177,8 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
       group_by(artnamn, vecka) %>%
       summarise(count = sum(sumval))
   }
-  
-  
+
+
   # This makes a label that have a row of weeks and then a row of months in text 
   fmt_label <- function(w) {
     
@@ -187,12 +187,13 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
     #   "april", "maj", "juni",
     #   "juli","augusti", "september",
     #   "oktober", "november", "december")
-    
     if_else(is.na(lag(w)) | !month(ymd("2021-01-01") + weeks(lag(w))) == month(ymd("2021-01-01") + weeks(w)), 
             paste0(sprintf("%2i", w), "\n      ", month(ymd("2021-01-01") + weeks(w), label = T, abbr = T, locale = "sv_SE.UTF-8")),
             paste(w))
   }
-  
+  # Hard coded labesl instead
+  #veckamån <- c("Vecka: \n\n", "13",  "14\n   apr", "15","16","17","18\n   maj","19","20","21","22\n   jun","23","24", "25","26\n   jul","27","28","29","30","31\n   aug","32","33","34","35\n   sep","36","37","38","39\n   okt","40")
+
   # To produce the correct steps betweeen y-axis number.
   #QUESTION: Is this the correct steps?
   steps <- case_when(max(df$count) < 12 ~ 1,
@@ -209,7 +210,7 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
   #                    between(max(df$count), 600,10000) ~ 10,
   #                    between(max(df$count), 10001,40000) ~ 100,
   #                    TRUE ~ 20)
-  
+
   acc <- case_when(between(max(df$count), 1000,4000) ~ 500,
                    max(df$count) >4000 ~ 2000,
                    TRUE ~ 10)
@@ -217,6 +218,7 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
   maxlim <- round_any(max(df$count), acc, f = ceiling) # Makes a rounded to nearest 1000 of max value to be at top of Y-axis
   Hweeklim <- 40 #max(df$vecka)
   Lweeklim <- 13 #min(df$vecka)
+  
   p <- 
     ggplot(data = df, 
            aes(x = vecka, y = count, fill = year)) +
@@ -227,8 +229,9 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
                        expand = c(0,0.05)) +
     #expand_limits(y=max(df$count)*1.1) +
     scale_x_continuous(
-      breaks = c(10, Lweeklim:Hweeklim),
-      labels = c("Vecka: ", fmt_label(Lweeklim:Hweeklim)),
+      breaks = c(Lweeklim:Hweeklim),
+      labels = c(fmt_label(Lweeklim:Hweeklim)),
+      #labels = c(veckamån),
       limits = c(Lweeklim - 0.5, Hweeklim + 0.4), 
       expand = c(0, 0) 
     ) +
@@ -237,12 +240,13 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
     theme_sebms_species() +
     theme(plot.margin = margin(t=2, r=7, b=2, l=1, unit = "mm"),
           axis.line = element_line(color = "gray5", linewidth = 0.3),
-          axis.text.y = element_text(size = 18) 
+          axis.text.y = element_text(size = 18),
+          plot.tag.position = c(0.05,0.075)
     )
-  
+ 
   yearname <- paste0(year, collapse = ":")
-  sebms_ggsave(p, "Butterflynumber", width = 30, height = 16, weathervar = yearname)
-  
+  sebms_ggsave(p, "Butterflynumber", width = 30, height = 15, weathervar = yearname)
+ 
   return(p)
 }
 
@@ -327,8 +331,8 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
                          expand = c(0,0)) +
       #expand_limits(y=max(df$count)*1.1) +
       scale_x_continuous(
-        breaks = c(10, seq(Lweeklim,Hweeklim,2)),
-        labels = c("Vecka:  ", fmt_label(seq(Lweeklim,Hweeklim,2))),
+        breaks = c(seq(Lweeklim,Hweeklim,2)),
+        labels = c(fmt_label(seq(Lweeklim,Hweeklim,2))),
         limits = c(Lweeklim - 0.5, Hweeklim + 0.4), 
         expand = c(0, 0) 
       ) + 
@@ -336,7 +340,8 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
       theme_sebms_species() +
       theme(axis.ticks = element_blank(),
             axis.line = element_line(color = "gray5",
-                                     linewidth = 0.3))
+                                     linewidth = 0.3),
+            plot.tag.position = c(0.05, 0.08))
   }  
   
   ## Add Species name to plot if requested
@@ -352,7 +357,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
     
   }
   
-  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, filename = .y, width = 20, height = 16, weathervar = year), .progress = "Saving individual species plots as png.....")
+  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, filename = .y, width = 24, height = 14, weathervar = year), .progress = "Saving individual species plots as png.....")
   
   #sebms_ggsave(p, Art, width = 26, height = 12, weathervar = year)
   return(ggs$plots)

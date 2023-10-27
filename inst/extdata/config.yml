@@ -5,5 +5,5 @@ default:
     dbuser: !expr Sys.getenv("DBUSER")
     dbpass: !expr Sys.getenv("DBPASS")  
     port: 5432
-    database: 'test55'
+    database: !expr Sys.getenv("DBNAME")
 

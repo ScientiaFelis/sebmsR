@@ -1,5 +1,31 @@
 #TODO: Streamline the functions to the ones necessary and so the output variables of the same kind is named consequently.
 
+#' Open the .Renviron File in Editor
+#' 
+#' This makes it possible to set the credential variables in .Renviron file.
+#' It can be in the user home directory or possibly in the R project working directory.
+#'
+#' @importFrom rstudioapi selectFile documentOPen
+#' @param homepath the path to the home directory
+#'
+#' @return open the .Renviron file to add PostgreSQL credentials
+#' @export
+#'
+editcred <- function(homepath = "~/") {
+  cat("Add SQL database credentials to .Renviron file\n\n")
+  cat("DBUSER = 'username'\n")
+  cat("DBPASS = 'passw'\n")
+  cat("DBNAME = 'database name'")
+  
+  Renv.file <- rstudioapi::selectFile(path = homepath,
+                                          caption = "Select the .Renviron File",
+                                          filter = "R Files (*.R)",
+                                          existing = FALSE)
+  rstudioapi::documentOpen(Renv.file)
+
+}
+
+
 #' Retrieve Species Abundance List per Site, Site type, and Date
 #' 
 #' Returns a data frame of counts per species, site, site type, and date.

@@ -111,11 +111,13 @@ content <- readLines(system.file("extdata", "config.yml",
 cat(paste(content, collapse = "\n"))
 ```
 
-For the above connection to be initiated, you also need to set up your `.Renviron` with the environment variables containing the credentials:
+For the above connection to be initiated, you also need to set up your `.Renviron` with the environment variables containing the credentials.
+For that run the function `editcred(homepath = 'user home dir')`:
 
 ```console
 DBUSER = my_db_username
 DBPASS = my_db_password
+DBNAME = PostgreSQL_database_name
 
 ```
 
@@ -131,6 +133,13 @@ To make a plot and generate the pngs for the weather data for the Butterfly year
 For the sunhour figure for the same year do `sebms_sunhour_plot(2022)`.
 
 
+To make figures with butterfly data use:
+
+`sebms_abundance_per_species_plot(2022)` to make bar plots with individual numbers for each species, divided on two png figures.
+`sebms_abundance_year_compare_plot(2021:2022)` to make bar plots comparing individuals per week compared between two years.
+`sebms_species_abundance_plot(2021, Art = 118)` to make bar plots for individual species with numbers per week.
+`sebms_species_per_sitetype_plot(2022)` to make bar plots to show how many species sites have and the number distribution of these, compared between site type.
+Also the mean number of species per site type. 
 
 ## Development
 

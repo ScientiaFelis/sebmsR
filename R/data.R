@@ -5,7 +5,7 @@
 #' This makes it possible to set the credential variables in .Renviron file.
 #' It can be in the user home directory or possibly in the R project working directory.
 #'
-#' @importFrom rstudioapi selectFile documentOPen
+#' @importFrom rstudioapi selectFile documentOpen
 #' @param homepath the path to the home directory
 #'
 #' @return open the .Renviron file to add PostgreSQL credentials

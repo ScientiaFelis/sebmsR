@@ -18,7 +18,7 @@
 #' One for species count below the median for that year and one for species above median.
 #' @export
 #' 
-sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67)) {
+sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84)) {
   
   if (database) {
     sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
@@ -164,7 +164,7 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
 #' @return A png figure with the number of individuals found each of the comparing years per week, 
 #' @export
 #' 
-sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67)) {
+sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84)) {
 
   if (database) {
     df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
@@ -267,7 +267,7 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
 #' @return A png per species showing the number of individuals per week.
 #' @export
 #' 
-sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", plotname = FALSE, database = TRUE, source = c(54,55,56,63,64,66,67)) {
+sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", plotname = FALSE, database = TRUE, source = c(54,55,56,63,64,66,67,84)) {
   
   if (database) {
     df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
@@ -382,7 +382,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
 #' @returns A png with the number of sites within each category of number of species, for both slingor and transects. It also shows the mean number of species per site type.
 #' @export
 #' 
-sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67)) {
+sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84)) {
   
   b <- seq(1, 50, by = 5) # make the start of species number groups
   l <- paste0(b, "-", b + 4) # This maes the group intervals

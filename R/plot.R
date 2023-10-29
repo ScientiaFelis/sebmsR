@@ -331,6 +331,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
       #geom_text(aes(x = Lweeklim+1, y = maxlim*0.99,label = unique(Art)), family = "Arial", size = 4, hjust = 0, vjust = 1, check_overlap = T) +
       scale_y_continuous(limits = c(0, maxlim), #nice_lim(df$count),#c(0, max(10, max(df$count)*1.2)), # Set Y-axis limits to 10 or the max value of the butterfly count
                          # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
+                         labels = function(x) formatC(x, width = 4),
                          breaks = seq(0,maxlim, steps), #10^ceiling(log10(max(df$count)/100))*2), # 
                          expand = c(0,0)) +
       #expand_limits(y=max(df$count)*1.1) +
@@ -340,13 +341,14 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
         labels = veckamån,
         limits = c(Lweeklim - 0.5, Hweeklim + 0.4), 
         expand = c(0, 0) 
-      ) + 
+      ) +
       labs(y = "Antal", x = NULL, tag = "Vecka:", title = glue::glue("{unique(Art)}")) +
       theme_sebms_species() +
       theme(axis.ticks = element_blank(),
             axis.line = element_line(color = "gray5",
                                      linewidth = 0.3),
-            plot.tag.position = c(0.05, 0.08))
+            plot.tag.position = c(0.05, 0.08),
+            axis.text.y = element_text(family = "Arial")) #Arial mono ist it possible?
   }  
   
   ## Add Species name to plot if requested

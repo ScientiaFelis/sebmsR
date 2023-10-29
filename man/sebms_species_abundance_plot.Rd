@@ -12,7 +12,7 @@ sebms_species_abundance_plot(
   Kommun = ".",
   plotname = FALSE,
   database = TRUE,
-  source = c(54, 55, 56, 63, 64, 66, 67)
+  source = c(54, 55, 56, 63, 64, 66, 67, 84)
 )
 }
 \arguments{

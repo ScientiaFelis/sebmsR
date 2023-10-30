@@ -323,6 +323,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
                          max(df$count) > 10000 ~ round_any(max(df$count), 1000, f = ceiling)
     )
     
+    maxlim <- if_else(between(max(df$count), 10,12), maxlim-6, maxlim)
     # Fix odd number which does not fit in 20 steps
     maxlim <- if_else(maxlim %in% seq(130, 290, 20), maxlim+10, maxlim)
     # This makes the steps between labels correct based on max value of count.

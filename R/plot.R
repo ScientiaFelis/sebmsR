@@ -312,7 +312,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
     # This round max value to nearest 10, 100 or 1000 to be at top of Y-axis and align with gridline at top
     # IF max(df$count) > round_any(max(df$count), 10, f = ceiling) -5 THEN round_any(max(df$count), 10, f = ceiling) +20
     ## If the max value is closing in to the ceiling then add another 20
-
+    
     maxlim <-  case_when(max(df$count) < 12 ~ if_else(max(df$count) > round_any(max(df$count), 10, f = ceiling)-5,round_any(max(df$count), 10, f = ceiling)+2,round_any(max(df$count), 10, f = ceiling)),
                          between(max(df$count),12,59) ~ if_else(max(df$count) > round_any(max(df$count), 10, f = ceiling)-5,round_any(max(df$count), 10, f = ceiling)+10,round_any(max(df$count), 10, f = ceiling)),
                          between(max(df$count), 60,120) ~ if_else(max(df$count) > round_any(max(df$count), 10, f = ceiling)-5,round_any(max(df$count), 10, f = ceiling)+20,round_any(max(df$count), 10, f = ceiling)),
@@ -403,19 +403,20 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   l <- paste0(b, "-", b + 4) # This maes the group intervals
   
   if (database) {
-    
+browser()
     df <- sebms_species_site_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
       filter(!speuid %in% c(135,131,133)) %>% 
-      group_by(situid, lokalnamn, sitetype) %>% 
-      summarise(species = n_distinct(speuid), .groups = "drop") %>% # Number of species per site and site type 
+      group_by(situid, sitetype) %>% 
+      summarize(species = n_distinct(speuid), .groups = "drop") %>% # Number of species per site and site type 
       group_by(sitetype) %>% 
       mutate(medel = mean(species)) %>% # mean number of species per site type
       ungroup() %>% 
       mutate(interval = l[findInterval(species, b)],
              sortorder = findInterval(species, b)) %>%
-      group_by(interval, sortorder, sitetype) %>%
+      group_by(interval, sortorder, sitetype, medel) %>%
       summarize(site_count = n_distinct(situid),
-                medel = mean(medel), .groups = "drop") %>%
+                #medel = mean(medel),
+                .groups = "drop") %>%
       arrange(sortorder) %>%
       select(interval, sortorder, sitetype, site_count, medel) %>% 
       complete(interval, sitetype) %>%
@@ -458,18 +459,20 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   
   
   tickmarks <- (df %>% distinct(interval, sitetype) %>% pull(interval) %>% length()) /2 +0.5 # Produce the correct numbet of tickmarks
-  
-  p <- df %>% 
-    ggplot(aes(x = fct_reorder(interval, sortorder), y = site_count)) +
+
+  p <- df  %>%
+    mutate(interval = fct_reorder(interval, sortorder)) %>% 
+    arrange(sortorder) %>% 
+    ggplot(aes(x = interval, y = site_count)) +
     geom_col(aes(fill = forcats::fct_rev(sitetype)), 
              position = position_dodge(preserve = "single"), width = 0.7) +
-    stat_summary(aes(x = l[findInterval(medel, b)], y = 104, colour = sitetype, fill = sitetype),
-                 position = position_dodge(width = 1.1),
+    stat_summary(aes(x = l[findInterval(medel+0.2, b)], y = 104, colour = sitetype, fill = sitetype),
+                 position = position_dodge2(width = 1.1),
                  fun = "mean",
                  geom = "point",
                  size = 5,
                  shape = 25) +
-    geom_text(aes(x = l[findInterval(medel, b)], y = 113, label = format(round(medel, 1), nsmall = 1)),
+    geom_text(aes(x = l[findInterval(medel+0.2, b)], y = 113, label = format(round(medel, 1), nsmall = 1)),
               data = lab,
               position = position_dodge2(width = 1.4),
               fontface = "plain",

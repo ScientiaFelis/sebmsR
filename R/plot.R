@@ -170,6 +170,7 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
     df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
       mutate(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
       filter(datum > ymd(glue("{year}-04-01")), datum < ymd(glue("{year}-09-30"))) %>% 
+      filter(!speuid %in% c(131,133,135)) %>% 
       group_by(year, vecka) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
   }else {
@@ -404,6 +405,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   if (database) {
     
     df <- sebms_species_site_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
+      filter(!speuid %in% c(135,131,133)) %>% 
       group_by(situid, lokalnamn, sitetype) %>% 
       summarise(species = n_distinct(speuid), .groups = "drop") %>% # Number of species per site and site type 
       group_by(sitetype) %>% 

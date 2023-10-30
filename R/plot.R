@@ -10,8 +10,8 @@
 #' @param database logical; if the data should be based on the sebms database
 #' @param source the database sources as id numbers
 #'
-#' @import dplyr
 #' @importFrom plyr round_any
+#' @import dplyr
 #' @import glue
 #' @import ggplot2
 #' @return Two png figures with the abundance data for each species.
@@ -156,8 +156,8 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
 #' @inheritParams sebms_abundance_per_species_plot
 #' @param year two years to compare, e.g. 2021:2022
 #' 
-#' @import dplyr
 #' @importFrom plyr round_any
+#' @import dplyr
 #' @import ggplot2
 #' @importFrom lubridate month weeks ymd
 #' 

@@ -13,7 +13,15 @@ sebms_species_site_count_filtered(
 )
 }
 \arguments{
-\item{year}{the year of interest}
+\item{year}{year to use for plot}
+
+\item{Län}{character or regular expression; which county you want the data from}
+
+\item{Landskap}{character or reg ex; which region you want the data from}
+
+\item{Kommun}{character or reg ex; which municipality you want the data from}
+
+\item{source}{the database sources as id numbers}
 }
 \description{
 Returns a data frame of counts per species, site, site type, and date.

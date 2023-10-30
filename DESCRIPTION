@@ -11,8 +11,7 @@ Depends: R (>= 3.4.1)
 License: Affero GPLv3
 Encoding: UTF-8
 LazyData: true
-Imports: ggplot2,
-    pool,
+Imports: pool,
     DBI,
     RPostgres,
     raster,

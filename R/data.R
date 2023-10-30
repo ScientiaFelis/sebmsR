@@ -31,10 +31,16 @@ editcred <- function(homepath = "~/") {
 #' Returns a data frame of counts per species, site, site type, and date.
 #' This is used for the `sebms_species_per_sitetype_plot()`
 #'
-#' @param year the year of interest
+#' @param year year to use for plot
+#' @param Län character or regular expression; which county you want the data from
+#' @param Landskap character or reg ex; which region you want the data from
+#' @param Kommun character or reg ex; which municipality you want the data from
+#' @param source the database sources as id numbers
 #'  
 #' @import tibble
-#' @import glue
+#' @importFrom glue glue
+#' @import dplyr
+#' @importFrom stringr str_detect str_to_lower
 #' @importFrom DBI dbGetQuery
 #' @export
 sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", source = c(54,55,56,63,64,66,67,84)){
@@ -122,8 +128,12 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
 #' `sebms_abundance_per_species_plot()`, `sebms_abundance_year_compare_plot()`,
 #' and `sebms_species_abundance_plot()`
 #' 
+#' @inheritParams sebms_species_site_count_filtered
+#' 
 #' @import tibble
-#' @import glue
+#' @importFrom glue glue
+#' @import dplyr
+#' @importFrom stringr str_detect str_to_lower
 #' @importFrom DBI dbGetQuery
 #' @export
 sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", source = c(54,55,56,63,64,66,67,84)) {

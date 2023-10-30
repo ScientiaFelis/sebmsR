@@ -273,8 +273,9 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
     df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
       filter(!str_detect(art, "[Nn]oll"), 
              !speuid %in% c(131,133)) %>%
+      mutate(antal = as.double(antal)) %>% 
       group_by(art, vecka = isoweek(datum)) %>%
-      summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
+      summarise(count = sum(antal, na.rm = T), .groups = "drop")
   }else {
     df <- 
       sebms_data_species_histo %>%
@@ -308,21 +309,24 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
   plotSP <- function(df, Art){
     
     # This round max value to nearest 10, 100 or 1000 to be at top of Y-axis and align with gridline at top
-    maxlim <-  case_when(max(df$count) < 100 ~ round_any(max(df$count), 10, f = ceiling),
-                         max(df$count) < 1000 ~ round_any(max(df$count), 100, f = ceiling),
-                         max(df$count) < 10000 ~ round_any(max(df$count), 200, f = ceiling),
+    # IF max(df$count) > round_any(max(df$count), 10, f = ceiling) -5 THEN round_any(max(df$count), 10, f = ceiling) +20
+    ## If the max value is closing in to the ceiling then add another 20
+    maxlim <-  case_when(max(df$count) < 100 ~ if_else(max(df$count) > round_any(max(df$count), 10, f = ceiling)-5,round_any(max(df$count), 10, f = ceiling)+20,round_any(max(df$count), 10, f = ceiling)),
+                         max(df$count) < 500 ~ if_else(max(df$count) > round_any(max(df$count), 100, f = ceiling)-50,round_any(max(df$count), 100, f = ceiling)+50,round_any(max(df$count), 100, f = ceiling)),
+                         max(df$count) < 1000 ~ if_else(max(df$count) > round_any(max(df$count), 100, f = ceiling)-50,round_any(max(df$count), 100, f = ceiling)+100,round_any(max(df$count), 100, f = ceiling)),
+                         max(df$count) < 10000 ~ if_else(max(df$count) > round_any(max(df$count), 200, f = ceiling)-100,round_any(max(df$count), 200, f = ceiling)+200,round_any(max(df$count), 200, f = ceiling)),
                          max(df$count) > 10000 ~ round_any(max(df$count), 1000, f = ceiling)
     )
     
     # This makes the steps between labels correct based on max value of count.
-    steps <- case_when(max(df$count) < 12 ~ 1,
-                       between(max(df$count),12,30) ~ 2,
-                       between(max(df$count),30,60) ~ 5,
-                       between(max(df$count),60,100) ~ 10,
-                       between(max(df$count),110,300) ~ 20,
-                       between(max(df$count),300,600) ~ 50,
-                       between(max(df$count),600,1000) ~ 100,
-                       between(max(df$count),1000,5000) ~ 200,
+    steps <- case_when(maxlim < 12 ~ 1,
+                       between(maxlim,12,29) ~ 2,
+                       between(maxlim,30,59) ~ 5,
+                       between(maxlim,60,100) ~ 10,
+                       between(maxlim,110,290) ~ 20,
+                       between(maxlim,291,599) ~ 50,
+                       between(maxlim,600,1000) ~ 100,
+                       between(maxlim,1000,5000) ~ 200,
                        TRUE ~1000)
     #FIXME: Add species name as title or subtitle instead of inside plot
     ggplot(data = df, 

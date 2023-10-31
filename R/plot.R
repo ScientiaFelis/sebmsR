@@ -12,9 +12,9 @@
 #' @param source the database sources as id numbers,
 #' defaults to `54,55,56,63,64,66,67,84`
 #'
-#' @import dplyr
 #' @importFrom plyr round_any
 #' @importFrom glue glue
+#' @import dplyr
 #' @import ggplot2
 #' @importFrom stringr str_detect
 #' @importFrom purrr map2
@@ -161,8 +161,8 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
 #' @inheritParams sebms_abundance_per_species_plot
 #' @param year two years to compare, e.g. 2021:2022
 #'
-#' @import dplyr
 #' @importFrom plyr round_any
+#' @import dplyr
 #' @import ggplot2
 #' @importFrom lubridate month weeks ymd
 #'
@@ -176,6 +176,7 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
     df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
       mutate(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
       filter(datum > ymd(glue("{year}-04-01")), datum < ymd(glue("{year}-09-30"))) %>% 
+      filter(!speuid %in% c(131,133,135)) %>% 
       group_by(year, vecka) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
   }else {
@@ -195,11 +196,11 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
     #   "juli","augusti", "september",
     #   "oktober", "november", "december")
     if_else(is.na(lag(w)) | !month(ymd("2021-01-01") + weeks(lag(w))) == month(ymd("2021-01-01") + weeks(w)), 
-            paste0(sprintf("%2i", w), "\n      ", month(ymd("2021-01-01") + weeks(w), label = T, abbr = T, locale = "sv_SE.UTF-8")),
+            paste0(sprintf("%2i", w), "\n   ", month(ymd("2021-01-01") + weeks(w), label = T, abbr = T, locale = "sv_SE.UTF-8")),
             paste(w))
   }
   # Hard coded labesl instead
-  #veckamån <- c("Vecka: \n\n", "13",  "14\n   apr", "15","16","17","18\n   maj","19","20","21","22\n   jun","23","24", "25","26\n   jul","27","28","29","30","31\n   aug","32","33","34","35\n   sep","36","37","38","39\n   okt","40")
+  veckamån <- c("13\n   apr","14", "15", "16","17", "18\n   maj", "19", "20", "21","22\n   jun", "23", "24","25", "26\n   jul","27", "28","29", "30\n   aug","31","32","33","34\n   sep","35","36","37","38\n  okt", "39","40")
   
   # To produce the correct steps betweeen y-axis number.
   steps <- case_when(max(df$count) < 12 ~ 1,
@@ -413,18 +414,20 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   l <- paste0(b, "-", b + 4) # This maes the group intervals
   
   if (database) {
-    
+browser()
     df <- sebms_species_site_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
-      group_by(situid, lokalnamn, sitetype) %>% 
-      summarise(species = n_distinct(speuid), .groups = "drop") %>% # Number of species per site and site type 
+      filter(!speuid %in% c(135,131,133)) %>% 
+      group_by(situid, sitetype) %>% 
+      summarize(species = n_distinct(speuid), .groups = "drop") %>% # Number of species per site and site type 
       group_by(sitetype) %>% 
       mutate(medel = mean(species)) %>% # mean number of species per site type
       ungroup() %>% 
       mutate(interval = l[findInterval(species, b)],
              sortorder = findInterval(species, b)) %>%
-      group_by(interval, sortorder, sitetype) %>%
+      group_by(interval, sortorder, sitetype, medel) %>%
       summarize(site_count = n_distinct(situid),
-                medel = mean(medel), .groups = "drop") %>%
+                #medel = mean(medel),
+                .groups = "drop") %>%
       arrange(sortorder) %>%
       select(interval, sortorder, sitetype, site_count, medel) %>% 
       complete(interval, sitetype) %>%
@@ -467,18 +470,20 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   
   
   tickmarks <- (df %>% distinct(interval, sitetype) %>% pull(interval) %>% length()) /2 +0.5 # Produce the correct numbet of tickmarks
-  
-  p <- df %>% 
-    ggplot(aes(x = fct_reorder(interval, sortorder), y = site_count)) +
+
+  p <- df  %>%
+    mutate(interval = fct_reorder(interval, sortorder)) %>% 
+    arrange(sortorder) %>% 
+    ggplot(aes(x = interval, y = site_count)) +
     geom_col(aes(fill = forcats::fct_rev(sitetype)), 
              position = position_dodge(preserve = "single"), width = 0.7) +
-    stat_summary(aes(x = l[findInterval(medel, b)], y = 104, colour = sitetype, fill = sitetype),
-                 position = position_dodge(width = 1.1),
+    stat_summary(aes(x = l[findInterval(medel+0.2, b)], y = 104, colour = sitetype, fill = sitetype),
+                 position = position_dodge2(width = 1.1),
                  fun = "mean",
                  geom = "point",
                  size = 5,
                  shape = 25) +
-    geom_text(aes(x = l[findInterval(medel, b)], y = 113, label = format(round(medel, 1), nsmall = 1)),
+    geom_text(aes(x = l[findInterval(medel+0.2, b)], y = 113, label = format(round(medel, 1), nsmall = 1)),
               data = lab,
               position = position_dodge2(width = 1.4),
               fontface = "plain",

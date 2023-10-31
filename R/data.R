@@ -51,9 +51,11 @@ editcred <- function(homepath = "~/") {
 #' is used for the [sebms_species_per_sitetype_plot()]
 #'
 #' @inheritParams sebms_abundance_per_species_plot
-#'
+#'  
 #' @import tibble
-#' @import glue
+#' @importFrom glue glue
+#' @import dplyr
+#' @importFrom stringr str_detect str_to_lower
 #' @importFrom DBI dbGetQuery
 #'
 #' @returns a tibble with species ids and names, filtered for trimed species
@@ -126,7 +128,7 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
           extract('YEAR' from vis_begintime) IN {year}
           AND
           vis_typ_datasourceid IN {source}
-          AND (spv.spv_istrim=TRUE or spe_uid in (135,131,133) )
+          AND spv.spv_istrim=TRUE --or spe_uid in (135,131,133) )
         
        GROUP BY
           Art, Lokalnamn,Datum, sitetype, speUId, sitUId, reg.reg_id, reg.län, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun --, date --, vecka
@@ -148,7 +150,9 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
 #' @param Art integer; the species uids of interest
 #'
 #' @import tibble
-#' @import glue
+#' @importFrom glue glue
+#' @import dplyr
+#' @importFrom stringr str_detect str_to_lower
 #' @importFrom DBI dbGetQuery
 #'
 #' @returns a tibble with species ids and names, filetered for trimmed species
@@ -218,7 +222,7 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
         WHERE
           extract('YEAR' from vis_begintime) IN {year}
           AND vis_typ_datasourceid IN {source}
-          AND (spv.spv_istrim=TRUE or spe_uid IN (135,131,133) )
+          AND spv.spv_istrim=TRUE -- or spe_uid IN (135,131,133) )
           AND spe.spe_uid IN {Art}
         
         GROUP BY

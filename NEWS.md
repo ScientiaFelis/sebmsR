@@ -6,6 +6,22 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
 
+# v 1.4.5
+
+In this version there is a new function `editcred()` that add or edit a .Renviron file to your home directory.
+There are also some bug fixes and updated docmentation.
+
+* New function: `editcred()`. This check if you have a `.Renviron` file in the given path (which should be your home directory). It will create/open it and add the Data base variables used by the `config.yml` file to connect to a PostgreSQL database.
+
+* Add a `source` argument in the butterfly plot functions to set the database sources.
+
+* The package should no longer load or connect to a database on load or attachment.
+
+* Fix a bug where the pool where not exported to the query function in the SQL data base functions.
+
+* Fix some issues with figures to make them closer to report.
+
+
 # v 1.4.0
 
 This version come with a new theme for some of the plot functions.

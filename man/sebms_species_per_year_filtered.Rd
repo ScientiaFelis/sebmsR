@@ -6,6 +6,9 @@
 \usage{
 sebms_species_per_year_filtered(year = 2020:2021)
 }
+\arguments{
+\item{year}{the years of interest}
+}
 \description{
 Return a data frame with abundance data per species and year.
 }

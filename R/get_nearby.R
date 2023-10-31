@@ -2,11 +2,13 @@
 #' Get Nearby Places to Given Coordinates
 #'
 #' Takes a coordinate and search for a nearby city, village or municiplaity depending on what is available and the number of inhabitants.
+#' 
 #' @param df data frame with coordinates, or sf object 
 #' @param radius the radius to search for nearby places
 #' @param top how many of the top results to save
 #' @param limited logical; if you want only the names of the resulting sites
 #' @param population_limit the smallest amount of poeple that should be in the locations
+#' @param sunvar dataframe with sunvar data, e.g. from `sebms_sunhours_data()`` 
 #'
 #' @importFrom geonames GNfindNearbyPlaceName
 #' @import dplyr

@@ -29,10 +29,10 @@
 #'  \code{sebms_sunhours_data} to a object in the Global environment with
 #'  the name *spatsunlist_`Year`*. \cr
 #'  
-#'  \code{\link{sebms_sundiff_plot }} create a figure that shows the 
+#'  \code{\link{sebms_sundiff_plot}} create a figure that shows the 
 #'  difference in sun hours between a given year and the five year mean. \cr
 #'  
-#'  \code{\link{sebms_minmax_sunhour }} give the maximum and minimum
+#'  \code{\link{sebms_minmax_sunhour}} give the maximum and minimum
 #'   sunhour per year and the city or village closest to that location. \cr
 #'   
 #'   -----------------------------------------------------------------------\cr

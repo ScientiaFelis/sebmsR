@@ -13,7 +13,7 @@ sebms_sunhours_data(
 )
 }
 \arguments{
-\item{year}{the year to produce plot for}
+\item{year}{the year or years to produce plot for}
 
 \item{months}{numeric value of the months to summarise sun ours over (default to 4:9)}
 
@@ -22,10 +22,6 @@ sebms_sunhours_data(
 \item{per_day}{logical; if data should be downloaded per day}
 
 \item{to_env}{logical; also send the result to the global environment as an object called 'spatsunist_{year}. If the function is used within a plot function this is TRUE}
-
-\item{day}{the day of interest}
-
-\item{hour}{the hour of interest}
 }
 \value{
 a sf spatial point object with the WGS84 coordinate system

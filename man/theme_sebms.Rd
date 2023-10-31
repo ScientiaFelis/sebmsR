@@ -26,6 +26,8 @@ theme_sebms(
 \item{y_sz}{font size for y axis text}
 
 \item{legend_position}{char indicating legend_position such as "none"}
+
+\item{fontfamily}{the font family to use}
 }
 \value{
 a theme that can be used for ggplot plot objects

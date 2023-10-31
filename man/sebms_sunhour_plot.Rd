@@ -14,7 +14,7 @@ sebms_sunhour_plot(
 )
 }
 \arguments{
-\item{year}{the year to produce plot for}
+\item{year}{the year or years to produce plot for}
 
 \item{df}{optional; a dataframe created by `sebms_sunhours_data()`}
 

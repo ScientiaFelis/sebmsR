@@ -50,7 +50,7 @@ editcred <- function(homepath = "~/") {
 #' Returns a data frame of counts per species, site, site type, and date.
 #' This is used for the `sebms_species_per_sitetype_plot()`
 #'
-#' @param year the year of interest
+#' @inheritParams sebms_abundance_per_species_plot
 #'  
 #' @import tibble
 #' @import glue
@@ -141,6 +141,9 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
 #' `sebms_abundance_per_species_plot()`, `sebms_abundance_year_compare_plot()`,
 #' and `sebms_species_abundance_plot()`
 #' 
+#' @inheritParams sebms_abundance_per_species_plot
+#' @param Art the species to create figures for, as uids
+#' 
 #' @import tibble
 #' @import glue
 #' @importFrom DBI dbGetQuery
@@ -227,6 +230,8 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
 #' 
 #' Return a data frame with abundance data per species and year.
 #' 
+#' @param year the years of interest
+#' 
 #' @import tibble
 #' @import glue
 #' @importFrom DBI dbGetQuery
@@ -267,7 +272,7 @@ sebms_species_per_year_filtered <- function(year = 2020:2021) {
 #' and filter for approved ones 
 #' @import tibble
 #' @importFrom DBI dbGetQuery
-#' @noRd
+#' @export
 sebms_species_per_year_site_filtered <- function() {
   
   q <- "

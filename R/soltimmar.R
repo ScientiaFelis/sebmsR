@@ -4,7 +4,6 @@
 #' @param year the year to produce plot for
 #' @param months numeric value of the months to summarise sun ours over (default to 4:9)
 #' @param day the day of interest
-#' @param hour the hour of interest
 #' @param per_day logical; if data should be downloaded per day
 #' 
 #' @importFrom httr GET content
@@ -55,10 +54,8 @@ fix_sunhour_NAs <- function(year, months, day, per_day = FALSE) {
 #' 
 #' Produce a data frame of the total sunhours in Sweden for the given month.
 #' 
-#' @param year the year to produce plot for
+#' @param year the year or years to produce plot for
 #' @param months numeric value of the months to summarise sun ours over (default to 4:9)
-#' @param day the day of interest
-#' @param hour the hour of interest
 #' @param per_month logical; summarise per month instead of per year
 #' @param per_day logical; if data should be downloaded per day
 #' @param to_env logical; also send the result to the global environment as an object called 'spatsunist_{year}. If the function is used within a plot function this is TRUE
@@ -228,6 +225,7 @@ sebms_sunmean_data <- function(year = 2017:2021, months = 4:9, per_month = FALSE
 #' @importFrom tidyr nest
 #' @importFrom purrr map map2
 #' @importFrom glue glue
+#' @importFrom scales squish
 #' 
 #' @return a figure saved as a png with the sunhours in coloour from, high (red) to low (blue)
 #' @export
@@ -377,6 +375,7 @@ sebms_sunhour_diff <- function(df, year = year(today())-1, months = 4:9, per_mon
 #' @importFrom glue glue
 #' @importFrom tidyr nest
 #' @importFrom purrr map map2
+#' @importFrom scales squish
 #' 
 #' @return a figure that shows diffeence in sunhours
 #' @export
@@ -487,17 +486,17 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, months = 4:9, per_mon
 #'
 #' @return a data frame with the max and min of total sunhours per year and the mean and diff from mean at that lokation. It also gives the name of the nearest city or village for that location.
 #' @export
-sebms_minmax_sunhour <- function(df, years = 2017:2022, months = 4:9, sunvar = total_sunH) {
+sebms_minmax_sunhour <- function(df, year = 2017:2022, months = 4:9, sunvar = total_sunH) {
   
   if(missing(df)) {
     
-    df <- sebms_sunhours_data(year = years, months = months)
+    df <- sebms_sunhours_data(year = year, months = months)
   }
   
   df %>%
     st_drop_geometry()  %>%
     bind_cols(df %>% st_coordinates() %>% as_tibble() %>% rename(lat = Y, lon = X)) %>%
-    filter(Year %in% years) %>%
+    filter(Year %in% year) %>%
     group_by(Year) %>%
     mutate(max = max({{ sunvar }}), min = min({{ sunvar }})) %>%
     ungroup() %>%

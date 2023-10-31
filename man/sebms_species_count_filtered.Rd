@@ -13,6 +13,19 @@ sebms_species_count_filtered(
   source = c(54, 55, 56, 63, 64, 66, 67, 84)
 )
 }
+\arguments{
+\item{year}{year to use for plot}
+
+\item{Art}{the species to create figures for, as uids}
+
+\item{Län}{character or regular expression; which county you want the data from}
+
+\item{Landskap}{character or reg ex; which region you want the data from}
+
+\item{Kommun}{character or reg ex; which municipality you want the data from}
+
+\item{source}{the database sources as id numbers}
+}
 \description{
 Returns a data frame with counts per species and date.
 This is used in most plot functions:

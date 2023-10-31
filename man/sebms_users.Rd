@@ -6,6 +6,9 @@
 \usage{
 sebms_users(my_username = NULL)
 }
+\arguments{
+\item{my_username}{the user name}
+}
 \description{
 Get user data
 }

@@ -13,7 +13,7 @@ sebms_sundiff_plot(
 )
 }
 \arguments{
-\item{year}{the year to produce plot for}
+\item{year}{the year or years to produce plot for}
 
 \item{df}{optinal; dataframe from the `sebms_sunhour_diff()`}
 

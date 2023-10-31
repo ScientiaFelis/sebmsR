@@ -53,6 +53,8 @@ sebms_connect <- function() {
 }
 
 #' Connection pool used for db connections
+#' 
+#' @param pool the connection pool
 #' @noMd
 #sebms_pool <<- sebms_connect()
 

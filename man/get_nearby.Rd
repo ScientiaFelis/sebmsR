@@ -23,6 +23,8 @@ get_nearby(
 \item{limited}{logical; if you want only the names of the resulting sites}
 
 \item{population_limit}{the smallest amount of poeple that should be in the locations}
+
+\item{sunvar}{dataframe with sunvar data, e.g. from `sebms_sunhours_data()``}
 }
 \value{
 a dataframe with names nearby you coordinates

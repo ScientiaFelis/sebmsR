@@ -6,6 +6,9 @@
 \usage{
 sebms_assert_connection(pool)
 }
+\arguments{
+\item{pool}{the connection pool}
+}
 \description{
 Connection pool used for db connections
 }

@@ -5,7 +5,6 @@
 #' This makes it possible to set the credential variables in .Renviron file.
 #' It can be in the user home directory or possibly in the R project working directory.
 #'
-#' @importFrom rstudioapi selectFile documentOpen
 #' @param homepath the path to the home directory
 #'
 #' @return open the .Renviron file to add PostgreSQL credentials
@@ -18,11 +17,30 @@ editcred <- function(homepath = "~/") {
   cat("DBNAME = 'database name'")
   cat("DBPORT = 'database port'")
   
-  Renv.file <- rstudioapi::selectFile(path = homepath,
-                                          caption = "Select the .Renviron File",
-                                          filter = "R Files (*.R)",
-                                          existing = FALSE)
-  rstudioapi::documentOpen(Renv.file)
+  Renv.file <- paste0(homepath, ".Renviron")
+  
+  if (file.exists(Renv.file)) {
+    
+    write("\n\nDBUSER = 'username'\nDBPASS = 'passw'\nDBNAME = 'database name'\nDBPORT = 'database port'", file = Renv.file, append = TRUE)
+   file.edit(Renv.file)
+   
+  }else {
+    cat("THERE IS NO .Renviron FILE IN THE GIVEN DIRECTORY\n")
+    
+    answ <- readline(prompt = "Do you want to create a .Renviron file? ")
+    
+    if (answ %in% c("Y", "y", "Yes", "yes")) {
+      
+      write("\n\nDBUSER = 'username'\nDBPASS = 'passw'\nDBNAME = 'database name'\nDBPORT = 'database port'", file = Renv.file, append = TRUE)
+      
+      file.edit(Renv.file)
+      
+    }else {
+      return()
+    }
+  }
+  
+  
 
 }
 

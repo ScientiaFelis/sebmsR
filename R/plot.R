@@ -86,7 +86,6 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
   }
   
   # Make accurate distances between x-axis numbers based on max counts
-  #QUESTION: Is this the correct steps?
   acc <- case_when(max(sp$count) >4000 ~ 2000,
                    between(max(sp$count), 1000,4000) ~ 500,
                    TRUE ~ 100)
@@ -199,15 +198,14 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
   #veckamån <- c("Vecka: \n\n", "13",  "14\n   apr", "15","16","17","18\n   maj","19","20","21","22\n   jun","23","24", "25","26\n   jul","27","28","29","30","31\n   aug","32","33","34","35\n   sep","36","37","38","39\n   okt","40")
   
   # To produce the correct steps betweeen y-axis number.
-  #QUESTION: Is this the correct steps?
   steps <- case_when(max(df$count) < 12 ~ 1,
                      between(max(df$count),12,30) ~ 2,
-                     between(max(df$count),30,60) ~ 5,
-                     between(max(df$count),60,100) ~ 10,
-                     between(max(df$count),110,300) ~ 20,
-                     between(max(df$count),300,600) ~ 50,
-                     between(max(df$count),600,1000) ~ 100,
-                     between(max(df$count),1000,5000) ~ 200,
+                     between(max(df$count),31,60) ~ 5,
+                     between(max(df$count),61,100) ~ 10,
+                     between(max(df$count),101,300) ~ 20,
+                     between(max(df$count),301,600) ~ 50,
+                     between(max(df$count),601,1000) ~ 100,
+                     between(max(df$count),1001,5000) ~ 200,
                      TRUE ~2000)
   # 
   # steps <- case_when(max(df$count) <600 ~ 100,

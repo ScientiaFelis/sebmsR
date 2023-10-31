@@ -105,7 +105,7 @@ reference those in the `config.yml`, the file can look like this:
         server: 'localhost'
         dbuser: !expr Sys.getenv("DBUSER")
         dbpass: !expr Sys.getenv("DBPASS")  
-        port: 5432
+        port: !expr Sys.getenv("DBPORT")
         database: !expr Sys.getenv("DBNAME")
 
 For the above connection to be initiated, you also need to set up your

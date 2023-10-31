@@ -16,19 +16,25 @@ sebms_species_count_filtered(
 \arguments{
 \item{year}{year to use for plot}
 
-\item{Art}{the species to create figures for, as uids}
+\item{Art}{integer; the species uids of interest}
 
-\item{Län}{character or regular expression; which county you want the data from}
+\item{Län}{character or regular expression; which county you want the data
+from}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 
 \item{Kommun}{character or reg ex; which municipality you want the data from}
 
-\item{source}{the database sources as id numbers}
+\item{source}{the database sources as id numbers,
+defaults to `54,55,56,63,64,66,67,84`}
+}
+\value{
+a tibble with species ids and names, filetered for trimmed species
+  names, the number of individuals, the date, county, region, and
+  municipality.
 }
 \description{
-Returns a data frame with counts per species and date.
-This is used in most plot functions:
-`sebms_abundance_per_species_plot()`, `sebms_abundance_year_compare_plot()`,
-and `sebms_species_abundance_plot()`
+Returns a data frame with counts per species and date. This is used in most
+plot functions: [sebms_abundance_per_species_plot()],
+[sebms_abundance_year_compare_plot()], and [sebms_species_abundance_plot()]
 }

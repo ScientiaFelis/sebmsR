@@ -16,7 +16,8 @@ sebms_abundance_year_compare_plot(
 \arguments{
 \item{year}{two years to compare, e.g. 2021:2022}
 
-\item{Län}{character or regular expression; which county you want the data from}
+\item{Län}{character or regular expression; which county you want the data
+from}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 
@@ -24,10 +25,12 @@ sebms_abundance_year_compare_plot(
 
 \item{database}{logical; if the data should be based on the sebms database}
 
-\item{source}{the database sources as id numbers}
+\item{source}{the database sources as id numbers,
+defaults to `54,55,56,63,64,66,67,84`}
 }
 \value{
-A png figure with the number of individuals found each of the comparing years per week,
+A png figure with the number of individuals found each of the
+  comparing years per week,
 }
 \description{
 Show the number of found butterflies per week, compared between two years.

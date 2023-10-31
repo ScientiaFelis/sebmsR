@@ -16,7 +16,8 @@ sebms_species_per_sitetype_plot(
 \arguments{
 \item{year}{year to use for plot}
 
-\item{Län}{character or regular expression; which county you want the data from}
+\item{Län}{character or regular expression; which county you want the data
+from}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 
@@ -24,11 +25,15 @@ sebms_species_per_sitetype_plot(
 
 \item{database}{logical; if the data should be based on the sebms database}
 
-\item{source}{the database sources as id numbers}
+\item{source}{the database sources as id numbers,
+defaults to `54,55,56,63,64,66,67,84`}
 }
 \value{
-A png with the number of sites within each category of number of species, for both slingor and transects. It also shows the mean number of species per site type.
+A png with the number of sites within each category of number of
+  species, for both slingor and transects. It also shows the mean number of
+  species per site type.
 }
 \description{
-Show the number of sites within a range of species richness found at the site. Also show the mean number of species per site in each site type.
+Show the number of sites within a range of species richness found at the
+site. Also show the mean number of species per site in each site type.
 }

@@ -1,24 +1,26 @@
 
 #' Get Nearby Places to Given Coordinates
 #'
-#' Takes a coordinate and search for a nearby city, village or municiplaity depending on what is available and the number of inhabitants.
-#' 
-#' @param df data frame with coordinates, or sf object 
+#' Takes a coordinate and search for a nearby city, village or municiplaity
+#' depending on what is available and the number of inhabitants.
+#'
+#' @param df data frame with coordinates, or sf object
 #' @param radius the radius to search for nearby places
 #' @param top how many of the top results to save
 #' @param limited logical; if you want only the names of the resulting sites
-#' @param population_limit the smallest amount of poeple that should be in the locations
-#' @param sunvar dataframe with sunvar data, e.g. from `sebms_sunhours_data()`` 
+#' @param population_limit the smallest amount of poeple that should be in the
+#'   locations
+#' @param sunvar dataframe with sunvar data, e.g. from `sebms_sunhours_data()``
 #'
 #' @importFrom geonames GNfindNearbyPlaceName
 #' @import dplyr
 #' @importFrom tidyr nest unnest
 #' @importFrom purrr map map2 possibly
 #' @importFrom sf st_coordinates st_coordinates
-#' 
+#'
 #' @return a dataframe with names nearby you coordinates
 #' @export
-#'
+#' 
 get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limit = 0, sunvar = total_sunH){
   #TODO: Make it use only Swedish locals
   options(geonamesUsername = "sebms") 

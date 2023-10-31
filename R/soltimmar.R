@@ -1,19 +1,21 @@
-#' 
+#'
 #' Function that download hourly sunhour data from SMHI
 #'
 #' @param year the year to produce plot for
-#' @param months numeric value of the months to summarise sun ours over (default to 4:9)
+#' @param months numeric value of the months to summarise sun ours over (default
+#'   to 4:9)
 #' @param day the day of interest
 #' @param per_day logical; if data should be downloaded per day
-#' 
+#'
 #' @importFrom httr GET content
 #' @importFrom glue glue
 #' @importFrom polite politely
 #' @importFrom dplyr bind_rows
-#' 
-#' @details
-#' This is a helper function that download data from the SMHI API on sunhours (sun seconds) for a ceratin year `year` and month `months` and bind it to a dataframe.
-#' 
+#'
+#' @details This is a helper function that download data from the SMHI API on
+#'   sunhours (sun seconds) for a ceratin year `year` and month `months` and
+#'   bind it to a dataframe.
+#'
 #' @noRd
 sunHdata <- function(year, months, day, per_day = FALSE) {
   if (per_day) {

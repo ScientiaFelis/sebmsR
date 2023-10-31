@@ -15,15 +15,22 @@ sebms_species_site_count_filtered(
 \arguments{
 \item{year}{year to use for plot}
 
-\item{Län}{character or regular expression; which county you want the data from}
+\item{Län}{character or regular expression; which county you want the data
+from}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 
 \item{Kommun}{character or reg ex; which municipality you want the data from}
 
-\item{source}{the database sources as id numbers}
+\item{source}{the database sources as id numbers,
+defaults to `54,55,56,63,64,66,67,84`}
+}
+\value{
+a tibble with species ids and names, filtered for trimed species
+  names, the site ids and names, site type, number of individuals for eahc
+  species, the date, county, region, and municipality
 }
 \description{
-Returns a data frame of counts per species, site, site type, and date.
-This is used for the `sebms_species_per_sitetype_plot()`
+Returns a data frame of counts per species, site, site type, and date. This
+is used for the [sebms_species_per_sitetype_plot()]
 }

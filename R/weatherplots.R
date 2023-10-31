@@ -29,9 +29,10 @@ sebms_default_station <- function(my_place, tempstat = TRUE) {
 
 
 #' Downloads and Exctract Stations Given by User
-#' 
-#' This takes the given list by users and match only one station to the possible with similar names
-#' 
+#'
+#' This takes the given list by users and match only one station to the possible
+#' with similar names
+#'
 #' @importFrom jsonlite fromJSON
 #' @import dplyr
 #' @importFrom stringr str_detect str_squish
@@ -52,6 +53,7 @@ sebms_user_station <- function(my_place) {
 
 
 #' Download and Filter out Precipitation Data from SMHI
+#' 
 #' @import dplyr
 #' @import purrr
 #' @import lubridate
@@ -110,6 +112,7 @@ sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::t
 }
 
 #' Download and Filter out Temperature Data from SMHI
+#' 
 #' @import dplyr 
 #' @import stringr
 #' @import lubridate
@@ -173,14 +176,15 @@ sebms_palette <- c("#BE4B48", "#9BBB59") #"#C0504D",
 
 
 #' Make a ggplot from Precipitation Data
-#' 
-#' This takes a dataframe from sebms_precip_data and makes a precipitation figure from that 
-#' 
+#'
+#' This takes a dataframe from sebms_precip_data and makes a precipitation
+#' figure from that
+#'
 #' @import ggplot2
 #' @import dplyr
 #' @importFrom tidyr nest
 #' @importFrom purrr map
-#' 
+#'
 #' @noRd
 sebms_precipplot <- function(precip, colours = sebms_palette) {
   
@@ -211,14 +215,15 @@ sebms_precipplot <- function(precip, colours = sebms_palette) {
 
 
 #' Make a ggplot from Temperature Data
-#' 
-#' This takes a dataframe from sebms_temp_data and makes a temperature figure from that 
-#' 
+#'
+#' This takes a dataframe from sebms_temp_data and makes a temperature figure
+#' from that
+#'
 #' @import ggplot2
 #' @import dplyr
 #' @importFrom tidyr nest
 #' @importFrom purrr map
-#' 
+#'
 #' @noRd
 sebms_tempplot <- function(temp, colours = sebms_palette){
   
@@ -246,14 +251,16 @@ sebms_tempplot <- function(temp, colours = sebms_palette){
 }
 
 
-#' Saves a ggplot object as a PNG file, resizing using pixel dimensions and a text scaling factor
-#' 
+#' Saves a ggplot object as a PNG file, resizing using pixel dimensions and a
+#' text scaling factor
+#'
 #' @param plot a ggplot object
 #' @param filename the path to the output file
 #' @param width pixel width
 #' @param height pixel height
 #' @param text.factor text scaling factor (default is 3)
-#' @param weathervar which weather variable it shoulld put in the name; 'Temp' or 'Precip'
+#' @param weathervar which weather variable it shoulld put in the name; 'Temp'
+#'   or 'Precip'
 #' @importFrom ggplot2 ggsave
 #' @importFrom glue glue
 #' @export
@@ -267,18 +274,21 @@ sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.722, text.fac
 }
 
 #' Creates png Figures  of Temperature and Precipitation for each Site
-#' 
+#'
 #' @param year from what year you want the temp and precipitation to be
-#' @param my_place the places you want weather data pngs from (default to Umeå, Stockholm, Visby, Lund)
-#' @param savepng logical, should the figures be saved as pngs. They are always shown in plot window
-#' @param colours add your own colours to separate the year data from the normal values (1991-2020)
+#' @param my_place the places you want weather data pngs from (default to Umeå,
+#'   Stockholm, Visby, Lund)
+#' @param savepng logical, should the figures be saved as pngs. They are always
+#'   shown in plot window
+#' @param colours add your own colours to separate the year data from the normal
+#'   values (1991-2020)
 #'
 #' @import ggplot2
 #' @importFrom purrr map2
 #' @import dplyr
 #' @importFrom glue glue
 #' @importFrom lubridate year today
-#' 
+#'
 #' @return png files with temperature and precipitation figures
 #' 
 

@@ -14,11 +14,14 @@ sebms_weather_png(
 \arguments{
 \item{year}{from what year you want the temp and precipitation to be}
 
-\item{my_place}{the places you want weather data pngs from (default to Umeå, Stockholm, Visby, Lund)}
+\item{my_place}{the places you want weather data pngs from (default to Umeå,
+Stockholm, Visby, Lund)}
 
-\item{savepng}{logical, should the figures be saved as pngs. They are always shown in plot window}
+\item{savepng}{logical, should the figures be saved as pngs. They are always
+shown in plot window}
 
-\item{colours}{add your own colours to separate the year data from the normal values (1991-2020)}
+\item{colours}{add your own colours to separate the year data from the normal
+values (1991-2020)}
 }
 \value{
 png files with temperature and precipitation figures

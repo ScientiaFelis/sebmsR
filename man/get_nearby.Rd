@@ -22,7 +22,8 @@ get_nearby(
 
 \item{limited}{logical; if you want only the names of the resulting sites}
 
-\item{population_limit}{the smallest amount of poeple that should be in the locations}
+\item{population_limit}{the smallest amount of poeple that should be in the
+locations}
 
 \item{sunvar}{dataframe with sunvar data, e.g. from `sebms_sunhours_data()``}
 }
@@ -30,5 +31,6 @@ get_nearby(
 a dataframe with names nearby you coordinates
 }
 \description{
-Takes a coordinate and search for a nearby city, village or municiplaity depending on what is available and the number of inhabitants.
+Takes a coordinate and search for a nearby city, village or municiplaity
+depending on what is available and the number of inhabitants.
 }

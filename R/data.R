@@ -46,15 +46,19 @@ editcred <- function(homepath = "~/") {
 
 
 #' Retrieve Species Abundance List per Site, Site type, and Date
-#' 
-#' Returns a data frame of counts per species, site, site type, and date.
-#' This is used for the `sebms_species_per_sitetype_plot()`
+#'
+#' Returns a data frame of counts per species, site, site type, and date. This
+#' is used for the [sebms_species_per_sitetype_plot()]
 #'
 #' @inheritParams sebms_abundance_per_species_plot
-#'  
+#'
 #' @import tibble
 #' @import glue
 #' @importFrom DBI dbGetQuery
+#'
+#' @returns a tibble with species ids and names, filtered for trimed species
+#'   names, the site ids and names, site type, number of individuals for eahc
+#'   species, the date, county, region, and municipality
 #' @export
 sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", source = c(54,55,56,63,64,66,67,84)){
   
@@ -135,18 +139,21 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
 }
 
 #' Retrieve Species Abundance List per Date
-#' 
-#' Returns a data frame with counts per species and date.
-#' This is used in most plot functions:
-#' `sebms_abundance_per_species_plot()`, `sebms_abundance_year_compare_plot()`,
-#' and `sebms_species_abundance_plot()`
-#' 
+#'
+#' Returns a data frame with counts per species and date. This is used in most
+#' plot functions: [sebms_abundance_per_species_plot()],
+#' [sebms_abundance_year_compare_plot()], and [sebms_species_abundance_plot()]
+#'
 #' @inheritParams sebms_abundance_per_species_plot
-#' @param Art the species to create figures for, as uids
-#' 
+#' @param Art integer; the species uids of interest
+#'
 #' @import tibble
 #' @import glue
 #' @importFrom DBI dbGetQuery
+#'
+#' @returns a tibble with species ids and names, filetered for trimmed species
+#'   names, the number of individuals, the date, county, region, and
+#'   municipality.
 #' @export
 sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", source = c(54,55,56,63,64,66,67,84)) {
   

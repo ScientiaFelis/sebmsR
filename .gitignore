@@ -11,6 +11,4 @@ vignettes/.build.timestamp
 vignettes/sebms-intro.R
 *.png
 Test_SQL.rmd
-R/*trimexport*
-R/*trimfunction*_swedish*
 zgeomaps*

@@ -16,6 +16,7 @@ editcred <- function(homepath = "~/") {
   cat("DBUSER = 'username'\n")
   cat("DBPASS = 'passw'\n")
   cat("DBNAME = 'database name'")
+  cat("DBPORT = 'database port'")
   
   Renv.file <- rstudioapi::selectFile(path = homepath,
                                           caption = "Select the .Renviron File",

@@ -4,6 +4,6 @@ default:
     server: 'localhost'
     dbuser: !expr Sys.getenv("DBUSER")
     dbpass: !expr Sys.getenv("DBPASS")  
-    port: 5432
+    port: !expr Sys.getenv("DBPORT")
     database: !expr Sys.getenv("DBNAME")
 

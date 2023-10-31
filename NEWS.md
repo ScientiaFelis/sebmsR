@@ -4,7 +4,16 @@ NEWS
 For more fine-grained list of changes or to report a bug, consult 
 
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
-* [The commit log](https://github.com/scientiafelis/sebmsr/commits/master)
+* [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
+
+# v 1.4.6
+
+This version fixes some bugs and a number of Build check errors. It also update the documentation.
+
+* Fix various errors from Build check, package dependencies, variable defenitions etc
+* Fix issue with month and week labels in `sebms_abundance_year_compare_plot()`
+* Fix issue in filtering out 'nullobservation' and combined species
+* Fix issue with placement of mean values in `sebms_species_per_sitetype_plot()`
 
 # v 1.4.5
 

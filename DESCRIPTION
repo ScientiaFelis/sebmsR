@@ -1,53 +1,60 @@
 Package: sebmsR
 Title: Swedish Butterfly Monitoring Programme Tools
-Version: 1.4.5
+Version: 1.4.6
 Authors@R: c(
-    person("Markus", "Skyttner", email = "markus.skyttner@nrm.se", role = c("aut", "cre")),
-    person("Georg", "Andersson", role = c("aut")),
-    person("Lars", "Pettersson", role = c("aut"))
-    )
-Description: Provides tools for working with data from the Swedish Butterfly Monitoring scheme.
-Depends: R (>= 4.0.0)
+    person("Markus", "Skyttner", , "markus.skyttner@nrm.se", role = "aut"),
+    person("Georg", "Andersson", , "georg.andersson@biol.lu.se", role = c("aut", "cre")),
+    person("Lars", "Pettersson", role = "aut")
+  )
+Description: Provides tools for working with data from, and provide
+    figures to, the Swedish Butterfly Monitoring scheme.
 License: AGPL (>= 3)
-Encoding: UTF-8
-LazyData: true
-Imports: ggplot2 (>= 3.4.0),
-    glue,
+URL: https://github.com/scientiafelis/sebmsr
+BugReports: https://github.com/ScientiaFelis/sebmsR/issues
+Depends: 
+    R (>= 4.0.0)
+Imports: 
+    config,
     DBI,
-    tibble,
     plyr,
     dplyr,
-    lubridate,
-    stringr,
-    purrr,
     forcats,
-    tidyr,
-    scales,
+    geonames,
+    ggplot2 (>= 3.4.0),
+    glue,
+    httr,
+    jsonlite,
+    lubridate,
+    polite,
     pool,
+    purrr,
+    rappdirs,
     RPostgres,
     rstudioapi,
-    rappdirs,
-    config, 
-    polite,
-    httr,
-    sf, 
-    jsonlite,
-    geonames
-RoxygenNote: 7.2.3
-Suggests: knitr,
-    rmarkdown,
-    testthat,
-    raster,
-    rasterVis,
-    sp,
-    magick,
-    shiny,
+    scales,
+    sf,
+    stringr,
+    tibble,
+    tidyr
+Suggests: 
+    cowplot,
     DT,
-    shinydashboard,
-    shinyjs,
-    leaflet,
     ggthemes,
     grid,
+    knitr,
+    leaflet,
+    magick,
+    raster,
+    rasterVis,
     RColorBrewer,
-    cowplot
-VignetteBuilder: knitr
+    rmarkdown,
+    shiny,
+    shinydashboard,
+    shinyjs,
+    sp,
+    testthat
+VignetteBuilder: 
+    knitr
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.3

@@ -67,6 +67,7 @@ fix_sunhour_NAs <- function(year, months, day, per_day = FALSE) {
 #' @importFrom sf st_as_sf st_set_crs st_intersection
 #' @importFrom purrr map map2 set_names possibly pmap_dfr
 #' @importFrom lubridate year today
+#' @importFrom glue glue
 #' 
 #' @returns a sf spatial point object with the WGS84 coordinate system
 #' 
@@ -224,6 +225,9 @@ sebms_sunmean_data <- function(year = 2017:2021, months = 4:9, per_month = FALSE
 #' 
 #' @importFrom lubridate year today
 #' @import ggplot2
+#' @importFrom tidyr nest
+#' @importFrom purrr map map2
+#' @importFrom glue glue
 #' 
 #' @return a figure saved as a png with the sunhours in coloour from, high (red) to low (blue)
 #' @export
@@ -329,8 +333,8 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
 #' 
 #' @inheritParams sebms_sunhours_data
 #'  
-#' @importFrom dplyr bind_cols mutate
-#' @importFrom sf st_drop_geometry
+#' @import dplyr
+#' @importFrom sf st_drop_geometry st_as_sf
 #' @importFrom lubridate year today
 #'
 #' @noRd
@@ -370,6 +374,9 @@ sebms_sunhour_diff <- function(df, year = year(today())-1, months = 4:9, per_mon
 #'
 #' @importFrom lubridate year today
 #' @import ggplot2
+#' @importFrom glue glue
+#' @importFrom tidyr nest
+#' @importFrom purrr map map2
 #' 
 #' @return a figure that shows diffeence in sunhours
 #' @export

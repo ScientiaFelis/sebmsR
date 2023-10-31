@@ -4,7 +4,7 @@
 #' 
 #' @importFrom jsonlite fromJSON
 #' @import dplyr
-#' @import stringr
+#' @importFrom stringr str_detect str_squish
 #' @noRd
 
 sebms_default_station <- function(my_place, tempstat = TRUE) {
@@ -34,7 +34,8 @@ sebms_default_station <- function(my_place, tempstat = TRUE) {
 #' 
 #' @importFrom jsonlite fromJSON
 #' @import dplyr
-#' @import stringr
+#' @importFrom stringr str_detect str_squish
+#' 
 #' @noRd
 sebms_user_station <- function(my_place) {
   
@@ -177,7 +178,8 @@ sebms_palette <- c("#BE4B48", "#9BBB59") #"#C0504D",
 #' 
 #' @import ggplot2
 #' @import dplyr
-#' @import purrr
+#' @importFrom tidyr nest
+#' @importFrom purrr map
 #' 
 #' @noRd
 sebms_precipplot <- function(precip, colours = sebms_palette) {
@@ -214,7 +216,8 @@ sebms_precipplot <- function(precip, colours = sebms_palette) {
 #' 
 #' @import ggplot2
 #' @import dplyr
-#' @import purrr
+#' @importFrom tidyr nest
+#' @importFrom purrr map
 #' 
 #' @noRd
 sebms_tempplot <- function(temp, colours = sebms_palette){
@@ -252,6 +255,7 @@ sebms_tempplot <- function(temp, colours = sebms_palette){
 #' @param text.factor text scaling factor (default is 3)
 #' @param weathervar which weather variable it shoulld put in the name; 'Temp' or 'Precip'
 #' @importFrom ggplot2 ggsave
+#' @importFrom glue glue
 #' @export
 sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.722, text.factor = 3, weathervar = "Temp") 
 {
@@ -269,10 +273,15 @@ sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.722, text.fac
 #' @param savepng logical, should the figures be saved as pngs. They are always shown in plot window
 #' @param colours add your own colours to separate the year data from the normal values (1991-2020)
 #'
-#' @return png files with temperature and precipitation figures
 #' @import ggplot2
-#' @importFrom purrr map map2
+#' @importFrom purrr map2
 #' @import dplyr
+#' @importFrom glue glue
+#' @importFrom lubridate year today
+#' 
+#' @return png files with temperature and precipitation figures
+#' 
+
 #' @export
 
 sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_place = NA, savepng = TRUE, colours = sebms_palette) {

@@ -93,11 +93,20 @@ default:
     uid: 'my_db_username'
     pwd: 'my_db_password'
     port: 5432
-    database: 'test4'
+    database: 'test57'
 ```
 
 If you prefer to use environment variables for the credentials and
 reference those in the `config.yml`, the file can look like this:
+
+    default:
+      sebms:
+        driver: !expr RPostgres::Postgres() 
+        server: 'localhost'
+        dbuser: !expr Sys.getenv("DBUSER")
+        dbpass: !expr Sys.getenv("DBPASS")  
+        port: 5432
+        database: !expr Sys.getenv("DBNAME")
 
 For the above connection to be initiated, you also need to set up your
 `.Renviron` with the environment variables containing the credentials.
@@ -107,6 +116,7 @@ For that run the function `editcred(homepath = 'user home dir')`:
 DBUSER = my_db_username
 DBPASS = my_db_password
 DBNAME = PostgreSQL_database_name
+DBPORT = PostgreSQL_database_port_number
 ```
 
 ## Usage
@@ -166,6 +176,6 @@ Pettersson at <http://dagfjarilar.lu.se>
 
 ## Meta
 
--   Please [report any issues or
-    bugs](https://github.com/rekonstrukt/swedishbutterflies/issues).
--   License: AGPL
+- Please [report any issues or
+  bugs](https://github.com/ScientiaFelis/sebmsR/issues).
+- License: AGPL

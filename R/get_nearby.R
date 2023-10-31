@@ -8,10 +8,12 @@
 #' @param limited logical; if you want only the names of the resulting sites
 #' @param population_limit the smallest amount of poeple that should be in the locations
 #'
-#' @import geonames
+#' @importFrom geonames GNfindNearbyPlaceName
 #' @import dplyr
-#' @importFrom purrr map map2
-#' @importFrom sf st_coordinates
+#' @importFrom tidyr nest unnest
+#' @importFrom purrr map map2 possibly
+#' @importFrom sf st_coordinates st_coordinates
+#' 
 #' @return a dataframe with names nearby you coordinates
 #' @export
 #'

@@ -12,8 +12,11 @@
 #'
 #' @import dplyr
 #' @importFrom plyr round_any
-#' @import glue
+#' @importFrom glue glue
 #' @import ggplot2
+#' @importFrom stringr str_detect
+#' @importFrom purrr map2
+#' 
 #' @return Two png figures with the abundance data for each species.
 #' One for species count below the median for that year and one for species above median.
 #' @export
@@ -262,7 +265,10 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
 #' 
 #' @import dplyr
 #' @import ggplot2
-#' @importFrom lubridate month weeks ymd
+#' @importFrom lubridate month weeks isoweek ymd
+#' @importFrom stringr str_detect
+#' @importFrom tidyr nest
+#' @importFrom purrr map2
 #' 
 #' @return A png per species showing the number of individuals per week.
 #' @export

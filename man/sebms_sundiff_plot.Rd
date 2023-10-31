@@ -13,7 +13,15 @@ sebms_sundiff_plot(
 )
 }
 \arguments{
+\item{year}{the year to produce plot for}
+
 \item{df}{optinal; dataframe from the `sebms_sunhour_diff()`}
+
+\item{months}{numeric value of the months to summarise sun ours over (default to 4:9)}
+
+\item{per_month}{logical; summarise per month instead of per year}
+
+\item{legends}{logical; if you want a legend to the figures (default: FALSE)}
 }
 \value{
 a figure that shows diffeence in sunhours

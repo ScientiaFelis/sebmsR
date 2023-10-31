@@ -239,7 +239,6 @@ sebms_species_per_year_filtered <- function(year = 2020:2021) {
       SELECT
         spe.spe_uid AS id,
         spe.spe_semainname As name,
-        --sit.sit_type AS sitetype,
         SUM(obs.obs_count) AS count,
         extract('YEAR' from vis_begintime) AS years
       FROM obs_observation AS obs
@@ -249,15 +248,14 @@ sebms_species_per_year_filtered <- function(year = 2020:2021) {
       INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
       INNER JOIN  spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid     
       WHERE
-        --sit.sit_reg_countyid = (SELECT reg_uid FROM reg_region WHERE reg_code = '08' AND reg_group = 'C')
         extract('YEAR' from vis_begintime) IN {year}
-        AND (spv.spv_istrim=TRUE or spe_uid in (135,131,133) )     -- new
+        AND spv.spv_istrim=TRUE     -- new
       GROUP BY
-        spe.spe_uid, years --, sitetype
+        spe.spe_uid, years
       ORDER BY
         count DESC, name;")
   
-  sebms_assert_connection()
+  sebms_pool <- sebms_assert_connection()
   res <- dbGetQuery(sebms_pool, q)
   as_tibble(res)
   
@@ -269,7 +267,7 @@ sebms_species_per_year_filtered <- function(year = 2020:2021) {
 #' and filter for approved ones 
 #' @import tibble
 #' @importFrom DBI dbGetQuery
-#' @export
+#' @noRd
 sebms_species_per_year_site_filtered <- function() {
   
   q <- "
@@ -293,7 +291,7 @@ sebms_species_per_year_site_filtered <- function() {
     ORDER BY
       species DESC;"
   
-  sebms_assert_connection()
+  sebms_pool <- sebms_assert_connection()
   res <- dbGetQuery(sebms_pool, q)
   as_tibble(res)
 }
@@ -303,7 +301,7 @@ sebms_species_per_year_site_filtered <- function() {
 #' and filter for approved species 
 #' @import tibble
 #' @importFrom DBI dbGetQuery
-#' @export
+#' @noRd
 sebms_species_per_year_site_counts_filtered <- function() {
   
   q <- "
@@ -328,7 +326,7 @@ sebms_species_per_year_site_counts_filtered <- function() {
   ORDER BY
     id, speciesno DESC;"
   
-  sebms_assert_connection()
+  sebms_pool <- sebms_assert_connection()
   res <- dbGetQuery(sebms_pool, q)
   as_tibble(res)
 }
@@ -344,7 +342,7 @@ sebms_species_per_year_site_counts_filtered <- function() {
 #' @import tibble
 #' @import glue
 #' @importFrom DBI dbGetQuery
-#' @export
+#' @noRd
 sebms_species_count <- function(year = 2021:2022) {
   
   year <- glue("({paste0({year}, collapse = ',')})")
@@ -373,7 +371,7 @@ sebms_species_count <- function(year = 2021:2022) {
           Art;
  ")
   
-  sebms_assert_connection()
+  sebms_pool <- sebms_assert_connection()
   res <- DBI::dbGetQuery(sebms_pool, q)
   as_tibble(res)
 }
@@ -385,7 +383,7 @@ sebms_species_count <- function(year = 2021:2022) {
 #' @import tibble
 #' @import glue
 #' @importFrom DBI dbGetQuery
-#' @export
+#' @noRd
 sebms_species_per_year <- function() {
   
   q <- glue("
@@ -410,7 +408,7 @@ sebms_species_per_year <- function() {
     ORDER BY
       count DESC;")
   
-  sebms_assert_connection()
+  sebms_pool <- sebms_assert_connection()
   res <- DBI::dbGetQuery(sebms_pool, q)
   as_tibble(res)
 }
@@ -425,7 +423,7 @@ sebms_species_per_year <- function() {
 #' @import tibble 
 #' @importFrom lubridate ymd_hms
 #' @importFrom jsonlite fromJSON
-#' @export
+#' @noRd
 #' 
 sebms_naturum_climate <- function() {
   
@@ -433,7 +431,7 @@ sebms_naturum_climate <- function() {
   #  "category/pmp3g/version/2/geotype/point/lon/", x ,"/lat/", y,"/data.json")
   
   api <- function(x, y) paste0("https://opendata-download-metfcst.smhi.se/api/", 
-                               "category/pmp2g/version/2/geotype/point/lon/", x ,"/lat/", y,"/data.json")
+                               "category/pmp3g/version/2/geotype/point/lon/", x ,"/lat/", y,"/data.json")
   
   res <- 
     sebms_data_sites_naturum %>% 

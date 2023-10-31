@@ -6,6 +6,7 @@
 #' @param x_sz font size for x axis text
 #' @param y_sz font size for y axis text
 #' @param legend_position char indicating legend_position such as "none"
+#' @param fontfamily the font family to use
 #' @return a theme that can be used for ggplot plot objects
 #' @import ggplot2
 #' @export
@@ -43,12 +44,8 @@ theme_sebms <- function(title_sz = 24,
 
 #' Theme for Swedish Butterfly Monitoring Scheme for Species Figures
 #' 
-#' @param title_sz font size for title
-#' @param x_title_sz font size for x axis title
-#' @param y_title_sz font size for y axis title
-#' @param x_sz font size for x axis text
-#' @param y_sz font size for y axis text
-#' @param legend_position char indicating legend_position such as "none"
+#' @inheritParams theme_sebms
+#' 
 #' @return a theme that can be used for ggplot plot objects
 #' @import ggplot2
 #' @export

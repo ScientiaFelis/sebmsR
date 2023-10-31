@@ -7,11 +7,11 @@ Authors@R: c(
     person("Lars", "Pettersson", role = c("aut"))
     )
 Description: Provides tools for working with data from the Swedish Butterfly Monitoring scheme.
-Depends: R (>= 3.4.1)
-License: Affero GPLv3
+Depends: R (>= 4.0.0)
+License: AGPL (>= 3)
 Encoding: UTF-8
 LazyData: true
-Imports:  ggplot2 (>= 3.4.0),
+Imports: ggplot2 (>= 3.4.0),
     glue,
     DBI,
     tibble,
@@ -47,7 +47,6 @@ Suggests: knitr,
     leaflet,
     ggthemes,
     grid,
-    magick,
     RColorBrewer,
     cowplot
 VignetteBuilder: knitr

@@ -75,11 +75,12 @@ sebms_assert_connection <- function(pool) {
 
 #' Get user data
 #' 
+#' @param my_username the user name
 #' @import dplyr
 #' @export
 sebms_users <- function(my_username = NULL) {
   
-  sebms_assert_connection()
+  sebms_pool <- sebms_assert_connection()
   
   res <- 
     tbl(sebms_pool, "usr_user") %>%
@@ -104,7 +105,7 @@ sebms_users <- function(my_username = NULL) {
 #' @export
 sebms_per_update_modified <- function(my_usr_uid=1,target_per_uid=0) {
   
-  sebms_assert_connection()
+  sebms_pool <- sebms_assert_connection()
   
   s <- "UPDATE per_person 
     SET per_modifiedtime = CURRENT_TIMESTAMP, 

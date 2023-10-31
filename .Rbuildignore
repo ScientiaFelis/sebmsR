@@ -4,3 +4,4 @@
 ^\.Renviron$
 ^README\.Rmd$
 ^\.travis\.yml
+^LICENSE\.md$

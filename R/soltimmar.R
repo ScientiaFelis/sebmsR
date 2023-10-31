@@ -370,7 +370,7 @@ sebms_sunhour_diff <- function(df, year = year(today())-1, months = 4:9, per_mon
 #' Produce a plot that shows differences in sun hours between a given year and mean.
 #'
 #' @param df optinal; dataframe from the `sebms_sunhour_diff()`
-#' @inheritParams sebms_sunhours_plot
+#' @inheritParams sebms_sunhour_plot
 #'
 #' @importFrom lubridate year today
 #' @import ggplot2

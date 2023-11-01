@@ -419,7 +419,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   l <- paste0(b, "-", b + 4) # This maes the group intervals
   
   if (database) {
-browser()
+
     df <- sebms_species_site_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
       filter(!speuid %in% c(135,131,133)) %>% 
       group_by(situid, sitetype) %>% 

@@ -128,7 +128,7 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
           extract('YEAR' from vis_begintime) IN {year}
           AND
           vis_typ_datasourceid IN {source}
-          AND spv.spv_istrim=TRUE --or spe_uid in (135,131,133) )
+          AND ( spv.spv_istrim=TRUE OR spe_uid IN (135,131,132,133,139) ) -- Include nullobs and 4 aggregated species groups
         
        GROUP BY
           Art, Lokalnamn,Datum, sitetype, speUId, sitUId, reg.reg_id, reg.län, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun --, date --, vecka
@@ -222,7 +222,7 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
         WHERE
           extract('YEAR' from vis_begintime) IN {year}
           AND vis_typ_datasourceid IN {source}
-          AND spv.spv_istrim=TRUE -- or spe_uid IN (135,131,133) )
+          AND ( spv.spv_istrim=TRUE OR spe_uid IN (135,131,132,133,139) ) -- Include nullobs and 4 aggregated species groups
           AND spe.spe_uid IN {Art}
         
         GROUP BY

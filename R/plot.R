@@ -176,7 +176,7 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
     df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
       mutate(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
       filter(datum > ymd(glue("{year}-04-01")), datum < ymd(glue("{year}-09-30"))) %>% 
-      filter(!speuid %in% c(131,133,135)) %>% 
+      #filter(!speuid %in% c(131,133,135)) %>% 
       group_by(year, vecka) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
   }else {
@@ -203,26 +203,50 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
   veckamån <- c("13\n   apr","14", "15", "16","17", "18\n   maj", "19", "20", "21","22\n   jun", "23", "24","25", "26\n   jul","27", "28","29", "30\n   aug","31","32","33","34\n   sep","35","36","37","38\n  okt", "39","40")
   
   # To produce the correct steps betweeen y-axis number.
-  steps <- case_when(max(df$count) < 12 ~ 1,
-                     between(max(df$count),12,30) ~ 2,
-                     between(max(df$count),31,60) ~ 5,
-                     between(max(df$count),61,100) ~ 10,
-                     between(max(df$count),101,300) ~ 20,
-                     between(max(df$count),301,600) ~ 50,
-                     between(max(df$count),601,1000) ~ 100,
-                     between(max(df$count),1001,5000) ~ 200,
-                     TRUE ~2000)
-  # 
-  # steps <- case_when(max(df$count) <600 ~ 100,
-  #                    between(max(df$count), 600,10000) ~ 10,
-  #                    between(max(df$count), 10001,40000) ~ 100,
-  #                    TRUE ~ 20)
+  maxlim <-  case_when(max(df$count) <= 9 ~ 10,
+                       between(max(df$count), 9,19) ~ 20,
+                       between(max(df$count), 20,28) ~ 30,
+                       between(max(df$count), 29,47) ~ 50,
+                       between(max(df$count), 48,95) ~ 100,
+                       between(max(df$count), 96,190) ~ 200,
+                       between(max(df$count), 191,275) ~ 300,
+                       between(max(df$count), 276,475) ~ 500,
+                       between(max(df$count), 476,750) ~ 800,
+                       between(max(df$count), 476,950) ~ 1000,
+                       between(max(df$count), 951,1350) ~ 1400,
+                       between(max(df$count), 1351,1900) ~ 2000,
+                       between(max(df$count), 1901,2900) ~ 3000,
+                       between(max(df$count), 2901,3750) ~ 4000,
+                       between(max(df$count), 3751,4500) ~ 5000,
+                       between(max(df$count), 4501,5500) ~ 6000,
+                       between(max(df$count), 5501,6500) ~ 7000,
+                       between(max(df$count), 6501,7500) ~ 8000,
+                       between(max(df$count), 7501,9000) ~ 10000,
+                       between(max(df$count), 9001,11000) ~ 12000,
+                       between(max(df$count), 11001,13000) ~ 14000,
+                       between(max(df$count), 13001,15000) ~ 16000,
+                       between(max(df$count), 15001,17000) ~ 18000,
+                       between(max(df$count), 17001,19000) ~ 20000,
+                       TRUE ~10000
+  )
   
-  acc <- case_when(between(max(df$count), 1000,4000) ~ 500,
-                   max(df$count) >4000 ~ 2000,
-                   TRUE ~ 10)
-  
-  maxlim <- round_any(max(df$count), acc, f = ceiling) # Makes a rounded to nearest 1000 of max value to be at top of Y-axis
+  # maxlim <- if_else(between(max(df$count), 10,12), maxlim-6, maxlim)
+  # # Fix odd number which does not fit in 20 steps
+  # maxlim <- if_else(maxlim %in% seq(130, 290, 20), maxlim+10, maxlim)
+  # This makes the steps between labels correct based on max value of count.
+  steps <- case_when(max(df$count) < 10 ~ 1,
+                     between(max(df$count), 9,19) ~ 2,
+                     between(max(df$count), 20,47) ~ 5,
+                     between(max(df$count), 48,95) ~ 10,
+                     between(max(df$count), 96,190) ~ 20,
+                     between(max(df$count), 191,475) ~ 50,
+                     between(max(df$count), 476,950) ~ 100,
+                     between(max(df$count), 951,2900) ~ 200,
+                     between(max(df$count), 2901,4500) ~ 500,
+                     between(max(df$count), 4501,8000) ~ 1000,
+                     between(max(df$count), 8001,18000) ~ 2000,
+                     between(max(df$count), 18001,20000) ~ 5000,
+                     TRUE ~10000)
   Hweeklim <- 40 #max(df$vecka)
   Lweeklim <- 13 #min(df$vecka)
   

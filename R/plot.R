@@ -322,15 +322,28 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
     
     maxlim <-  case_when(max(df$count) <= 9 ~ 10,
                          between(max(df$count), 9,19) ~ 20,
-                         between(max(df$count), 20,47) ~ 50,
+                         between(max(df$count), 20,28) ~ 30,
+                         between(max(df$count), 29,47) ~ 50,
                          between(max(df$count), 48,95) ~ 100,
                          between(max(df$count), 96,190) ~ 200,
-                         between(max(df$count), 191, 475) ~ 500,
-                         between(max(df$count), 476, 950) ~ 1000,
+                         between(max(df$count), 191,275) ~ 300,
+                         between(max(df$count), 276,475) ~ 500,
+                         between(max(df$count), 476,750) ~ 800,
+                         between(max(df$count), 476,950) ~ 1000,
                          between(max(df$count), 951,1350) ~ 1400,
                          between(max(df$count), 1351,1900) ~ 2000,
                          between(max(df$count), 1901,2900) ~ 3000,
-                         between(max(df$count), 2901,4500) ~ 5000,
+                         between(max(df$count), 2901,3750) ~ 4000,
+                         between(max(df$count), 3751,4500) ~ 5000,
+                         between(max(df$count), 4501,5500) ~ 6000,
+                         between(max(df$count), 5501,6500) ~ 7000,
+                         between(max(df$count), 6501,7500) ~ 8000,
+                         between(max(df$count), 7501,9000) ~ 10000,
+                         between(max(df$count), 9001,11000) ~ 12000,
+                         between(max(df$count), 11001,13000) ~ 14000,
+                         between(max(df$count), 13001,15000) ~ 16000,
+                         between(max(df$count), 15001,17000) ~ 18000,
+                         between(max(df$count), 17001,19000) ~ 20000,
                          TRUE ~10000
     )
     
@@ -343,13 +356,14 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
                        between(max(df$count), 20,47) ~ 5,
                        between(max(df$count), 48,95) ~ 10,
                        between(max(df$count), 96,190) ~ 20,
-                       between(max(df$count), 191, 475) ~ 50,
-                       between(max(df$count), 476, 950) ~ 100,
-                       between(max(df$count), 951,1350) ~ 200,
-                       between(max(df$count), 1351,1900) ~ 200,
-                       between(max(df$count), 1901,2900) ~ 200,
-                       between(max(df$count), 2901,4500) ~ 200,
-                       TRUE ~500)
+                       between(max(df$count), 191,475) ~ 50,
+                       between(max(df$count), 476,950) ~ 100,
+                       between(max(df$count), 951,2900) ~ 200,
+                       between(max(df$count), 2901,4500) ~ 500,
+                       between(max(df$count), 4501,8000) ~ 1000,
+                       between(max(df$count), 8001,18000) ~ 2000,
+                       between(max(df$count), 18001,20000) ~ 5000,
+                       TRUE ~10000)
     #FIXME: Add species name as title or subtitle instead of inside plot
     ggplot(data = df, 
            aes(x = vecka, y = count)) +
@@ -419,7 +433,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   l <- paste0(b, "-", b + 4) # This maes the group intervals
   
   if (database) {
-browser()
+
     df <- sebms_species_site_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
       filter(!speuid %in% c(135,131,133)) %>% 
       group_by(situid, sitetype) %>% 

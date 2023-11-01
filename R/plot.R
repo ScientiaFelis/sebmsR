@@ -443,16 +443,16 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
       group_by(sitetype) %>% 
       mutate(medel = mean(species)) %>% # mean number of species per site type
       ungroup() %>% 
-      mutate(interval = l[findInterval(species, b)],
-             sortorder = findInterval(species, b)) %>%
+      mutate(interval = l[findInterval(species, b, all.inside = T)], #QUESTION: should we set 0 sites as category 1-5
+             sortorder = findInterval(species, b),
+             interval = if_else(sortorder == 0, "0", interval)) %>%
       group_by(interval, sortorder, sitetype, medel) %>%
       summarize(site_count = n_distinct(situid),
                 #medel = mean(medel),
                 .groups = "drop") %>%
       arrange(sortorder) %>%
       select(interval, sortorder, sitetype, site_count, medel) %>% 
-      complete(interval, sitetype) %>%
-      mutate(site_count=replace_na(site_count, 0)) %>%
+      complete(interval, sitetype, fill = list(site_count = 0)) %>%
       group_by(interval) %>%
       fill(sortorder, .direction = "updown") %>%
       group_by(sitetype) %>%
@@ -490,8 +490,11 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   # labname <- c("", r)
   
   
-  tickmarks <- (df %>% distinct(interval, sitetype) %>% pull(interval) %>% length()) /2 +0.5 # Produce the correct numbet of tickmarks
-
+  tickmarks <- (df %>%
+                  distinct(interval, sitetype) %>% 
+                  pull(interval) %>% 
+                  length()) /2 +0.5 # Produce the correct numbet of tickmarks
+  
   p <- df  %>%
     mutate(interval = fct_reorder(interval, sortorder)) %>% 
     arrange(sortorder) %>% 
@@ -510,8 +513,10 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
               fontface = "plain",
               size = 5,
               inherit.aes = F) +
-    geom_segment(aes(x = stage(reorder(interval, sortorder), after_scale = rep(seq(1.5, tickmarks,1), each=2)), # This adds a segment, that looks like a tickmark, after each group
-                     xend = stage(reorder(interval, sortorder), after_scale = rep(seq(1.5, tickmarks,1), each=2)),
+    geom_segment(aes(x = stage(reorder(interval, sortorder),
+                               after_scale = rep(seq(1.5, tickmarks,1),each = 2)), # This adds a segment, that looks like a tickmark, after each group
+                     xend = stage(reorder(interval, sortorder),
+                                  after_scale = rep(seq(1.5, tickmarks,1), each = 2)),
                      y = -1.1, # How long the tickmark is, we want negative as it should go down
                      yend = 0)) + # The start of the tickmark
     scale_y_continuous(breaks = seq(0,120,20),

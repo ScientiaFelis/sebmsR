@@ -11,6 +11,7 @@
 #' @param database logical; if the data should be based on the sebms database
 #' @param source the database sources as id numbers,
 #' defaults to `54,55,56,63,64,66,67,84`
+#' @param print logical; if FALSE (default) the function does not print to plot window.
 #'
 #' @importFrom plyr round_any
 #' @importFrom glue glue
@@ -24,7 +25,7 @@
 #'   median.
 #' @export
 #' 
-sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84)) {
+sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
   
   if (database) {
     sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
@@ -151,7 +152,9 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
   name <- list(glue("Above-median_{year}"), glue("Below-median_{year}"))
   map2(res, name, ~sebms_ggsave(.x, "Species_tot_count", width = 22, height=32, weathervar = .y, text.factor = 4))
   
-  return(res)
+  if (print) {
+    return(res)
+  }
 }
 
 #' Butterfly Number Two Year Comparison Plot
@@ -170,7 +173,7 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
 #'   comparing years per week,
 #' @export
 #' 
-sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84)) {
+sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
   
   if (length(year) > 2) {
     return(cat("More than two year in interval.\n\nGIVE ONLY TWO YEARS TO COMPARE!")
@@ -284,7 +287,10 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
   yearname <- paste0(year, collapse = "-")
   sebms_ggsave(p, "Butterflynumber", width = 30, height = 15, weathervar = yearname)
   
-  return(p)
+  if (print) {
+    return(p)
+  }
+  
 }
 
 
@@ -306,7 +312,7 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
 #' @return A png per species showing the number of individuals per week.
 #' @export
 #' 
-sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", plotname = FALSE, database = TRUE, source = c(54,55,56,63,64,66,67,84)) {
+sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", plotname = FALSE, database = TRUE, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
   
   if (database) {
     df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
@@ -442,7 +448,10 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
   map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, filename = .y, width = 24, height = 14, weathervar = yearname), .progress = "Saving individual species plots as png.....")
   
   #sebms_ggsave(p, Art, width = 26, height = 12, weathervar = year)
-  return(ggs$plots)
+  if (print) {
+    return(ggs$plots)
+  }
+  
 }
 
 
@@ -462,7 +471,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
 #'   species per site type.
 #' @export
 #' 
-sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84)) {
+sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
   
   b <- seq(1, 65, by = 5) # make the start of species number groups
   l <- paste0(b, "-", b + 4) # This maes the group intervals
@@ -629,7 +638,11 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   }
   
   sebms_ggsave(p, "Species_per_site", width = 22, height = 13, weathervar = yearname)
-  return(p)
+  
+  if (print) {
+    return(p)
+    
+  }
   
   options(OutDec = ".") # Restore decimal separator to dot
   

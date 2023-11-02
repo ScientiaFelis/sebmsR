@@ -459,22 +459,13 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   if (database) {
     
     df <- sebms_species_site_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
-      # Om art per site innehåller någon av agg (131-133 + 139), finns någon av arterna, gör då om till den arten, annars första arten i agg.
-      mutate(groupid = case_when(speuid %in% c(131,58,57) ~ 1,
-                                 speuid %in% c(139,29,30) ~ 2,
-                                 speuid %in% c(133,24,25) ~ 3,
-                                 speuid %in% c(132,74,73,72) ~ 4,
-                                 TRUE ~ 5)) %>% 
-      group_by(groupid, situid, sitetype) %>% 
+      group_by(situid, sitetype) %>% 
       mutate(speuid = case_when(speuid == 131 ~ if_else(any(speuid %in% c(57,58)),NA_integer_, 131),
                                 speuid == 132 ~ if_else(any(speuid %in% c(72,73,74)),NA_integer_, 132),
                                 speuid == 133 ~ if_else(any(speuid %in% c(24,25)),NA_integer_, 133),
                                 speuid == 139 ~ if_else(any(speuid %in% c(29,30)),NA_integer_, 139),
                                 TRUE ~speuid)) %>% 
-      # ungroup() %>%
-      arrange(situid, groupid, speuid) %>% 
-      fill(speuid, .direction = "down") %>% #Fyller NA med det värdet över
-      ungroup() %>% 
+      filter(!is.na(speuid)) %>% 
       mutate(speuid = if_else(speuid == 135, NA_integer_, speuid)) %>% # Sätter nollobs til NA så de inte räknas i artmångfaldsmått
       group_by(situid, sitetype) %>% 
       summarize(species = n_distinct(speuid, na.rm = T), .groups = "drop") %>% # Number of species per site and site type 
@@ -489,7 +480,6 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
       summarize(site_count = n_distinct(situid),
                 #medel = mean(medel),
                 .groups = "drop") %>%
-      arrange(sortorder) %>%
       select(interval, sortorder, sitetype, site_count, medel) %>% 
       complete(interval, sitetype, fill = list(site_count = 0)) %>%
       group_by(interval) %>%

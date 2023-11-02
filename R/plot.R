@@ -606,7 +606,9 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
     labs(x = "Antal arter på lokalen", y = "Antal lokaler") +
     theme_sebms_species(x_sz = 12, y_sz = 12)
   
-  sebms_ggsave(p, "Species_per_site", width = 22, height = 13, weathervar = year)
+  
+  yearname <- paste0(min(year),":",max(year))
+  sebms_ggsave(p, "Species_per_site", width = 22, height = 13, weathervar = yearname)
   return(p)
   
   options(OutDec = ".") # Restore decimal separator to dot

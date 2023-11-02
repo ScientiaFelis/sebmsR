@@ -172,6 +172,11 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
 #' 
 sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84)) {
   
+  if (length(year) > 2) {
+    return(cat("More than two year in interval.\n\nGIVE ONLY TWO YEARS TO COMPARE!")
+    )
+  }
+  
   if (database) {
     df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
       mutate(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%

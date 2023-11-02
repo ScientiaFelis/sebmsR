@@ -464,7 +464,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
 #' 
 sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84)) {
   
-  b <- seq(1, 50, by = 5) # make the start of species number groups
+  b <- seq(1, 65, by = 5) # make the start of species number groups
   l <- paste0(b, "-", b + 4) # This maes the group intervals
   
   if (database) {

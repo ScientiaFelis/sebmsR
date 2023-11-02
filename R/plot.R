@@ -478,10 +478,11 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
       group_by(sitetype) %>% 
       mutate(medel = mean(species)) %>% # mean number of species per site type
       ungroup() %>% 
-      filter(species != 0) %>%  #REMOVE to get a zero species category OBS: add the all.inside=T in the interval calc below also
-      mutate(interval = l[findInterval(species, b)], #, all.inside = T 
+      #filter(species != 0) %>%  #REMOVE to get a zero species category OBS: add the all.inside=T in the interval calc below also
+      mutate(interval = l[findInterval(species, b, all.inside = T)], #, all.inside = T 
              sortorder = findInterval(species, b),
-             interval = if_else(sortorder == 0, "0", interval)) %>%
+             interval = if_else(sortorder == 0, "0", interval)
+             ) %>%
       group_by(interval, sortorder, sitetype, medel) %>%
       summarize(site_count = n_distinct(situid),
                 #medel = mean(medel),
@@ -492,7 +493,11 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
       fill(sortorder, .direction = "updown") %>%
       group_by(sitetype) %>%
       fill(medel, .direction = "down") %>%
-      ungroup()
+      ungroup() %>% 
+      group_by(interval, sitetype) %>% 
+      summarise(sortorder = first(sortorder),
+                medel = max(medel),
+                site_count = sum(site_count), .groups = "drop")
     
   }else{
     df <- sebms_data_species_per_site_sitetype %>%

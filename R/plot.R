@@ -374,7 +374,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
                          between(max(df$count), 13001,15000) ~ 16000,
                          between(max(df$count), 15001,17000) ~ 18000,
                          between(max(df$count), 17001,19000) ~ 20000,
-                         TRUE ~10000
+                         TRUE ~ 40000
     )
     
     # maxlim <- if_else(between(max(df$count), 10,12), maxlim-6, maxlim)
@@ -388,12 +388,12 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
                        between(max(df$count), 96,190) ~ 20,
                        between(max(df$count), 191,475) ~ 50,
                        between(max(df$count), 476,950) ~ 100,
-                       between(max(df$count), 951,2900) ~ 200,
-                       between(max(df$count), 2901,4500) ~ 500,
+                       between(max(df$count), 951,2200) ~ 200,
+                       between(max(df$count), 2201,4500) ~ 500,
                        between(max(df$count), 4501,8000) ~ 1000,
                        between(max(df$count), 8001,18000) ~ 2000,
                        between(max(df$count), 18001,20000) ~ 5000,
-                       TRUE ~10000)
+                       TRUE ~ 10000)
     #FIXME: Add species name as title or subtitle instead of inside plot
     ggplot(data = df, 
            aes(x = vecka, y = count)) +

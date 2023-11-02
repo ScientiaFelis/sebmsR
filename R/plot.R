@@ -611,8 +611,12 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
     labs(x = "Antal arter på lokalen", y = "Antal lokaler") +
     theme_sebms_species(x_sz = 12, y_sz = 12)
   
-  
-  yearname <- paste0(min(year),":",max(year))
+  if (length(year)>1) {
+    yearname <- paste0(min(year),":",max(year))  
+  }else {
+    yearname <- year
+  }
+
   sebms_ggsave(p, "Species_per_site", width = 22, height = 13, weathervar = yearname)
   return(p)
   

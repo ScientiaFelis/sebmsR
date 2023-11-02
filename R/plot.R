@@ -457,24 +457,41 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   l <- paste0(b, "-", b + 4) # This maes the group intervals
   
   if (database) {
-
+    
     df <- sebms_species_site_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
-      filter(!speuid %in% c(135,131,133)) %>% 
+      # Om art per site innehåller någon av agg (131-133 + 139), finns någon av arterna, gör då om till den arten, annars första arten i agg.
+      mutate(groupid = case_when(speuid %in% c(131,58,57) ~ 1,
+                                 speuid %in% c(139,29,30) ~ 2,
+                                 speuid %in% c(133,24,25) ~ 3,
+                                 speuid %in% c(132,74,73,72) ~ 4,
+                                 TRUE ~ 5)) %>% 
+      group_by(groupid, situid, sitetype) %>% 
+      mutate(speuid = case_when(speuid == 131 ~ if_else(any(speuid %in% c(57,58)),NA_integer_, 131),
+                                speuid == 132 ~ if_else(any(speuid %in% c(72,73,74)),NA_integer_, 132),
+                                speuid == 133 ~ if_else(any(speuid %in% c(24,25)),NA_integer_, 133),
+                                speuid == 139 ~ if_else(any(speuid %in% c(29,30)),NA_integer_, 139),
+                                TRUE ~speuid)) %>% 
+      # ungroup() %>%
+      arrange(situid, groupid, speuid) %>% 
+      fill(speuid, .direction = "down") %>% #Fyller NA med det värdet över
+      ungroup() %>% 
+      mutate(speuid = if_else(speuid == 135, NA_integer_, speuid)) %>% # Sätter nollobs til NA så de inte räknas i artmångfaldsmått
       group_by(situid, sitetype) %>% 
-      summarize(species = n_distinct(speuid), .groups = "drop") %>% # Number of species per site and site type 
+      summarize(species = n_distinct(speuid, na.rm = T), .groups = "drop") %>% # Number of species per site and site type 
       group_by(sitetype) %>% 
       mutate(medel = mean(species)) %>% # mean number of species per site type
       ungroup() %>% 
-      mutate(interval = l[findInterval(species, b)],
-             sortorder = findInterval(species, b)) %>%
+      filter(species != 0) %>%  #REMOVE to get a zero species category
+      mutate(interval = l[findInterval(species, b, all.inside = T)], #QUESTION: should we set 0 sites as category 1-5
+             sortorder = findInterval(species, b),
+             interval = if_else(sortorder == 0, "0", interval)) %>%
       group_by(interval, sortorder, sitetype, medel) %>%
       summarize(site_count = n_distinct(situid),
                 #medel = mean(medel),
                 .groups = "drop") %>%
       arrange(sortorder) %>%
       select(interval, sortorder, sitetype, site_count, medel) %>% 
-      complete(interval, sitetype) %>%
-      mutate(site_count=replace_na(site_count, 0)) %>%
+      complete(interval, sitetype, fill = list(site_count = 0)) %>%
       group_by(interval) %>%
       fill(sortorder, .direction = "updown") %>%
       group_by(sitetype) %>%
@@ -512,8 +529,11 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   # labname <- c("", r)
   
   
-  tickmarks <- (df %>% distinct(interval, sitetype) %>% pull(interval) %>% length()) /2 +0.5 # Produce the correct numbet of tickmarks
-
+  tickmarks <- (df %>%
+                  distinct(interval, sitetype) %>% 
+                  pull(interval) %>% 
+                  length()) /2 +0.5 # Produce the correct numbet of tickmarks
+  
   p <- df  %>%
     mutate(interval = fct_reorder(interval, sortorder)) %>% 
     arrange(sortorder) %>% 
@@ -532,8 +552,10 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
               fontface = "plain",
               size = 5,
               inherit.aes = F) +
-    geom_segment(aes(x = stage(reorder(interval, sortorder), after_scale = rep(seq(1.5, tickmarks,1), each=2)), # This adds a segment, that looks like a tickmark, after each group
-                     xend = stage(reorder(interval, sortorder), after_scale = rep(seq(1.5, tickmarks,1), each=2)),
+    geom_segment(aes(x = stage(reorder(interval, sortorder),
+                               after_scale = rep(seq(1.5, tickmarks,1),each = 2)), # This adds a segment, that looks like a tickmark, after each group
+                     xend = stage(reorder(interval, sortorder),
+                                  after_scale = rep(seq(1.5, tickmarks,1), each = 2)),
                      y = -1.1, # How long the tickmark is, we want negative as it should go down
                      yend = 0)) + # The start of the tickmark
     scale_y_continuous(breaks = seq(0,120,20),

@@ -519,6 +519,52 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   # labname <- c("", r)
   
   
+  # This makes groups of max limits and set the maxlimit of figure based on max values of data
+  # If value fall above a certain threshold it is set at a certain maxlimit
+  
+  maxlim <-  case_when(max(df$site_count) <= 9 ~ 10,
+                       between(max(df$site_count), 9,19) ~ 20,
+                       between(max(df$site_count), 20,28) ~ 30,
+                       between(max(df$site_count), 29,47) ~ 50,
+                       between(max(df$site_count), 48,95) ~ 100,
+                       between(max(df$site_count), 96,190) ~ 200,
+                       between(max(df$site_count), 191,275) ~ 300,
+                       between(max(df$site_count), 276,475) ~ 500,
+                       between(max(df$site_count), 476,750) ~ 800,
+                       between(max(df$site_count), 476,950) ~ 1000,
+                       between(max(df$site_count), 951,1350) ~ 1400,
+                       between(max(df$site_count), 1351,1900) ~ 2000,
+                       between(max(df$site_count), 1901,2900) ~ 3000,
+                       between(max(df$site_count), 2901,3750) ~ 4000,
+                       between(max(df$site_count), 3751,4500) ~ 5000,
+                       between(max(df$site_count), 4501,5500) ~ 6000,
+                       between(max(df$site_count), 5501,6500) ~ 7000,
+                       between(max(df$site_count), 6501,7500) ~ 8000,
+                       between(max(df$site_count), 7501,9000) ~ 10000,
+                       between(max(df$site_count), 9001,11000) ~ 12000,
+                       between(max(df$site_count), 11001,13000) ~ 14000,
+                       between(max(df$site_count), 13001,15000) ~ 16000,
+                       between(max(df$site_count), 15001,17000) ~ 18000,
+                       between(max(df$site_count), 17001,19000) ~ 20000,
+                       TRUE ~10000
+  )
+  
+  # This makes the steps between labels correct based on max value of count.
+  steps <- case_when(max(df$site_count) < 10 ~ 1,
+                     between(max(df$site_count), 9,19) ~ 2,
+                     between(max(df$site_count), 20,47) ~ 5,
+                     between(max(df$site_count), 48,95) ~ 10,
+                     between(max(df$site_count), 96,190) ~ 20,
+                     between(max(df$site_count), 191,475) ~ 50,
+                     between(max(df$site_count), 476,950) ~ 100,
+                     between(max(df$site_count), 951,2900) ~ 200,
+                     between(max(df$site_count), 2901,4500) ~ 500,
+                     between(max(df$site_count), 4501,8000) ~ 1000,
+                     between(max(df$site_count), 8001,18000) ~ 2000,
+                     between(max(df$site_count), 18001,20000) ~ 5000,
+                     TRUE ~10000)
+  
+  # Make tickmarks for x-axis
   tickmarks <- (df %>%
                   distinct(interval, sitetype) %>% 
                   pull(interval) %>% 
@@ -530,13 +576,13 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
     ggplot(aes(x = interval, y = site_count)) +
     geom_col(aes(fill = forcats::fct_rev(sitetype)), 
              position = position_dodge(preserve = "single"), width = 0.7) +
-    stat_summary(aes(x = l[findInterval(medel+0.2, b)], y = 104, colour = sitetype, fill = sitetype),
+    stat_summary(aes(x = l[findInterval(medel+0.2, b)], y = maxlim-(steps*1.8), colour = sitetype, fill = sitetype),
                  position = position_dodge2(width = 1.1),
                  fun = "mean",
                  geom = "point",
                  size = 5,
                  shape = 25) +
-    geom_text(aes(x = l[findInterval(medel+0.2, b)], y = 113, label = format(round(medel, 1), nsmall = 1)),
+    geom_text(aes(x = l[findInterval(medel+0.2, b)], y = maxlim-steps*1.4, label = format(round(medel, 1), nsmall = 1)),
               data = lab,
               position = position_dodge2(width = 1.4),
               fontface = "plain",
@@ -548,11 +594,11 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
                                   after_scale = rep(seq(1.5, tickmarks,1), each = 2)),
                      y = -1.1, # How long the tickmark is, we want negative as it should go down
                      yend = 0)) + # The start of the tickmark
-    scale_y_continuous(breaks = seq(0,120,20),
-                       labels = seq(0,120,20),
+    scale_y_continuous(breaks = seq(0,maxlim,steps),
+                       labels = seq(0,maxlim,steps),
                        #limits = c(0, 120),
                        expand = c(0, 0)) +
-    coord_cartesian(ylim = c(0,120), clip = "off") +
+    coord_cartesian(ylim = c(0,maxlim), clip = "off") +
     # scale_x_discrete(breaks = sort(c(unique(df$x1), x_tick)),
     #                  labels = labname) +
     scale_fill_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +

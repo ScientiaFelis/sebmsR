@@ -6,6 +6,17 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 1.4.7
+
+This version contain new max limits and steps for figures to be a bit neater. It also recalculate species number and site per species group in the `sebms_species_per_sitetype_plot()`
+
+* Add new max limits and step function
+* Disregard species aggregate in specie richness calculations if one species in the aggregate exists on site.
+* Include sites with zero observation in the average species per site calculations
+* Now possible to use multiple years in the `sebms_species_per_sitetype_plot()` function.
+* Through an error and exit if more than two years are given in `sebms_abundance_year_compare_plot()`
+
+
 # v 1.4.6
 
 This version fixes some bugs and a number of Build check errors. It also update the documentation.

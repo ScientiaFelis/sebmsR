@@ -14,7 +14,7 @@ sebms_species_per_sitetype_plot(
 )
 }
 \arguments{
-\item{year}{year to use for plot}
+\item{year}{year or years to use for plot}
 
 \item{Län}{character or regular expression; which county you want the data
 from}

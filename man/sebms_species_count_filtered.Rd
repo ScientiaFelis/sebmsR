@@ -14,7 +14,7 @@ sebms_species_count_filtered(
 )
 }
 \arguments{
-\item{year}{year to use for plot}
+\item{year}{year or years to use for plot}
 
 \item{Art}{integer; the species uids of interest}
 

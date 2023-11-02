@@ -3,7 +3,7 @@
 #'
 #' Produce a plot with number of individuals per species a given year
 #'
-#' @param year year to use for plot
+#' @param year year or years to use for plot
 #' @param Län character or regular expression; which county you want the data
 #'   from
 #' @param Landskap character or reg ex; which region you want the data from
@@ -175,6 +175,7 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
   if (length(year) > 2) {
     return(cat("More than two year in interval.\n\nGIVE ONLY TWO YEARS TO COMPARE!")
     )
+    stop()
   }
   
   if (database) {

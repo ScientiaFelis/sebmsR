@@ -310,11 +310,11 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
   
   if (database) {
     df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
-      filter(!str_detect(art, "[Nn]oll"), 
-             !speuid %in% c(131,133)) %>%
+      filter(!str_detect(art, "[Nn]oll"), speuid != 132) %>%
       mutate(antal = as.double(antal)) %>% 
       group_by(art, vecka = isoweek(datum)) %>%
-      summarise(count = sum(antal, na.rm = T), .groups = "drop")
+      summarise(count = sum(antal, na.rm = T), .groups = "drop") %>% 
+      mutate(art = str_replace(art, "/", "-"))
   }else {
     df <- 
       sebms_data_species_histo %>%
@@ -431,10 +431,15 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
     ggs <- df %>% 
       nest(.by = art) %>% 
       mutate(plots = map(data, ~plotSP(df=.x, Art = NULL), .progress = "Creating individual species plots...."))
-    
   }
   
-  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, filename = .y, width = 24, height = 14, weathervar = year), .progress = "Saving individual species plots as png.....")
+  if (length(year)>1) {
+    yearname <- paste0(min(year),":",max(year))  
+  }else {
+    yearname <- year
+  }
+  
+  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, filename = .y, width = 24, height = 14, weathervar = yearname), .progress = "Saving individual species plots as png.....")
   
   #sebms_ggsave(p, Art, width = 26, height = 12, weathervar = year)
   return(ggs$plots)
@@ -482,7 +487,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
       mutate(interval = l[findInterval(species, b, all.inside = T)], #, all.inside = T 
              sortorder = findInterval(species, b),
              interval = if_else(sortorder == 0, "0", interval)
-             ) %>%
+      ) %>%
       group_by(interval, sortorder, sitetype, medel) %>%
       summarize(site_count = n_distinct(situid),
                 #medel = mean(medel),
@@ -622,7 +627,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   }else {
     yearname <- year
   }
-
+  
   sebms_ggsave(p, "Species_per_site", width = 22, height = 13, weathervar = yearname)
   return(p)
   

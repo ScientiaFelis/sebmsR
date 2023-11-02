@@ -281,7 +281,7 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
           plot.tag.position = c(0.05,0.075)
     )
   
-  yearname <- paste0(year, collapse = ":")
+  yearname <- paste0(year, collapse = "-")
   sebms_ggsave(p, "Butterflynumber", width = 30, height = 15, weathervar = yearname)
   
   return(p)
@@ -314,7 +314,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
       mutate(antal = as.double(antal)) %>% 
       group_by(art, vecka = isoweek(datum)) %>%
       summarise(count = sum(antal, na.rm = T), .groups = "drop") %>% 
-      mutate(art = str_replace(art, "/", "-"))
+      mutate(art = str_replace(art, "/", "_"))
   }else {
     df <- 
       sebms_data_species_histo %>%
@@ -434,7 +434,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
   }
   
   if (length(year)>1) {
-    yearname <- paste0(min(year),":",max(year))  
+    yearname <- paste0(min(year),"-",max(year))  
   }else {
     yearname <- year
   }
@@ -623,7 +623,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
     theme_sebms_species(x_sz = 12, y_sz = 12)
   
   if (length(year)>1) {
-    yearname <- paste0(min(year),":",max(year))  
+    yearname <- paste0(min(year),"-",max(year))  
   }else {
     yearname <- year
   }

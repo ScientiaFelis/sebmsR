@@ -10,7 +10,8 @@ sebms_species_per_sitetype_plot(
   Landskap = ".",
   Kommun = ".",
   database = TRUE,
-  source = c(54, 55, 56, 63, 64, 66, 67, 84)
+  source = c(54, 55, 56, 63, 64, 66, 67, 84),
+  print = FALSE
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ from}
 
 \item{source}{the database sources as id numbers,
 defaults to `54,55,56,63,64,66,67,84`}
+
+\item{print}{logical; if FALSE (default) the function does not print to plot window.}
 }
 \value{
 A png with the number of sites within each category of number of

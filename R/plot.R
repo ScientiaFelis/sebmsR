@@ -11,6 +11,7 @@
 #' @param database logical; if the data should be based on the sebms database
 #' @param source the database sources as id numbers,
 #' defaults to `54,55,56,63,64,66,67,84`
+#' @param print logical; if FALSE (default) the function does not print to plot window.
 #'
 #' @importFrom plyr round_any
 #' @importFrom glue glue
@@ -24,7 +25,7 @@
 #'   median.
 #' @export
 #' 
-sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84)) {
+sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
   
   if (database) {
     sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
@@ -151,7 +152,9 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
   name <- list(glue("Above-median_{year}"), glue("Below-median_{year}"))
   map2(res, name, ~sebms_ggsave(.x, "Species_tot_count", width = 22, height=32, weathervar = .y, text.factor = 4))
   
-  return(res)
+  if (print) {
+    return(res)
+  }
 }
 
 #' Butterfly Number Two Year Comparison Plot
@@ -170,7 +173,7 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
 #'   comparing years per week,
 #' @export
 #' 
-sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84)) {
+sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
   
   if (length(year) > 2) {
     return(cat("More than two year in interval.\n\nGIVE ONLY TWO YEARS TO COMPARE!")
@@ -281,10 +284,13 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
           plot.tag.position = c(0.05,0.075)
     )
   
-  yearname <- paste0(year, collapse = ":")
+  yearname <- paste0(year, collapse = "-")
   sebms_ggsave(p, "Butterflynumber", width = 30, height = 15, weathervar = yearname)
   
-  return(p)
+  if (print) {
+    return(p)
+  }
+  
 }
 
 
@@ -306,15 +312,15 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
 #' @return A png per species showing the number of individuals per week.
 #' @export
 #' 
-sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", plotname = FALSE, database = TRUE, source = c(54,55,56,63,64,66,67,84)) {
+sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", plotname = FALSE, database = TRUE, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
   
   if (database) {
     df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
-      filter(!str_detect(art, "[Nn]oll"), 
-             !speuid %in% c(131,133)) %>%
+      filter(!str_detect(art, "[Nn]oll"), speuid != 132) %>%
       mutate(antal = as.double(antal)) %>% 
       group_by(art, vecka = isoweek(datum)) %>%
-      summarise(count = sum(antal, na.rm = T), .groups = "drop")
+      summarise(count = sum(antal, na.rm = T), .groups = "drop") %>% 
+      mutate(art = str_replace(art, "/", "_"))
   }else {
     df <- 
       sebms_data_species_histo %>%
@@ -374,7 +380,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
                          between(max(df$count), 13001,15000) ~ 16000,
                          between(max(df$count), 15001,17000) ~ 18000,
                          between(max(df$count), 17001,19000) ~ 20000,
-                         TRUE ~10000
+                         TRUE ~ 40000
     )
     
     # maxlim <- if_else(between(max(df$count), 10,12), maxlim-6, maxlim)
@@ -388,12 +394,12 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
                        between(max(df$count), 96,190) ~ 20,
                        between(max(df$count), 191,475) ~ 50,
                        between(max(df$count), 476,950) ~ 100,
-                       between(max(df$count), 951,2900) ~ 200,
-                       between(max(df$count), 2901,4500) ~ 500,
+                       between(max(df$count), 951,2200) ~ 200,
+                       between(max(df$count), 2201,4500) ~ 500,
                        between(max(df$count), 4501,8000) ~ 1000,
                        between(max(df$count), 8001,18000) ~ 2000,
                        between(max(df$count), 18001,20000) ~ 5000,
-                       TRUE ~10000)
+                       TRUE ~ 10000)
     #FIXME: Add species name as title or subtitle instead of inside plot
     ggplot(data = df, 
            aes(x = vecka, y = count)) +
@@ -401,7 +407,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
       #geom_text(aes(x = Lweeklim+1, y = maxlim*0.99,label = unique(Art)), family = "Arial", size = 4, hjust = 0, vjust = 1, check_overlap = T) +
       scale_y_continuous(limits = c(0, maxlim), #nice_lim(df$count),#c(0, max(10, max(df$count)*1.2)), # Set Y-axis limits to 10 or the max value of the butterfly count
                          # labels = seq(0,max(df$count)*1.2, 10^ceiling(log10(max(df$count)/100))*2), # Set labels from 0 to max of count
-                         labels = function(x) formatC(x, width = 4),
+                         labels = function(x) formatC(x, width = 4, format = "d"),
                          breaks = seq(0,maxlim, steps), #10^ceiling(log10(max(df$count)/100))*2), # 
                          expand = c(0,0)) +
       #expand_limits(y=max(df$count)*1.1) +
@@ -431,13 +437,21 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
     ggs <- df %>% 
       nest(.by = art) %>% 
       mutate(plots = map(data, ~plotSP(df=.x, Art = NULL), .progress = "Creating individual species plots...."))
-    
   }
   
-  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, filename = .y, width = 24, height = 14, weathervar = year), .progress = "Saving individual species plots as png.....")
+  if (length(year)>1) {
+    yearname <- paste0(min(year),"-",max(year))  
+  }else {
+    yearname <- year
+  }
+  
+  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, filename = .y, width = 24, height = 14, weathervar = yearname), .progress = "Saving individual species plots as png.....")
   
   #sebms_ggsave(p, Art, width = 26, height = 12, weathervar = year)
-  return(ggs$plots)
+  if (print) {
+    return(ggs$plots)
+  }
+  
 }
 
 
@@ -457,9 +471,9 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
 #'   species per site type.
 #' @export
 #' 
-sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84)) {
+sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
   
-  b <- seq(1, 50, by = 5) # make the start of species number groups
+  b <- seq(1, 65, by = 5) # make the start of species number groups
   l <- paste0(b, "-", b + 4) # This maes the group intervals
   
   if (database) {
@@ -478,10 +492,11 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
       group_by(sitetype) %>% 
       mutate(medel = mean(species)) %>% # mean number of species per site type
       ungroup() %>% 
-      filter(species != 0) %>%  #REMOVE to get a zero species category OBS: add the all.inside=T in the interval calc below also
-      mutate(interval = l[findInterval(species, b)], #, all.inside = T 
+      #filter(species != 0) %>%  #REMOVE to get a zero species category OBS: add the all.inside=T in the interval calc below also
+      mutate(interval = l[findInterval(species, b, all.inside = T)], #, all.inside = T 
              sortorder = findInterval(species, b),
-             interval = if_else(sortorder == 0, "0", interval)) %>%
+             interval = if_else(sortorder == 0, "0", interval)
+      ) %>%
       group_by(interval, sortorder, sitetype, medel) %>%
       summarize(site_count = n_distinct(situid),
                 #medel = mean(medel),
@@ -492,7 +507,11 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
       fill(sortorder, .direction = "updown") %>%
       group_by(sitetype) %>%
       fill(medel, .direction = "down") %>%
-      ungroup()
+      ungroup() %>% 
+      group_by(interval, sitetype) %>% 
+      summarise(sortorder = first(sortorder),
+                medel = max(medel),
+                site_count = sum(site_count), .groups = "drop")
     
   }else{
     df <- sebms_data_species_per_site_sitetype %>%
@@ -613,13 +632,17 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
     theme_sebms_species(x_sz = 12, y_sz = 12)
   
   if (length(year)>1) {
-    yearname <- paste0(min(year),":",max(year))  
+    yearname <- paste0(min(year),"-",max(year))  
   }else {
     yearname <- year
   }
-
+  
   sebms_ggsave(p, "Species_per_site", width = 22, height = 13, weathervar = yearname)
-  return(p)
+  
+  if (print) {
+    return(p)
+    
+  }
   
   options(OutDec = ".") # Restore decimal separator to dot
   

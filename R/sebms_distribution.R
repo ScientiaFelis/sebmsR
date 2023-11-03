@@ -34,7 +34,7 @@ sebms_sites_map <- function(year=2021, width=5, height=3.5) {
     st_transform(3006)
   
   #a = rast("data-raw/figures/MapDistribution-data/R_files_for_similar_map/MapSweden.tif")
-
+  
   grid <- sebms_swe_grid %>% 
     st_as_sf() %>% 
     st_set_crs(3021) %>% 
@@ -46,17 +46,23 @@ sebms_sites_map <- function(year=2021, width=5, height=3.5) {
     st_transform(3021)
   
   ## FIXME: colours of map not good. Is there a map colour guide.
-  tiff <- rast(system.file("extdata", "MapSweden.tif", 
+  # TODO: Check out ggRGB in RStoolbox package
+  tiff <- terra::rast(system.file("extdata", "MapSweden.tif", 
                            package = "sebmsR", mustWork = TRUE))
   crs(tiff) <- "epsg:3006"
   
-
-    tifdf <- raster::brick(x = system.file("extdata", "MapSweden.tif",
-                            package = "sebmsR", mustWork = TRUE), crs = "epsg:3006") %>%
-     as("SpatialPixelsDataFrame") %>% 
-    as.data.frame(xy=T)
-
-col_map <- function(rl) {
+ tiff <-  raster::stack(system.file("extdata", "MapSweden.tif", 
+                            package = "sebmsR", mustWork = TRUE)) %>% 
+  raster::as.data.frame(xy=T)
+ 
+ 
+ 
+  tifdf <- raster::brick(x = system.file("extdata", "MapSweden_RGB.tif",
+                                         package = "sebmsR", mustWork = TRUE), crs = "epsg:3006") %>%
+    as("SpatialPixelsDataFrame") %>% 
+    raster::as.data.frame(xy=T)
+  
+  col_map <- function(rl) {
     cm <- coltab(rl) %>% 
       bind_rows() %>% 
       mutate(hex = rgb(red, green, blue, maxColorValue = alpha),
@@ -65,18 +71,18 @@ col_map <- function(rl) {
     #names(cm) <- 0:(length(cm) - 1)
     cm
   }
- 
-    
+  
+  
   gplot(tiff, maxpixels = 1e6) +
     geom_raster(aes(x = x, y = y, fill = value), show.legend = F) +
     #geom_sf(data = bg) +
     geom_sf(data = bf, inherit.aes = F, alpha = 0, linewidth = 0.3, colour = "black") +
     geom_sf(data = alla, colour = "red", alpha = 0.2, inherit.aes = F) +
     #scale_fill_distiller(type = "div", palette = "RdYlGn") +
-   # scale_fill_identity() +
+    # scale_fill_identity() +
     scale_fill_gradientn(colours = colmap, guide = FALSE) +
     theme_void()# + theme(panel.background = element_rect(fill = "white"))
-    
+  
 }
 
 
@@ -105,8 +111,8 @@ col_map <- function(rl) {
 sebms_distribution_map <- function(occ_sp, year=2021, species = 80, width= 5, height=3.5) {
   
   
-# TODO: add in species data from sebms database.
-    
+  # TODO: add in species data from sebms database.
+  
   SweLandGrid <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "SweLandGrid") %>% 
     st_set_crs(3021)
   
@@ -117,7 +123,7 @@ sebms_distribution_map <- function(occ_sp, year=2021, species = 80, width= 5, he
     st_set_crs(3021)
   
   #a = rast("data-raw/figures/MapDistribution-data/R_files_for_similar_map/MapSweden.tif")
-
+  
   grid <- sebms_swe_grid %>% 
     st_as_sf() %>% 
     st_set_crs(3021) %>% 
@@ -132,7 +138,7 @@ sebms_distribution_map <- function(occ_sp, year=2021, species = 80, width= 5, he
   tiff <- rast(system.file("extdata", "MapSweden.tif", 
                            package = "sebmsR", mustWork = TRUE)) 
   
-      
+  
   col_map <- function(rl) {
     cm <- coltab(rl) %>% 
       bind_rows() %>% 
@@ -142,9 +148,9 @@ sebms_distribution_map <- function(occ_sp, year=2021, species = 80, width= 5, he
     #names(cm) <- 0:(length(cm) - 1)
     cm
   }
- 
-    terrain.colors(25)
-   
+  
+  terrain.colors(25)
+  
   gplot(tiff, maxpixels = 1e6) +
     geom_raster(aes(x = x, y = y, fill = factor(value)), show.legend = F) +
     #geom_sf(data = bg) +
@@ -153,7 +159,7 @@ sebms_distribution_map <- function(occ_sp, year=2021, species = 80, width= 5, he
     #scale_fill_distiller(type = "div", palette = "RdYlGn") +
     scale_fill_manual(values = col_map(tiff), guide = "none") +
     theme_void()# + theme(panel.background = element_rect(fill = "white"))
-    
+  
 }
 
 

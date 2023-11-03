@@ -29,6 +29,7 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
   
   if (database) {
     sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
+      filter(!speuid %in% c(131,132,133,139,135)) %>% 
       group_by(art) %>%
       summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
     

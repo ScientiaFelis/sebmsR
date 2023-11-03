@@ -6,6 +6,18 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 1.4.8
+
+This version fixes some bugs and small issues
+
+* **New option** to set printing to plot window, disabled (`print = FALSE`) by default.
+* Add in zero observation category again in `sebms_species_per_sitetype_plot()`
+* Add more species number categories to `sebms_species_per_sitetype_plot()`. Now it goes to '61-65'
+* Add species aggregates to `sebms_species_abundance_plot()`
+* Fix naming of species aggregates from '/' to '-'
+* Fix file name of png so windows also can handle them. Now we separate species in aggregates with '_' and years with '-'
+
+
 # v 1.4.7
 
 This version contain new max limits and steps for figures to be a bit neater. It also recalculate species number and site per species group in the `sebms_species_per_sitetype_plot()`

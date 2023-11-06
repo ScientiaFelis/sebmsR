@@ -117,8 +117,8 @@ get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, populat
     mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, pupulation_limit = population_limit))) %>% 
     unnest(loc) %>%
     unnest(data) %>% 
-    transmute(Year, lon, lat, name, Max_Min = {{ sunvar }}) %>% 
-    arrange(Year, name, desc(Max_Min))
+    transmute(Year, lon, lat, name, MaxMin_sunhour = {{ sunvar }}) %>% 
+    arrange(Year, name, desc(MaxMin_sunhour))
   
   return(locations)
 }

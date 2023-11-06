@@ -4,14 +4,7 @@
 \alias{get_nearby}
 \title{Get Nearby Places to Given Coordinates}
 \usage{
-get_nearby(
-  df,
-  radius = 50,
-  top = 1,
-  limited = TRUE,
-  population_limit = 0,
-  sunvar = total_sunH
-)
+get_nearby(df, radius = 50, top = 1, limited = TRUE, population_limit = 0)
 }
 \arguments{
 \item{df}{data frame with coordinates, or sf object}
@@ -24,13 +17,11 @@ get_nearby(
 
 \item{population_limit}{the smallest amount of poeple that should be in the
 locations}
-
-\item{sunvar}{dataframe with sunvar data, e.g. from `sebms_sunhours_data()``}
 }
 \value{
-a dataframe with names nearby you coordinates
+a data frame with location names nearby your coordinates
 }
 \description{
-Takes a coordinate and search for a nearby city, village or municiplaity
-depending on what is available and the number of inhabitants.
+Search for a city, village or municipality nearby a coordinate depending on
+what is available and the number of inhabitants.
 }

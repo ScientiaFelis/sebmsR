@@ -58,15 +58,17 @@ get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limi
 }
 
 
-
-
-#' Get Nearby Places to SunHour Station Coordinates
+#' Get Nearby Places to Sunhour Stations
 #'
-#' Search for a city, village or municipality nearby a Sun Hour station
-#' depending on what is available and the number of inhabitants.
+#' Search for a city, village or municipality nearby the Sun Hour stations and
+#' get the Sun hour data. Optional is to get the only stations where there where
+#' most and least number of sun hours. This function also depends on what is
+#' available and the number of inhabitants.
 #'
 #' @inheritParams get_nearby
-#' @param sunvar dataframe with sunvar data, e.g. from `sebms_sunhours_data()``
+#' @param sunvar variable with sun hour data`
+#' @param findMaxMin logical (default TRUE); do you want only the location with
+#'   most and least sunhours.
 #'
 #' @importFrom geonames GNfindNearbyPlaceName
 #' @import dplyr
@@ -77,7 +79,7 @@ get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limi
 #' @return a data frame with location names nearby your coordinates
 #' @export
 #' 
-get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, population_limit = 0, sunvar = total_sunH){
+get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, population_limit = 0, sunvar = total_sunH, findMaxMin = TRUE){
   #TODO: Make it use only Swedish locals
   options(geonamesUsername = "sebms") 
   
@@ -85,17 +87,16 @@ get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, populat
     
     lat <- df %>% select(matches("lat")) %>% pull()
     lon <- df %>% select(matches("lon")) %>% pull()
-      GNfindNearbyPlaceName(lat = lat , lng = lon, radius = radius, maxRows = "100", style = "MEDIUM") %>%
-        as_tibble() %>% 
-        transmute(name = toponymName, distance = as.numeric(distance), population = as.numeric(population)) %>%
-        filter(population > population_limit) %>%
-        slice_min(distance, n = top) %>%  
-        { if(limited) select(., name)  else select_all(.) }
+    GNfindNearbyPlaceName(lat = lat , lng = lon, radius = radius, maxRows = "100", style = "MEDIUM") %>%
+      as_tibble() %>% 
+      transmute(name = toponymName, distance = as.numeric(distance), population = as.numeric(population)) %>%
+      filter(population > population_limit) %>%
+      slice_min(distance, n = top) %>%  
+      { if(limited) select(., name)  else select_all(.) }
   }
   )
-#  find_near <- possibly(find_near, otherwise = "Empty df")
-
-    if(class(df) %>% first() %in% "sf") {
+  
+  if(inherits(df, "sf")) {
     df <- df %>% 
       st_coordinates() %>% 
       as_tibble() %>%
@@ -103,10 +104,10 @@ get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, populat
       bind_cols(df %>% 
                   st_drop_geometry() %>% 
                   select(Year, {{ sunvar }})
-                )
+      )
     
   }
-
+  
   locations <- df %>%
     mutate(ID = row_number()) %>%
     group_by(ID) %>%
@@ -115,8 +116,18 @@ get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, populat
     mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, pupulation_limit = population_limit))) %>% 
     unnest(loc) %>%
     unnest(data) %>% 
-    transmute(Year, lon, lat, name, MaxMin_sunhour = {{ sunvar }}) %>% 
-    arrange(Year, name, desc(MaxMin_sunhour))
+    transmute(Year, lon, lat, name, Sunhours = {{ sunvar }}) 
+  
+  if (findMaxMin) {
+    locations <- locations %>% 
+      group_by(Year) %>% 
+      mutate(max = max(Sunhours),
+             min = min(Sunhours)) %>% 
+      filter(Sunhours == max | Sunhours == min) %>% 
+      ungroup() %>% 
+      select(Year, lon, lat, name, MaxMin_sunhours = Sunhours) %>% 
+      arrange(Year, desc(MaxMin_sunhours)) 
+  }
   
   return(locations)
 }

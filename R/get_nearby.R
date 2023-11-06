@@ -28,30 +28,28 @@ get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limi
     
     lat <- df %>% select(matches("lat")) %>% pull()
     lon <- df %>% select(matches("lon")) %>% pull()
-      GNfindNearbyPlaceName(lat = lat , lng = lon, radius = radius, maxRows = "100", style = "MEDIUM") %>%
-        as_tibble() %>% 
-        transmute(name = toponymName, distance = as.numeric(distance), population = as.numeric(population)) %>%
-        filter(population > population_limit) %>%
-        slice_min(distance, n = top) %>%  
-        { if(limited) select(., name)  else select_all(.) }
+    GNfindNearbyPlaceName(lat = lat , lng = lon, radius = radius, maxRows = "100", style = "MEDIUM") %>%
+      as_tibble() %>%
+      transmute(name = toponymName, distance = as.numeric(distance), population = as.numeric(population)) %>%
+      filter(population > population_limit) %>% # Filter on min population size
+      slice_min(distance, n = top) %>% # take the nearest 'top' locals
+      { if(limited) select(., name)  else select_all(.) } # select only name var if limited = TRUE, otherwise all.
   }
   )
-#  find_near <- possibly(find_near, otherwise = "Empty df")
-
-    if(class(df) %>% first() %in% "sf") {
-    df <- df %>% 
-      st_coordinates() %>% 
+  
+  if(inherits(df, "sf")) {
+    df <- df %>%
+      st_coordinates() %>%
       as_tibble() %>%
       rename(lat = Y, lon = X)
-    
   }
-
+  
   locations <- df %>%
     mutate(ID = row_number()) %>%
     group_by(ID) %>%
     nest() %>%
     ungroup() %>%
-    mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, pupulation_limit = population_limit))) %>% 
+    mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, pupulation_limit = population_limit))) %>%
     unnest(loc) %>%
     unnest(data) %>%
     select(lon = matches("lon"), lat = matches("lat"), name)

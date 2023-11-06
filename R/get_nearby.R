@@ -1,8 +1,8 @@
 
 #' Get Nearby Places to Given Coordinates
 #'
-#' Takes a coordinate and search for a nearby city, village or municiplaity
-#' depending on what is available and the number of inhabitants.
+#' Search for a city, village or municipality nearby a coordinate depending on
+#' what is available and the number of inhabitants.
 #'
 #' @param df data frame with coordinates, or sf object
 #' @param radius the radius to search for nearby places
@@ -10,7 +10,6 @@
 #' @param limited logical; if you want only the names of the resulting sites
 #' @param population_limit the smallest amount of poeple that should be in the
 #'   locations
-#' @param sunvar dataframe with sunvar data, e.g. from `sebms_sunhours_data()``
 #'
 #' @importFrom geonames GNfindNearbyPlaceName
 #' @import dplyr
@@ -18,17 +17,17 @@
 #' @importFrom purrr map map2 possibly
 #' @importFrom sf st_coordinates st_coordinates
 #'
-#' @return a dataframe with names nearby you coordinates
+#' @return a data frame with location names nearby your coordinates
 #' @export
 #' 
-get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limit = 0, sunvar = total_sunH){
+get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limit = 0){
   #TODO: Make it use only Swedish locals
   options(geonamesUsername = "sebms") 
   
   find_near <- possibly(function(df, radius = radius, top = top, limited = limited, pupulation_limit = population_limit) {
     
-    lat <- df$lat
-    lon <- df$lon
+    lat <- df %>% select(matches("lat")) %>% pull()
+    lon <- df %>% select(matches("lon")) %>% pull()
       GNfindNearbyPlaceName(lat = lat , lng = lon, radius = radius, maxRows = "100", style = "MEDIUM") %>%
         as_tibble() %>% 
         transmute(name = toponymName, distance = as.numeric(distance), population = as.numeric(population)) %>%
@@ -46,6 +45,16 @@ get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limi
       rename(lat = Y, lon = X)
     
   }
+
+  locations <- df %>%
+    mutate(ID = row_number()) %>%
+    group_by(ID) %>%
+    nest() %>%
+    ungroup() %>%
+    mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, pupulation_limit = population_limit))) %>% 
+    unnest(loc) %>%
+    unnest(data) %>%
+    select(lon = matches("lon"), lat = matches("lat"), name)
   
   locations <- df %>%
     mutate(ID = row_number()) %>%

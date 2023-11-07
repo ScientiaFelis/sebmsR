@@ -69,7 +69,7 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
         axis.ticks.x.top = element_line(color = "darkgray"),
         axis.ticks.length.x = unit(-1, "mm"),
         axis.ticks.y = element_blank(),
-        axis.line = element_line(color = "darkgray", size = 0.35)) 
+        axis.line = element_line(color = "darkgray", linewidth = 0.35)) 
   }
   
   # A function that makes tickmarks without labels between the labels.

@@ -8,7 +8,6 @@
 #'   from
 #' @param Landskap character or reg ex; which region you want the data from
 #' @param Kommun character or reg ex; which municipality you want the data from
-#' @param database logical; if the data should be based on the sebms database
 #' @param source the database sources as id numbers,
 #' defaults to `54,55,56,63,64,66,67,84`
 #' @param print logical; if FALSE (default) the function does not print to plot window.
@@ -25,31 +24,20 @@
 #'   median.
 #' @export
 #' 
-sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
+sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", source = c(54,55,56,63,64,66,67,84), print = FALSE) {
   
-  if (database) {
-    sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
-      filter(!speuid %in% c(131,132,133,139,135)) %>% 
-      group_by(art) %>%
-      summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
-    
-    # Split data on the median to get to pngs that can be inserted in the report
-    s1 <- sp %>%
-      filter(count >= median(count))
-    s2 <- sp %>%
-      filter(count < median(count), !str_detect(art, "[Nn]oll"))
-    
-  }else {
-    # n <- nrow(sebms_data_specieslist_cum)
-    s1 <- 
-      sebms_data_specieslist_cum %>% 
-      filter(count >= 200)
-    #  slice(1 : floor(n/2))
-    s2 <- 
-      sebms_data_specieslist_cum %>% 
-      filter(count < 200)
-    #  slice(-c(1 : floor(n/2)))
-  }
+  sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
+    filter(!speuid %in% c(131,132,133,139,135)) %>% 
+    group_by(art) %>%
+    summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
+  
+  # Split data on the median to get to pngs that can be inserted in the report
+  s1 <- sp %>%
+    filter(count >= median(count))
+  s2 <- sp %>%
+    filter(count < median(count), !str_detect(art, "[Nn]oll"))
+  
+  
   
   # Modify theme
   theme_sebms2 <- function() {
@@ -174,7 +162,7 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
 #'   comparing years per week,
 #' @export
 #' 
-sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
+sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", source = c(54,55,56,63,64,66,67,84), print = FALSE) {
   
   if (length(year) > 2) {
     return(cat("More than two year in interval.\n\nGIVE ONLY TWO YEARS TO COMPARE!")
@@ -182,19 +170,12 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
     stop()
   }
   
-  if (database) {
-    df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
-      mutate(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
-      filter(datum > ymd(glue("{year}-04-01")), datum < ymd(glue("{year}-09-30"))) %>% 
-      #filter(!speuid %in% c(131,133,135)) %>% 
-      group_by(year, vecka) %>%
-      summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
-  }else {
-    df <- 
-      sebms_data_species_histo %>%
-      group_by(artnamn, vecka) %>%
-      summarise(count = sum(sumval))
-  }
+  df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
+    mutate(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
+    filter(datum > ymd(glue("{year}-04-01")), datum < ymd(glue("{year}-09-30"))) %>% 
+    #filter(!speuid %in% c(131,133,135)) %>% 
+    group_by(year, vecka) %>%
+    summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
   
   
   # This makes a label that have a row of weeks and then a row of months in text 
@@ -313,21 +294,15 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
 #' @return A png per species showing the number of individuals per week.
 #' @export
 #' 
-sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", plotname = FALSE, database = TRUE, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
+sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", plotname = FALSE, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
   
-  if (database) {
-    df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
-      filter(!str_detect(art, "[Nn]oll"), speuid != 132) %>%
-      mutate(antal = as.double(antal)) %>% 
-      group_by(art, vecka = isoweek(datum)) %>%
-      summarise(count = sum(antal, na.rm = T), .groups = "drop") %>% 
-      mutate(art = str_replace(art, "/", "_"))
-  }else {
-    df <- 
-      sebms_data_species_histo %>%
-      group_by(artnamn, vecka) %>%
-      summarise(count = sum(sumval))
-  }
+  df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
+    filter(!str_detect(art, "[Nn]oll"), speuid != 132) %>%
+    mutate(antal = as.double(antal)) %>% 
+    group_by(art, vecka = isoweek(datum)) %>%
+    summarise(count = sum(antal, na.rm = T), .groups = "drop") %>% 
+    mutate(art = str_replace(art, "/", "_"))
+  
   
   # Week / month label to get label of month below first week in month.
   fmt_label <- function(w) {
@@ -472,58 +447,46 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
 #'   species per site type.
 #' @export
 #' 
-sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", database = TRUE, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
+sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", source = c(54,55,56,63,64,66,67,84), print = FALSE) {
   
   b <- seq(1, 65, by = 5) # make the start of species number groups
   l <- paste0(b, "-", b + 4) # This maes the group intervals
   
-  if (database) {
-    
-    df <- sebms_species_site_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
-      group_by(situid, sitetype) %>% 
-      mutate(speuid = case_when(speuid == 131 ~ if_else(any(speuid %in% c(57,58)),NA_integer_, 131),
-                                speuid == 132 ~ if_else(any(speuid %in% c(72,73,74)),NA_integer_, 132),
-                                speuid == 133 ~ if_else(any(speuid %in% c(24,25)),NA_integer_, 133),
-                                speuid == 139 ~ if_else(any(speuid %in% c(29,30)),NA_integer_, 139),
-                                TRUE ~speuid)) %>% 
-      filter(!is.na(speuid)) %>% 
-      mutate(speuid = if_else(speuid == 135, NA_integer_, speuid)) %>% # Sätter nollobs til NA så de inte räknas i artmångfaldsmått
-      group_by(situid, sitetype) %>% 
-      summarize(species = n_distinct(speuid, na.rm = T), .groups = "drop") %>% # Number of species per site and site type 
-      group_by(sitetype) %>% 
-      mutate(medel = mean(species)) %>% # mean number of species per site type
-      ungroup() %>% 
-      #filter(species != 0) %>%  #REMOVE to get a zero species category OBS: add the all.inside=T in the interval calc below also
-      mutate(interval = l[findInterval(species, b, all.inside = T)], #, all.inside = T 
-             sortorder = findInterval(species, b),
-             interval = if_else(sortorder == 0, "0", interval)
-      ) %>%
-      group_by(interval, sortorder, sitetype, medel) %>%
-      summarize(site_count = n_distinct(situid),
-                #medel = mean(medel),
-                .groups = "drop") %>%
-      select(interval, sortorder, sitetype, site_count, medel) %>% 
-      complete(interval, sitetype, fill = list(site_count = 0)) %>%
-      group_by(interval) %>%
-      fill(sortorder, .direction = "updown") %>%
-      group_by(sitetype) %>%
-      fill(medel, .direction = "down") %>%
-      ungroup() %>% 
-      group_by(interval, sitetype) %>% 
-      summarise(sortorder = first(sortorder),
-                medel = max(medel),
-                site_count = sum(site_count), .groups = "drop")
-    
-  }else{
-    df <- sebms_data_species_per_site_sitetype %>%
-      mutate(
-        interval = l[findInterval(species, b)], 
-        sortorder = findInterval(species, b)) %>%
-      group_by(interval, sortorder, sitetype) %>%
-      summarize(site_count = n_distinct(id), .groups = "drop") %>%
-      arrange(-desc(sortorder)) %>%
-      select(interval, sortorder, sitetype, site_count)
-  }
+  df <- sebms_species_site_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>% 
+    group_by(situid, sitetype) %>% 
+    mutate(speuid = case_when(speuid == 131 ~ if_else(any(speuid %in% c(57,58)),NA_integer_, 131),
+                              speuid == 132 ~ if_else(any(speuid %in% c(72,73,74)),NA_integer_, 132),
+                              speuid == 133 ~ if_else(any(speuid %in% c(24,25)),NA_integer_, 133),
+                              speuid == 139 ~ if_else(any(speuid %in% c(29,30)),NA_integer_, 139),
+                              TRUE ~speuid)) %>% 
+    filter(!is.na(speuid)) %>% 
+    mutate(speuid = if_else(speuid == 135, NA_integer_, speuid)) %>% # Sätter nollobs til NA så de inte räknas i artmångfaldsmått
+    group_by(situid, sitetype) %>% 
+    summarize(species = n_distinct(speuid, na.rm = T), .groups = "drop") %>% # Number of species per site and site type 
+    group_by(sitetype) %>% 
+    mutate(medel = mean(species)) %>% # mean number of species per site type
+    ungroup() %>% 
+    #filter(species != 0) %>%  #REMOVE to get a zero species category OBS: add the all.inside=T in the interval calc below also
+    mutate(interval = l[findInterval(species, b, all.inside = T)], #, all.inside = T 
+           sortorder = findInterval(species, b),
+           interval = if_else(sortorder == 0, "0", interval)
+    ) %>%
+    group_by(interval, sortorder, sitetype, medel) %>%
+    summarize(site_count = n_distinct(situid),
+              #medel = mean(medel),
+              .groups = "drop") %>%
+    select(interval, sortorder, sitetype, site_count, medel) %>% 
+    complete(interval, sitetype, fill = list(site_count = 0)) %>%
+    group_by(interval) %>%
+    fill(sortorder, .direction = "updown") %>%
+    group_by(sitetype) %>%
+    fill(medel, .direction = "down") %>%
+    ungroup() %>% 
+    group_by(interval, sitetype) %>% 
+    summarise(sortorder = first(sortorder),
+              medel = max(medel),
+              site_count = sum(site_count), .groups = "drop")
+  
   
   
   options(OutDec = ",") # Set decimal separator to comma

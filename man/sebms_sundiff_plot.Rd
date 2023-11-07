@@ -2,7 +2,7 @@
 % Please edit documentation in R/soltimmar.R
 \name{sebms_sundiff_plot}
 \alias{sebms_sundiff_plot}
-\title{Create a Figure that Shows the Difference in Sunhours}
+\title{Create a Figure that Shows the Difference in Sun Hours}
 \usage{
 sebms_sundiff_plot(
   year = year(today()) - 1,
@@ -15,9 +15,10 @@ sebms_sundiff_plot(
 \arguments{
 \item{year}{the year or years to produce plot for}
 
-\item{df}{optinal; dataframe from the `sebms_sunhour_diff()`}
+\item{df}{optinal; dataframe from the [sebms_sunhour_diff()]}
 
-\item{months}{numeric value of the months to summarise sun ours over (default to 4:9)}
+\item{months}{numeric value of the months to summarise sun ours over (default
+to 4:9)}
 
 \item{per_month}{logical; summarise per month instead of per year}
 
@@ -27,5 +28,6 @@ sebms_sundiff_plot(
 a figure that shows diffeence in sunhours
 }
 \description{
-Produce a plot that shows differences in sun hours between a given year and mean.
+Produce a plot that shows differences in sun hours between a given year and a
+5-year mean.
 }

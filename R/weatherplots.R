@@ -1,22 +1,24 @@
 ## Below are functions that creates the weather figures for the butterfly monitoring reports
 
-#' Extract default Station names and id
+#' Extract Default Station Names and ID
+#' 
+#' Helper function that extract default station names from SMHI weather stations.
+#' These are Lund, Visby, Stockholm and Umeå. 
 #' 
 #' @importFrom jsonlite fromJSON
 #' @import dplyr
 #' @importFrom stringr str_detect str_squish
 #' @noRd
-
-sebms_default_station <- function(my_place, tempstat = TRUE) {
+sebms_default_station <- function(tempstat = TRUE) {
   
-  if(tempstat){ # This change stations slightly depending on if it is precipitation or tempereature that is used.
+  if(tempstat){ # This change stations slightly depending on if it is precipitation or temperature that is used.
     my_place <- c("Stock.*Obs.*len$|^Lund$|Visby.*Flyg|Umeå.*Flyg")
     stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
       filter(str_detect(name, my_place)) %>% 
       select(name, id, latitude, longitude) %>% 
       mutate(id = str_squish(id))
     
-  }else{ # Stations for perecipitation
+  }else{ # Stations for precipitation
     my_place <- c("Stock.*Observ.*len$|^Lund$|Visby$|Umeå-Röbäck")
     stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
       filter(str_detect(name, my_place)) %>% 
@@ -75,7 +77,7 @@ sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::t
   }
   
   if(unique(is.na(my_place))){
-    stations <- sebms_default_station(my_place, tempstat = FALSE)
+    stations <- sebms_default_station(tempstat = FALSE)
   }else{
     stations <- sebms_user_station(my_place)
   }
@@ -132,7 +134,7 @@ sebms_temp_data <- function(my_place = NA, year = lubridate::year(lubridate::tod
   }
   
   if(unique(is.na(my_place))){
-    stations <- sebms_default_station(my_place, tempstat = TRUE)
+    stations <- sebms_default_station(tempstat = TRUE)
   }else{
     stations <- sebms_user_station(my_place)
   }
@@ -169,7 +171,7 @@ sebms_temp_data <- function(my_place = NA, year = lubridate::year(lubridate::tod
 }
 
 
-#' Palette used in plots
+#' Palette Used in ggplots
 #' @return vector of color hex codes
 #' @export
 sebms_palette <- c("#BE4B48", "#9BBB59") #"#C0504D", 
@@ -251,16 +253,19 @@ sebms_tempplot <- function(temp, colours = sebms_palette){
 }
 
 
+#' Save Plots as png Files with Given File Name and Name Extension
+#'
 #' Saves a ggplot object as a PNG file, resizing using pixel dimensions and a
-#' text scaling factor
+#' text scaling factor. I also adds given file name and file name extension,
+#' such as a weather variable.
 #'
 #' @param plot a ggplot object
 #' @param filename the path to the output file
 #' @param width pixel width
 #' @param height pixel height
 #' @param text.factor text scaling factor (default is 3)
-#' @param weathervar which weather variable it shoulld put in the name; 'Temp'
-#'   or 'Precip'
+#' @param weathervar which weather variable it should put in the name; 'Temp' or
+#'   'Precip'
 #' @importFrom ggplot2 ggsave
 #' @importFrom glue glue
 #' @export
@@ -273,7 +278,10 @@ sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.722, text.fac
          device = "png", dpi = dpi, width = width.calc, height = height.calc, units = 'cm')
 }
 
-#' Creates png Figures  of Temperature and Precipitation for each Site
+#' Creates png Figures of Temperature and Precipitation for each Site
+#'
+#' Creates figures for Temperature and Precipitation for the given year with a
+#' 30-year mean as comparison.
 #'
 #' @param year from what year you want the temp and precipitation to be
 #' @param my_place the places you want weather data pngs from (default to Umeå,
@@ -290,10 +298,8 @@ sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.722, text.fac
 #' @importFrom lubridate year today
 #'
 #' @return png files with temperature and precipitation figures
-#' 
-
+#'
 #' @export
-
 sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_place = NA, savepng = TRUE, colours = sebms_palette) {
   
   if(length(colours) != 2) {

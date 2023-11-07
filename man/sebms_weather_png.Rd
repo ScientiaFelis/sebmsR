@@ -2,7 +2,7 @@
 % Please edit documentation in R/weatherplots.R
 \name{sebms_weather_png}
 \alias{sebms_weather_png}
-\title{Creates png Figures  of Temperature and Precipitation for each Site}
+\title{Creates png Figures of Temperature and Precipitation for each Site}
 \usage{
 sebms_weather_png(
   year = lubridate::year(lubridate::today()) - 1,
@@ -27,5 +27,6 @@ values (1991-2020)}
 png files with temperature and precipitation figures
 }
 \description{
-Creates png Figures  of Temperature and Precipitation for each Site
+Creates figures for Temperature and Precipitation for the given year with a
+30-year mean as comparison.
 }

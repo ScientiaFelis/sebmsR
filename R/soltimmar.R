@@ -1,5 +1,6 @@
-#'
-#' Function that download hourly sunhour data from SMHI
+#' Download Sun Hour Data from SMHI
+#' 
+#' This is a helper function that download sunhour data from SMHI open data. 
 #'
 #' @param year the year to produce plot for
 #' @param months numeric value of the months to summarise sun ours over (default
@@ -31,14 +32,15 @@ sunHdata <- function(year, months, day, per_day = FALSE) {
   }
 }
 
-#' Replace Falting Sunhour Values with mean of Surrounding Values
-#' 
-#' This function look for gaps in sunhour values (set to -999) and replace them with the mean of the before and following value.
+#' Replace Faulting Sun Hour Values with Mean of Surrounding Values
+#'
+#' This function look for gaps in sun hour values (set to -999) and replace them
+#' with the mean of the before and following value.
 #'
 #' @inheritParams sunHdata
 #' @importFrom dplyr mutate if_else lag lead
-#' 
-#' @return a dataframe with no gaps in sunhour values.
+#'
+#' @return a data frame with no gaps in sun hour values.
 #' @noRd
 fix_sunhour_NAs <- function(year, months, day, per_day = FALSE) {
   
@@ -52,24 +54,27 @@ fix_sunhour_NAs <- function(year, months, day, per_day = FALSE) {
   return(fixna)
   
 }
-#' Create a total Sunhours Dataframe from SMHI Sunhour data
-#' 
-#' Produce a data frame of the total sunhours in Sweden for the given month.
-#' 
+#' Calculate Total Sun Hours from SMHI Open Data
+#'
+#' Produce a data frame of the total sun hours in Sweden for the given month.
+#'
 #' @param year the year or years to produce plot for
-#' @param months numeric value of the months to summarise sun ours over (default to 4:9)
+#' @param months numeric value of the months to summarise sun ours over (default
+#'   to 4:9)
 #' @param per_month logical; summarise per month instead of per year
 #' @param per_day logical; if data should be downloaded per day
-#' @param to_env logical; also send the result to the global environment as an object called 'spatsunist_{year}. If the function is used within a plot function this is TRUE
+#' @param to_env logical; also send the result to the global environment as an
+#'   object called 'spatsunist_{year}. If the function is used within a plot
+#'   function this is TRUE
 #'
 #' @import dplyr
 #' @importFrom sf st_as_sf st_set_crs st_intersection
 #' @importFrom purrr map map2 set_names possibly pmap_dfr
 #' @importFrom lubridate year today
 #' @importFrom glue glue
-#' 
+#'
 #' @returns a sf spatial point object with the WGS84 coordinate system
-#' 
+#'
 #' @export
 sebms_sunhours_data <- function(year = year(today())-1, months = 4:9, per_month = FALSE, per_day = FALSE, to_env = FALSE) {
   
@@ -184,10 +189,11 @@ sebms_sunhours_data <- function(year = year(today())-1, months = 4:9, per_month 
 suncols <- colorRampPalette(colors = c(rgb(43,131,186,maxColorValue = 255), rgb(171,221,164, maxColorValue = 255), rgb(255,255,191, maxColorValue = 255), rgb(253,174,97, maxColorValue = 255) , rgb(215,25,28,maxColorValue = 255)))
 
 
-#' Create a Mean Sunhour Value over a Five Year Period
-#' 
-#' Creates a five year mean from the SMHI Iradiance data. This data is also stored internally in the package to avoid to much downloading
-#' 
+#' Create a Mean Sun Hour Value over a Five Year Period
+#'
+#' Creates a five year mean from the SMHI Iradiance data. This data is also
+#' stored internally in the package to avoid to much downloading
+#'
 #' @inheritParams sebms_sunhours_data
 #' @import dplyr
 #' @importFrom purrr map set_names
@@ -213,23 +219,26 @@ sebms_sunmean_data <- function(year = 2017:2021, months = 4:9, per_month = FALSE
 }
 
 
-#' Create an Image with Sunhour Data
+#' Create an Image with Sun Hour Data
 #'
-#' This function takes a data frame from e.g. `sebms_sunhours_data()` and creates an raster image.
-#' 
+#' Create a data frame from e.g. [sebms_sunhours_data()] and creates an raster
+#' image.
+#'
 #' @inheritParams sebms_sunhours_data
-#' @param df optional; a dataframe created by `sebms_sunhours_data()`
-#' @param sunvar the variable to calculate colours on, `total_sunH` or `mean_sunH`
+#' @param df optional; a dataframe created by [sebms_sunhours_data()]
+#' @param sunvar the variable to calculate colours on, `total_sunH` or
+#'   `mean_sunH`
 #' @param legends logical; if you want a legend to the figures (default: FALSE)
-#' 
+#'
 #' @importFrom lubridate year today
 #' @import ggplot2
 #' @importFrom tidyr nest
 #' @importFrom purrr map map2
 #' @importFrom glue glue
 #' @importFrom scales squish
-#' 
-#' @return a figure saved as a png with the sunhours in coloour from, high (red) to low (blue)
+#'
+#' @return a figure saved as a png with the sunhours in coloour from, high (red)
+#'   to low (blue)
 #' @export
 sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, months = 4:9, per_month = FALSE, legends = FALSE) {
   
@@ -327,12 +336,13 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
 #   nest() %>%
 #   mutate(plots = map(data, ~sebms_sunhour_plot(df = .x, year = .x$year %>% unique())))
 
-#' Make a diff Between current Year and the 5-year Mean 
-#' 
-#' This function makes a plot of the difference between the current years sun hours and the 5-year mean (2017-2021)
-#' 
+#' Make a Diff Between Current Year and the 5-year Mean
+#'
+#' Create a plot of the difference between the current years sun hours and the
+#' 5-year mean (2017-2021)
+#'
 #' @inheritParams sebms_sunhours_data
-#'  
+#'
 #' @import dplyr
 #' @importFrom sf st_drop_geometry st_as_sf
 #' @importFrom lubridate year today
@@ -365,11 +375,12 @@ sebms_sunhour_diff <- function(df, year = year(today())-1, months = 4:9, per_mon
   return(sundiff)
 } 
 
-#' Create a Figure that Shows the Difference in Sunhours
-#' 
-#' Produce a plot that shows differences in sun hours between a given year and mean.
+#' Create a Figure that Shows the Difference in Sun Hours
 #'
-#' @param df optinal; dataframe from the `sebms_sunhour_diff()`
+#' Produce a plot that shows differences in sun hours between a given year and a
+#' 5-year mean.
+#'
+#' @param df optinal; dataframe from the [sebms_sunhour_diff()]
 #' @inheritParams sebms_sunhour_plot
 #'
 #' @importFrom lubridate year today
@@ -378,7 +389,7 @@ sebms_sunhour_diff <- function(df, year = year(today())-1, months = 4:9, per_mon
 #' @importFrom tidyr nest
 #' @importFrom purrr map map2
 #' @importFrom scales squish
-#' 
+#'
 #' @return a figure that shows diffeence in sunhours
 #' @export
 sebms_sundiff_plot <- function(year = year(today())-1, df, months = 4:9, per_month = FALSE, legends = FALSE) {
@@ -474,19 +485,23 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, months = 4:9, per_mon
   }
 }
 
-#' Maximum and Minimum Sun-hours Given Years
+#' Maximum and Minimum Sun Hours for Given Years
 #'
-#' GIve the maximm and minimum sunhour per year and the city or village closest to that location
+#' Give the maximum and minimum sun hour per year and the city or village
+#' closest to that location
 #'
-#' @param df a sf object with `year` and `total_sunhour` created by `sebms_sunhour_data()`
-#' @param sunvar which variable to calculate the min and max on, can 
-#' be `total_sunH` or `diffsun`
+#' @param df a sf object with `year` and `total_sunhour` created by
+#'   [sebms_sunhous_data()]
+#' @param sunvar which variable to calculate the min and max on, can be
+#'   `total_sunH` or `diffsun`
 #' @inheritParams sebms_sunhours_data
-#' 
+#'
 #' @importFrom sf st_drop_geometry st_coordinates
 #' @import dplyr
 #'
-#' @return a data frame with the max and min of total sunhours per year and the mean and diff from mean at that lokation. It also gives the name of the nearest city or village for that location.
+#' @return a data frame with the max and min of total sun hours per year and the
+#'   mean and diff from mean at that location. It also gives the name of the
+#'   nearest city or village for that location.
 #' @export
 sebms_minmax_sunhour <- function(df, year = 2017:2022, months = 4:9, sunvar = total_sunH) {
   
@@ -505,31 +520,3 @@ sebms_minmax_sunhour <- function(df, year = 2017:2022, months = 4:9, sunvar = to
     filter({{ sunvar }} == max| {{ sunvar }} == min) %>%
     get_nearby(sunvar = {{ sunvar }})
 }
-
-# 
-# allyearlist_total_mean_diff %>%
-#   st_drop_geometry() %>%
-#   group_by(Year) %>%
-#   summarise(minsun = min(total_sunH),
-#             maxsun = max(total_sunH), .groups = "drop") %>%
-#  gt::gt() %>%
-#  gt::gtsave(filename = "MinMax_sunHours.png")
-# #
-# allyearlist_total_mean_diff %>%
-#   st_drop_geometry() %>%
-#   ggplot() +
-#   geom_histogram(aes(diffsun)) +
-#   facet_wrap(~Year) +
-#   theme_sebms()
-# 
-# ggsave("DiffsunH_histogram.png", width = 14, height = 8)
-# 
-# allyearlist_total_mean_diff %>%
-#   st_drop_geometry() %>%
-#   group_by(Year) %>%
-#   summarise(minsun = min(diffsun),
-#             maxsun = max(diffsun),
-#             meansun = mean(diffsun),
-#             .groups = "drop") %>%
-#   gt::gt() %>%
-#   gt::gtsave(filename = "MinMax_DiffsunHours.png")

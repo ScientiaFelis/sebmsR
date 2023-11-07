@@ -2,23 +2,28 @@
 % Please edit documentation in R/soltimmar.R
 \name{sebms_minmax_sunhour}
 \alias{sebms_minmax_sunhour}
-\title{Maximum and Minimum Sun-hours Given Years}
+\title{Maximum and Minimum Sun Hours for Given Years}
 \usage{
 sebms_minmax_sunhour(df, year = 2017:2022, months = 4:9, sunvar = total_sunH)
 }
 \arguments{
-\item{df}{a sf object with `year` and `total_sunhour` created by `sebms_sunhour_data()`}
+\item{df}{a sf object with `year` and `total_sunhour` created by
+[sebms_sunhous_data()]}
 
 \item{year}{the year or years to produce plot for}
 
-\item{months}{numeric value of the months to summarise sun ours over (default to 4:9)}
+\item{months}{numeric value of the months to summarise sun ours over (default
+to 4:9)}
 
-\item{sunvar}{which variable to calculate the min and max on, can 
-be `total_sunH` or `diffsun`}
+\item{sunvar}{which variable to calculate the min and max on, can be
+`total_sunH` or `diffsun`}
 }
 \value{
-a data frame with the max and min of total sunhours per year and the mean and diff from mean at that lokation. It also gives the name of the nearest city or village for that location.
+a data frame with the max and min of total sun hours per year and the
+  mean and diff from mean at that location. It also gives the name of the
+  nearest city or village for that location.
 }
 \description{
-GIve the maximm and minimum sunhour per year and the city or village closest to that location
+Give the maximum and minimum sun hour per year and the city or village
+closest to that location
 }

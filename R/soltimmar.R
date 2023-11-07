@@ -495,15 +495,10 @@ sebms_minmax_sunhour <- function(df, year = 2017:2022, months = 4:9, sunvar = to
     df <- sebms_sunhours_data(year = year, months = months)
   }
   
-  df %>%
-    st_drop_geometry()  %>%
-    bind_cols(df %>% st_coordinates() %>% as_tibble() %>% rename(lat = Y, lon = X)) %>%
-    filter(Year %in% year) %>%
-    group_by(Year) %>%
-    mutate(max = max({{ sunvar }}), min = min({{ sunvar }})) %>%
-    ungroup() %>%
-    filter({{ sunvar }} == max| {{ sunvar }} == min) %>%
-    get_nearby(sunvar = {{ sunvar }})
+  minmaxsun <- df %>%
+    get_nearby_SunHour(sunvar = {{ sunvar }}, findMaxMin = TRUE)
+  
+  return(minmaxsun)
 }
 
 # 

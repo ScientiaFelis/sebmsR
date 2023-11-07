@@ -4,7 +4,7 @@
 #' Search for a city, village or municipality nearby a coordinate depending on
 #' what is available and the number of inhabitants.
 #'
-#' @param df data frame with coordinates, or sf object
+#' @param df data frame with coordinates, or sf object from e.g. [sebms_sunhours_data()]
 #' @param radius the radius to search for nearby places
 #' @param top how many of the top results to save
 #' @param limited logical; if you want only the names of the resulting sites

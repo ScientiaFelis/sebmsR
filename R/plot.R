@@ -395,12 +395,13 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
         expand = c(0, 0) 
       ) +
       labs(y = "Antal", x = NULL, tag = "Vecka:", title = glue::glue("{unique(Art)}")) +
-      theme_sebms_species() +
+      theme_sebms_species(x_sz = 20, y_sz = 20) +
       theme(axis.ticks = element_blank(),
             axis.line = element_line(color = "gray5",
                                      linewidth = 0.3),
             plot.tag.position = c(0.05, 0.08),
-            axis.text.y = element_text(family = "Arial")) #Arial mono ist it possible?
+            axis.text.y = element_text(family = "Arial"), #Arial mono is it possible?
+            axis.text.x = element_text(family = "Arial")) 
   }  
   
   ## Add Species name to plot if requested

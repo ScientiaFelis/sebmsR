@@ -9,7 +9,6 @@ sebms_species_per_sitetype_plot(
   Län = ".",
   Landskap = ".",
   Kommun = ".",
-  database = TRUE,
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
   print = FALSE
 )
@@ -23,8 +22,6 @@ from}
 \item{Landskap}{character or reg ex; which region you want the data from}
 
 \item{Kommun}{character or reg ex; which municipality you want the data from}
-
-\item{database}{logical; if the data should be based on the sebms database}
 
 \item{source}{the database sources as id numbers,
 defaults to `54,55,56,63,64,66,67,84`}

@@ -2,6 +2,7 @@
 
 export(editcred)
 export(get_nearby)
+export(get_nearby_SunHour)
 export(runShinyApp)
 export(sebms_abundance_per_species_plot)
 export(sebms_abundance_year_compare_plot)

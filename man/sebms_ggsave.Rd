@@ -2,8 +2,7 @@
 % Please edit documentation in R/weatherplots.R
 \name{sebms_ggsave}
 \alias{sebms_ggsave}
-\title{Saves a ggplot object as a PNG file, resizing using pixel dimensions and a
-text scaling factor}
+\title{Save Plots as png Files with Given File Name and Name Extension}
 \usage{
 sebms_ggsave(
   plot,
@@ -25,10 +24,11 @@ sebms_ggsave(
 
 \item{text.factor}{text scaling factor (default is 3)}
 
-\item{weathervar}{which weather variable it shoulld put in the name; 'Temp'
-or 'Precip'}
+\item{weathervar}{which weather variable it should put in the name; 'Temp' or
+'Precip'}
 }
 \description{
 Saves a ggplot object as a PNG file, resizing using pixel dimensions and a
-text scaling factor
+text scaling factor. I also adds given file name and file name extension,
+such as a weather variable.
 }

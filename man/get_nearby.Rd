@@ -7,7 +7,7 @@
 get_nearby(df, radius = 50, top = 1, limited = TRUE, population_limit = 0)
 }
 \arguments{
-\item{df}{data frame with coordinates, or sf object}
+\item{df}{data frame with coordinates, or sf object from e.g. [sebms_sunhours_data()]}
 
 \item{radius}{the radius to search for nearby places}
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/soltimmar.R
 \name{sebms_sunhour_plot}
 \alias{sebms_sunhour_plot}
-\title{Create an Image with Sunhour Data}
+\title{Create an Image with Sun Hour Data}
 \usage{
 sebms_sunhour_plot(
   year = year(today()) - 1,
@@ -16,19 +16,23 @@ sebms_sunhour_plot(
 \arguments{
 \item{year}{the year or years to produce plot for}
 
-\item{df}{optional; a dataframe created by `sebms_sunhours_data()`}
+\item{df}{optional; a dataframe created by [sebms_sunhours_data()]}
 
-\item{sunvar}{the variable to calculate colours on, `total_sunH` or `mean_sunH`}
+\item{sunvar}{the variable to calculate colours on, `total_sunH` or
+`mean_sunH`}
 
-\item{months}{numeric value of the months to summarise sun ours over (default to 4:9)}
+\item{months}{numeric value of the months to summarise sun ours over (default
+to 4:9)}
 
 \item{per_month}{logical; summarise per month instead of per year}
 
 \item{legends}{logical; if you want a legend to the figures (default: FALSE)}
 }
 \value{
-a figure saved as a png with the sunhours in coloour from, high (red) to low (blue)
+a figure saved as a png with the sunhours in coloour from, high (red)
+  to low (blue)
 }
 \description{
-This function takes a data frame from e.g. `sebms_sunhours_data()` and creates an raster image.
+Create a data frame from e.g. [sebms_sunhours_data()] and creates an raster
+image.
 }

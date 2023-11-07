@@ -2,7 +2,7 @@
 % Please edit documentation in R/soltimmar.R
 \name{sebms_sunhours_data}
 \alias{sebms_sunhours_data}
-\title{Create a total Sunhours Dataframe from SMHI Sunhour data}
+\title{Calculate Total Sun Hours from SMHI Open Data}
 \usage{
 sebms_sunhours_data(
   year = year(today()) - 1,
@@ -15,17 +15,20 @@ sebms_sunhours_data(
 \arguments{
 \item{year}{the year or years to produce plot for}
 
-\item{months}{numeric value of the months to summarise sun ours over (default to 4:9)}
+\item{months}{numeric value of the months to summarise sun ours over (default
+to 4:9)}
 
 \item{per_month}{logical; summarise per month instead of per year}
 
 \item{per_day}{logical; if data should be downloaded per day}
 
-\item{to_env}{logical; also send the result to the global environment as an object called 'spatsunist_{year}. If the function is used within a plot function this is TRUE}
+\item{to_env}{logical; also send the result to the global environment as an
+object called 'spatsunist_{year}. If the function is used within a plot
+function this is TRUE}
 }
 \value{
 a sf spatial point object with the WGS84 coordinate system
 }
 \description{
-Produce a data frame of the total sunhours in Sweden for the given month.
+Produce a data frame of the total sun hours in Sweden for the given month.
 }

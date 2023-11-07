@@ -3,7 +3,7 @@
 \docType{data}
 \name{sebms_palette}
 \alias{sebms_palette}
-\title{Palette used in plots}
+\title{Palette Used in ggplots}
 \format{
 An object of class \code{character} of length 2.
 }
@@ -14,6 +14,6 @@ sebms_palette
 vector of color hex codes
 }
 \description{
-Palette used in plots
+Palette Used in ggplots
 }
 \keyword{datasets}

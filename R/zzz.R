@@ -32,6 +32,7 @@ Use runShinyApp('poc') to run the Shiny proof-of-concept app"
   #   message("Please enable db connections for full functionality")
   #   message("(edit settings in config.yml and/or run ssh tunnels?)")
   # }
+  cat("\nFONT PROBLEMS?\n See READMEs 'Font Issues in Windows'")
 }
 
 .onDetach <- function(libpath) {

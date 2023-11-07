@@ -146,6 +146,20 @@ individual species with numbers per week.
 many species sites have and the number distribution of these, compared
 between site type. Also the mean number of species per site type.
 
+## Font Issues in Windows
+
+There seems to be a problem on some Windows machines with fonts not
+being recognized. There are a number of things you can try to eliminate
+this.
+
+- Make sure you have the font installed then use
+  `extrafont::font_import()` to register all fonts in R.
+- Use the `extrafont::loadfonts(device = "all", quiet = TRUE)` to load
+  registered font in R
+- If you work in RStudio: Install the `ragg` package and set the Graphic
+  device backend to **‘AGG’**;
+  `Tools > Global options > General > Graphics > Backend: AGG`
+
 ## Development
 
 To further develop or change the package, please refer to instructions

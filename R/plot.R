@@ -630,7 +630,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
     scale_fill_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +
     scale_colour_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +
     labs(x = "Antal arter på lokalen", y = "Antal lokaler") +
-    theme_sebms_species(x_sz = 12, y_sz = 12)
+    theme_sebms_species()
   
   if (length(year)>1) {
     yearname <- paste0(min(year),"-",max(year))  

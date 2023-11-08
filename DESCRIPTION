@@ -1,6 +1,6 @@
 Package: sebmsR
 Title: Swedish Butterfly Monitoring Programme Tools
-Version: 1.4.8
+Version: 1.4.9
 Authors@R: c(
     person("Markus", "Skyttner", , "markus.skyttner@nrm.se", role = "aut"),
     person("Georg", "Andersson", , "georg.andersson@biol.lu.se", role = c("aut", "cre")),

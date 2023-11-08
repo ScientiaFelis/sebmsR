@@ -6,6 +6,18 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 1.4.9
+
+This version comes with a cleaned code and a new function, as well as some bug fixes.
+
+* **New functions**: Add a new generalised `get_nearby()` function and a specific case for sun hour data `get_nearby_SunHour()`
+* Remove unnecessary SQL calls to only have three data request functions.
+* BREAKING: Remove example `data` such that the species plots only works with a connection and a call to the PostgreSQL data base.
+* Clarified documentation and function explanations
+* Increase axis text size in `sebms_species_abundance_plot()`
+* Updated README to include recommendations to Windows users if they have problem with fonts.
+
+
 # v 1.4.8
 
 This version fixes some bugs and small issues

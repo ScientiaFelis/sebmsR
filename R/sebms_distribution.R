@@ -56,6 +56,7 @@ sebms_sites_map <- function(year=2021, width=5, height=3.5) {
     select(-Max)
   
   #terra::rasterize(as.matrix(tiff[1:2]), y= tiff1)
+  #FIXME: make alla as raster too
   
   ggplot(data = tiff, aes(x = x, y = y)) +                   #plot map
     geom_raster(aes(fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) +
@@ -63,6 +64,8 @@ sebms_sites_map <- function(year=2021, width=5, height=3.5) {
     geom_sf(data = alla, colour = "red", alpha = 0.2, inherit.aes = F) +
     scale_fill_identity() +
     theme_void()
+  
+  ggsave("Butterfly_sites.png", width = 7, height = 15, units = "cm")
   
 }
 

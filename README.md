@@ -10,10 +10,11 @@ app.
 ## Under construction
 
 The package is currently under re-development and some functions do not
-work well, e.g. the Shiny app and reading from a Postgres database. The
-functions related to weather data, e.g. `sebms_weather_png()`,
-`sebms_sunhours_data()`, `sebms_sunhour_plot ()`, and
-`sebms_sundiff_plot()` works well.
+work well, e.g. the Shiny app. The functions related to weather data,
+e.g. `sebms_weather_png()`, `sebms_sunhours_data()`,
+`sebms_sunhour_plot ()`, and `sebms_sundiff_plot()`, as well as the
+functions that create species abundance plots work well and produce pngs
+ready to use in reports.
 
 ## Installing from github
 
@@ -29,23 +30,23 @@ library(devtools)
 install_github("scientiafelis/sebmsr")
 
 # A specific versioned release can be installed like this:
-install_github("scientiafelis/sebmsr@0.4.0")
+install_github("scientiafelis/sebmsr@1.5.0")
 ```
 
 ## Quick start
 
 Since the package can read data from a Postgres db with live data from
-SeBMS, some initial system configuration may first be needed to set up
+SeBMS, some initial system configuration may first be needed, to set up
 the connection.
 
 ### Secure shell connection to the database server
 
-If the database connection requires an ssh tunnel to first be
-established, and you are using a \*nix system, this configuration can be
-achieved by editing `~/.ssh/config`, adding a section such as:
+If the database connection requires an ssh tunnel to be established. If
+you are using a **nix** system (Linux, mac etc), this configuration can
+be achieved by editing `~/.ssh/config`, adding a section such as:
 
 ``` bash
-Host butterflies
+Host sebms
     User my_ssh_user
     HostName my_server_ip_for_the_postgres_db_server
     LocalForward 5432 127.0.0.1:5432
@@ -53,17 +54,19 @@ Host butterflies
 ```
 
 After this, the tunnel can be established with the command
-`ssh -N butterflies`. Upon success, the database can then be reached
-locally at the postgres db standard port. Similar results can be
-achieved using `putty` on Windows platforms.
+`ssh -N sebms`. Upon success, the database can then be reached locally
+at the postgres db standard port.
+
+Similar results can be achieved using `putty` on **Windows** platforms.
 
 ### Config for db connection
 
 Once the database server is available, the R package needs to be
 configured to use the database connection. To achieve this, load the
 package in your R environment and create a `config.yml` with the db
-connection details and perhaps also a `.Renviron` file, if you have a
-config file that references environment variables in R:
+connection details. You can also use a `.Renviron` file, that export the
+data base details to the environment and let the `config.yml` references
+these variables in R:
 
 ``` r
 
@@ -124,14 +127,13 @@ DBPORT = PostgreSQL_database_port_number
 After getting connected to the database, look at usage examples to get
 you started.
 
-Please read the Vignette, using either the Help tab in RStudio IDE or
-the R prompt command `browseVignettes(package = "sebmsR")`.
+To get a list of functions and what they do, use `?sebmsR`
 
 ### Examples
 
 To make a plot and generate the pngs for the weather data for the
 Butterfly yearly report of **2022** you can just do
-`sebms_weather_png(2022)`. For the sunhour figure for the same year do
+`sebms_weather_png(2022)`. For the sun hour figure for the same year do
 `sebms_sunhour_plot(2022)`.
 
 To make figures with butterfly data use:
@@ -177,10 +179,9 @@ the changes.
 To change functions that retrieve data from the db, please make changes
 primarily in the `R/data.R` file.
 
-The plotting uses ggplot2 and leaflet mostly and functions are in
-`R/plot.R` and `R/zgeomaps.R` for the spatial data.
+The plotting uses ggplot2 functions in `R/plot.R`.
 
-The long-form documentation / Vignette is located in
+Vignettes need to be updated and developed. These are located in
 `vignettes/sebms-intro.Rmd`.
 
 ## Credits

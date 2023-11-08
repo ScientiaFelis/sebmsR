@@ -87,6 +87,21 @@
 #'  This is used within the plot functions. \cr
 #'  
 #'   }
+#'   
+#'   
+#'  ------------------------------------------------------------------------\cr
+#' 
+#' @section ggplot2() Themes: 
+#' 
+#'  \tabular{ll}{
+#' 
+#'  \code{\link{theme_sebms}} ggplot2 theme used for figures in sebms project. \cr
+#'  
+#'  \code{\link{theme_sebms_species}} ggplot2 theme used specificly for
+#'  the species abundance plots. \cr
+#' 
+#' }
+#' 
 #' @docType package
 #' @keywords package
 

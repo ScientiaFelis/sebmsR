@@ -399,7 +399,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
       theme(axis.ticks = element_blank(),
             axis.line = element_line(color = "gray5",
                                      linewidth = 0.3),
-            plot.tag.position = c(0.05, 0.1),
+            plot.tag.position = c(0.04, 0.097),
             plot.tag = element_text(family = "Arial", size = 18),
             axis.text.y = element_text(family = "Arial"), #Arial mono is it possible?
             axis.text.x = element_text(family = "Arial")) 

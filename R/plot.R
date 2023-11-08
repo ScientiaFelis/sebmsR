@@ -260,7 +260,7 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
     scale_fill_manual("Year", values = c(sebms_palette[1], sebms_palette[2])) +
     labs(y = "Antal individer", x = NULL, tag = "Vecka:") +
     theme_sebms_species() +
-    theme(plot.margin = margin(t=2, r=7, b=2, l=1, unit = "mm"),
+    theme(plot.margin = margin(t=2.5, r=4, b=2, l=1, unit = "mm"),
           axis.line = element_line(color = "gray5", linewidth = 0.3),
           axis.text.y = element_text(size = 18),
           plot.tag.position = c(0.05,0.075)

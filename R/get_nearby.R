@@ -28,7 +28,7 @@ get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limi
     
     lat <- df %>% select(matches("lat")) %>% pull()
     lon <- df %>% select(matches("lon")) %>% pull()
-    GNfindNearbyPlaceName(lat = lat , lng = lon, radius = radius, maxRows = "100", style = "MEDIUM") %>%
+    geonames::GNfindNearbyPlaceName(lat = lat , lng = lon, radius = radius, maxRows = "100", style = "MEDIUM") %>%
       as_tibble() %>%
       transmute(name = toponymName, distance = as.numeric(distance), population = as.numeric(population)) %>%
       filter(population > population_limit) %>% # Filter on min population size

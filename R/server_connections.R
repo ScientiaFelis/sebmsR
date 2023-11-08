@@ -4,7 +4,8 @@
 #' It can be in the user home directory or possibly in the R project working directory.
 #'
 #' @param homepath the path to the home directory
-#'
+#' 
+#' @importFrom utils file.edit
 #' @return open the .Renviron file to add PostgreSQL credentials
 #' @export
 #'

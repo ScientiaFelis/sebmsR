@@ -13,14 +13,14 @@ sebms_default_station <- function(tempstat = TRUE) {
   
   if(tempstat){ # This change stations slightly depending on if it is precipitation or temperature that is used.
     my_place <- c("Stock.*Obs.*len$|^Lund$|Visby.*Flyg|Umeå.*Flyg")
-    stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
+    stations <- jsonlite::fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
       filter(str_detect(name, my_place)) %>% 
       select(name, id, latitude, longitude) %>% 
       mutate(id = str_squish(id))
     
   }else{ # Stations for precipitation
     my_place <- c("Stock.*Observ.*len$|^Lund$|Visby$|Umeå-Röbäck")
-    stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
+    stations <- jsonlite::fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
       filter(str_detect(name, my_place)) %>% 
       select(name, id, latitude, longitude) %>% 
       mutate(id = str_squish(id))
@@ -45,7 +45,7 @@ sebms_user_station <- function(my_place) {
   my_place <- my_place %>% 
     paste0(collapse = "|") # This makes the concatenated list of stations from user to a regex spressions with the names.
   
-  stations <- fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
+  stations <- jsonlite::fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
     filter(str_detect(name, my_place)) %>% 
     select(name, id, latitude, longitude) %>% 
     mutate(id = str_squish(id))
@@ -57,7 +57,8 @@ sebms_user_station <- function(my_place) {
 #' Download and Filter out Precipitation Data from SMHI
 #' 
 #' @import dplyr
-#' @import purrr
+#' @importFrom purrr set_names map
+#' @importFrom utils read.csv2
 #' @import lubridate
 #' @import stringr
 #' @import ggplot2
@@ -185,6 +186,7 @@ sebms_palette <- c("#BE4B48", "#9BBB59") #"#C0504D",
 #' @import ggplot2
 #' @import dplyr
 #' @importFrom tidyr nest
+#' @importFrom forcats fct_reorder
 #' @importFrom purrr map
 #'
 #' @noRd
@@ -197,7 +199,7 @@ sebms_precipplot <- function(precip, colours = sebms_palette) {
   # 
   
   plotfunc <- function(df){
-    ggplot(data = df, aes(x = reorder(month, monthnr), y = nb, fill = forcats::fct_rev(period))) + 
+    ggplot(data = df, aes(x = fct_reorder(month, monthnr), y = nb, fill = forcats::fct_rev(period))) + 
       geom_bar(stat = "identity", position = "dodge", width = .7) + 
       facet_wrap(~ name, ncol = 1) +
       #scale_x_continuous(breaks = br, labels = lab) +
@@ -230,7 +232,7 @@ sebms_precipplot <- function(precip, colours = sebms_palette) {
 sebms_tempplot <- function(temp, colours = sebms_palette){
   
   plotfunct <- function(df)
-  {ggplot(data = df, aes(x = reorder(month, monthnr), 
+  {ggplot(data = df, aes(x = fct_reorder(month, monthnr), 
                          y = temp, group = period, linetype = period, 
                          colour = period)) + 
       geom_line(stat = "identity", linewidth = 1.1) +

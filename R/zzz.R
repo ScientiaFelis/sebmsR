@@ -17,6 +17,7 @@ sebms_pool <- NULL
 Use runShinyApp('poc') to run the Shiny proof-of-concept app"
 #TODO: Fix other start-up message
   #packageStartupMessage(welcome)
+  packageStartupMessage("\nFONT PROBLEMS?\n See READMEs 'Font Issues in Windows'", appendLF = T)
 }
 
 .onLoad <- function(libname, pkgname) {
@@ -32,7 +33,6 @@ Use runShinyApp('poc') to run the Shiny proof-of-concept app"
   #   message("Please enable db connections for full functionality")
   #   message("(edit settings in config.yml and/or run ssh tunnels?)")
   # }
-  packageStartupMessage("\nFONT PROBLEMS?\n See READMEs 'Font Issues in Windows'", appendLF = T)
 }
 
 .onDetach <- function(libpath) {

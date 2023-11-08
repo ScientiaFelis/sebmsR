@@ -82,9 +82,6 @@ This package contains functions to make figures used in e.g. the reports of the 
  \code{\link{sebms_species_per_year_filtered}} return a data frame with
  abundance data per species and year. \cr
  
- \code{\link{sebms_species_per_year_site_filtered}} return a data frame with
- number of species per site and site type. \cr
- 
  }
  
  ------------------------------------------------------------------------\cr
@@ -97,8 +94,11 @@ This package contains functions to make figures used in e.g. the reports of the 
   
  \code{\link{get_nearby}} get the nearby places to given coordinates. \cr
  
+ \code{\link{get_nearby_SunHour}} get the nearby places to sun hour stations
+   with sun hour data fo each place. \cr
+ 
  \code{\link{sebms_ggsave}} save the figures produced as png.
- This is usually done automatically within the plot functions. \cr
+ This is used within the plot functions. \cr
  
   }
 }

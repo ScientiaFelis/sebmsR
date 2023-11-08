@@ -2,7 +2,7 @@ context("sebmsR")
 
 test_that("data retrieval works", {
   skip_on_travis()
-  res <- sebms_species_per_year()
+  res <- sebms_species_per_year_filtered()
   expect_true(nrow(res) > 0)
 })
 
@@ -15,25 +15,25 @@ test_that("data retrieval works", {
 # })
 
 test_that("dual plots w specieslist counts works", {
-  plots <- sebms_abundance_per_species_plot()
-  expect_equal(nrow(plots$p1$data), 51)
+  plots <- sebms_abundance_per_species_plot(print = T)
+  expect_equal(nrow(plots$p1$data), 49)
   expect_equal(nrow(plots$p2$data), 49)
 })
 
-# test_that("plot w specieslist histo works", {
-#   p <- sebms_species_abundance_plot()
-#   expect_equal(length(p), 98)
-# })
+test_that("plot w specieslist histo works", {
+  p <- sebms_species_abundance_plot(Art = c(4,118), print = T)
+  expect_equal(length(p), 2)
+})
 
 test_that("plot w species per site works", {
-  p <- sebms_species_per_sitetype_plot()
+  p <- sebms_species_per_sitetype_plot(print = T)
   expect_equal(nrow(p$data), 20)
 })
 
-# test_that("plot to compare years work", {
-#   p <- sebms_abundance_year_compare_plot()
-#   expect_equal(nrow(p$data), 56)
-# })
+test_that("plot to compare years work", {
+  p <- sebms_abundance_year_compare_plot(print = T)
+  expect_equal(nrow(p$data), 53)
+})
 
 # test_that("naturum climate data works", {
 #   df <- sebms_naturum_climate()

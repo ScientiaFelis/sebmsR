@@ -15,9 +15,11 @@
 #' @importFrom plyr round_any
 #' @importFrom glue glue
 #' @import dplyr
+#' @importFrom forcats fct_reorder
 #' @import ggplot2
 #' @importFrom stringr str_detect
 #' @importFrom purrr map2
+#' @importFrom stats median
 #'
 #' @return Two png figures with the abundance data for each species. One for
 #'   species count below the median for that year and one for species above
@@ -89,12 +91,12 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
   tickmarks2 <- length(unique(s2$art))-0.5
   
   p1 <- s1 %>%  
-    ggplot(aes(y = reorder(art, count), x = count)) +
+    ggplot(aes(y = fct_reorder(art, count), x = count)) +
     geom_vline(xintercept = seq(0,maxlim, acc), colour = "darkgrey") +
     geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.2, size = 3) +
-    geom_segment(aes(y = stage(reorder(art, count), after_scale = seq(0.5, tickmarks1,1)),
-                     yend = stage(reorder(art, count), after_scale = seq(0.5, tickmarks1,1)),
+    geom_segment(aes(y = stage(fct_reorder(art, count), after_scale = seq(0.5, tickmarks1,1)),
+                     yend = stage(fct_reorder(art, count), after_scale = seq(0.5, tickmarks1,1)),
                      x = -maxlim*0.005,
                      xend = 0),
                  linewidth = 0.5,
@@ -113,12 +115,12 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
     theme_sebms2()
   
   p2 <- s2 %>% 
-    ggplot(aes(y = reorder(art, count), x = count)) +
+    ggplot(aes(y = fct_reorder(art, count), x = count)) +
     geom_vline(xintercept = seq(0,maxlim, acc), colour = "darkgrey") +
     geom_col(color = sebms_palette[2], fill = sebms_palette[2], width = 0.5) +
     geom_text(aes(label = count), colour = "grey10", hjust = -0.5, size = 3) +
-    geom_segment(aes(y = stage(reorder(art, count), after_scale = seq(0.5, tickmarks2,1)),
-                     yend = stage(reorder(art, count), after_scale = seq(0.5, tickmarks2,1)),
+    geom_segment(aes(y = stage(fct_reorder(art, count), after_scale = seq(0.5, tickmarks2,1)),
+                     yend = stage(fct_reorder(art, count), after_scale = seq(0.5, tickmarks2,1)),
                      x = -maxlim*0.005,
                      xend = 0),
                  linewidth = 0.5,
@@ -441,7 +443,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
 #' @inheritParams sebms_abundance_per_species_plot
 #'
 #' @import dplyr
-#' @import forcats
+#' @importFrom forcats fct_reorder fct_rev
 #' @import ggplot2
 #'
 #' @returns A png with the number of sites within each category of number of
@@ -579,9 +581,9 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
               fontface = "plain",
               size = 5,
               inherit.aes = F) +
-    geom_segment(aes(x = stage(reorder(interval, sortorder),
+    geom_segment(aes(x = stage(fct_reorder(interval, sortorder),
                                after_scale = rep(seq(1.5, tickmarks,1),each = 2)), # This adds a segment, that looks like a tickmark, after each group
-                     xend = stage(reorder(interval, sortorder),
+                     xend = stage(fct_reorder(interval, sortorder),
                                   after_scale = rep(seq(1.5, tickmarks,1), each = 2)),
                      y = -1.1, # How long the tickmark is, we want negative as it should go down
                      yend = 0)) + # The start of the tickmark

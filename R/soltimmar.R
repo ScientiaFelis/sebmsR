@@ -20,14 +20,14 @@
 #' @noRd
 sunHdata <- function(year, months, day, per_day = FALSE) {
   if (per_day) {
-    polite_GET_nrt <- politely(GET, verbose = FALSE, robots = FALSE) # turn off robotstxt checking
+    polite_GET_nrt <- polite::politely(GET, verbose = FALSE, robots = FALSE) # turn off robotstxt checking
     
     polite_GET_nrt(glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{months}{day}/parameter/119/data.json?interval=daily")) %>% 
-      content(encoding = "UTF-8") %>% 
+      httr::content(encoding = "UTF-8") %>% 
       bind_rows()
   }else {
-    GET(glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{months}/parameter/119/data.json?interval=monthly")) %>% 
-      content(encoding = "UTF-8") %>% 
+    httr::GET(glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{months}/parameter/119/data.json?interval=monthly")) %>% 
+      httr::content(encoding = "UTF-8") %>% 
       bind_rows()
   }
 }

@@ -6,6 +6,19 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 1.5.0
+
+This version is a milestone package version that should be ready for production
+of **sun hour plots**, **weather plots**, and **species abundance plots**
+
+It fix some minor bugs and issues.
+
+* Fix alignment of Vecka in `sebms_species_abundance_plot()`
+* Fix margins in `sebms_abundance_year_compare_plot()`
+* Fix issues from package check
+* Update package documentation
+
+
 # v 1.4.9
 
 This version comes with a cleaned code and a new function, as well as some bug fixes.

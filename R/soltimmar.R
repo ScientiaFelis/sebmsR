@@ -177,7 +177,9 @@ sebms_sunhours_data <- function(year = year(today())-1, months = 4:9, per_month 
     lmon <- sunlist %>% distinct(month) %>% pull()
     
     if(length(lmon) < length(months)) {
-      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n 'per_day=TRUE' MIGHT WORK.")
+      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n")
+      message("IF YOU ARE MAKING A FIGURE, IT WILL BE INCORRECT, TO BLUE!\n")
+      message("USE 'per_day=T', WHICH MAY SOLVE THE PROBLEM BUT TAKE LONG TIME.")
     }
     
     sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.

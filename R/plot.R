@@ -493,7 +493,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   
   
   
-  options(OutDec = ",") # Set decimal separator to comma
+  options(OutDec = ",") # Set decimal separator to comma. Perhaps test `withr::local_options(list(OutDec=",))`
   
   
   lab <- df %>% distinct(sitetype, medel) # unique mean labels

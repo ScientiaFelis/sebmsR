@@ -80,11 +80,12 @@ sebms_sunhours_data <- function(year = year(today())-1, months = 4:9, per_month 
   
   if (per_month) { #This runs two different versions of the functions. Summarise per month or per year.
     
+    # TODO Check what allyears give with dayfunc not goruping per month
     if (per_day) {
       dayfunc <- function(year, months) {
         pmap_dfr(Day, possibly(~fix_sunhour_NAs(year = year, months = months, day = .x, per_day = TRUE))) %>%
           bind_rows() %>% 
-          group_by(month, gapvalue, lat, lon) %>% 
+          group_by(gapvalue, lat, lon) %>% 
           summarise(daysunH = sum(value), .groups = "drop")
       } # This function iterate over days (and hour combinations if wanted) in combination with the year and month.
       
@@ -92,13 +93,13 @@ sebms_sunhours_data <- function(year = year(today())-1, months = 4:9, per_month 
         map2(year, months, dayfunc) %>% ##iterate through year plus month and send that to sunHdata via dayfunc and fix_sunhour_NAs, se above
           set_names(months) %>% # set the names of month to list items
           bind_rows(.id = "month") %>% # Take the nmae of list items (month) and set them in a variable
-          group_by(month, gapvalue, lat, lon) %>%
+          group_by(month, gapvalue, lat, lon) %>% 
           summarise(total_sunH = sum(daysunH),
                     .groups = "drop") %>%
           mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
         
       }
-    }else {
+    }else {# This function summarise per month but do not use per day values.
       
       allyears <- function(year, months){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
         map2(year, months, possibly(fix_sunhour_NAs)) %>% ##iterate through year plus month and send that to sunHdata, se above
@@ -240,13 +241,13 @@ sebms_sunmean_data <- function(year = 2017:2021, months = 4:9, per_month = FALSE
 #' @return a figure saved as a png with the sunhours in coloour from, high (red)
 #'   to low (blue)
 #' @export
-sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, months = 4:9, per_month = FALSE, legends = FALSE) {
+sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, months = 4:9, per_month = FALSE, per_day = FALSE, legends = FALSE) {
   
   if(missing(df)) {
     cat("Please be pacient...")
     cat("THIS CAN TAKE A MINUTE OR FIVE\n\n")
     cat("Downloading sunhour data from SMHI........\n")
-    df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, to_env = TRUE)
+    df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day, to_env = TRUE)
   }
   
   if (per_month) {
@@ -304,9 +305,18 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
   
   cat("\nMaking plots........\n")
   if (per_month) {
+    
+    lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()
+    
+    if(length(lmon) < length(months)) {
+      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n'per_day = TUE' MIGHT BE A WORK AROUND BUT TAKE LONG TIME.")
+      months <- as.integer(lmon)
+    }
+    
     ggs <- df %>% 
       group_by(month) %>% 
       nest() %>% 
+      ungroup() %>% 
       mutate(plots = map2(data, months, ~sunHplot(df = .x, months = .y), .progress = "Create sunhour figures")) # The map2 use data for eachmonth and also give the sunHplot function the month which is used in the switch to give a specific limits for eachmonth.
     
     map2(ggs$plots, ggs$month, ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("Sunhours_{year}-{.y}")))
@@ -315,13 +325,21 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
     
   }else {
     if (length(months) < 6 && per_month == FALSE) {
-      cat("THIS FIGURE IF OPTIMIZED FOR THE SUM OF SUNHOURS OVER 6 SUMMER MONTH\n")
-      cat("IT MIGHT LOOK VERY BLUE (LOW NR HOURS) OR RED (HIGH NR HOURS) IF FEWER OR MORE MONTH IS USED\n\n")
-      cat("USE 'per_month = TRUE' TO GET VALUES PER MONTH")
+      message("THIS FIGURE IF OPTIMIZED FOR THE SUM OF SUNHOURS OVER 6 SUMMER MONTH\n")
+      message("IT MIGHT LOOK VERY BLUE (LOW NR HOURS) OR RED (HIGH NR HOURS) IF FEWER OR MORE MONTH IS USED\n\n")
+      message("USE 'per_month = TRUE' TO GET VALUES PER MONTH")
     }
+    
+    lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()
+    
+    if(length(lmon) < length(months)) {
+      return(message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n 'per_day=TRUE' MIGHT WORK."))
+    }
+    
     ggs <- df %>% 
       group_by(Year) %>% 
       nest() %>% 
+      ungroup() %>% 
       mutate(plots = map(data, sunHplot, .progress = "Create sunhour figures"))
     
     map2(ggs$plots, ggs$Year, ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("Sunhours_{.y}")))
@@ -465,6 +483,7 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, months = 4:9, per_mon
     ggs <- dff %>% 
       group_by(month) %>% 
       nest() %>% 
+      ungroup() %>% 
       mutate(plots = map2(data, months, ~sunDiffplot(dff = .x, months = .y), .progress = "Create sunhour diff figures"))
     
     
@@ -476,6 +495,7 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, months = 4:9, per_mon
     ggs <- dff %>% 
       group_by(Year) %>% 
       nest() %>% 
+      ungroup() %>% 
       mutate(plots = map(data, sunDiffplot, .progress = "Create sunhour diff figures"))
     
     

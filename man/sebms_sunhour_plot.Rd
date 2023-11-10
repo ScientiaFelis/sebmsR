@@ -10,6 +10,7 @@ sebms_sunhour_plot(
   sunvar = total_sunH,
   months = 4:9,
   per_month = FALSE,
+  per_day = FALSE,
   legends = FALSE
 )
 }
@@ -25,6 +26,8 @@ sebms_sunhour_plot(
 to 4:9)}
 
 \item{per_month}{logical; summarise per month instead of per year}
+
+\item{per_day}{logical; if data should be downloaded per day}
 
 \item{legends}{logical; if you want a legend to the figures (default: FALSE)}
 }

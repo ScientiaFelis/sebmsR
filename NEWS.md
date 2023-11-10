@@ -6,6 +6,22 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 1.5.1
+
+This is a bugfix version.
+The function `sebms_sunhour_plot()` did not work if there where missing month in the data,
+which can happen if there are lacking data for some days in a month.
+This can be fixed by gathering data per day and fill in the missing sunhours 
+with last days data for example, however the `sebms_sunhour_plot()` did not have
+the `per_day` argument as it takes a lot of time and usually is ot needed.
+In this function we add:
+
+* possibility to use `per_day = TRUE` in the `sebms_sunhour_plot()`
+* fix error if there are missing month in data. Now only the month with data is have figures and a warning is given.
+* a warning is given if there is missing month in the data and a suggestion to use `per_day=T` is given.
+* the functions also warn more if you use less month than what the figure is optimized for if you summarise over the whole season.
+
+
 # v 1.5.0
 
 This version is a milestone package version that should be ready for production

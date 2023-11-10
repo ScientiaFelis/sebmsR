@@ -121,7 +121,7 @@ sebms_sunhours_data <- function(year = year(today())-1, months = 4:9, per_month 
     # # 
     #Days <- list(c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "31")) # To test with specific days
     
-    if (per_day) {
+    if (per_day) { # Take out data per day
       dayfunc <- function(year, months) {
         pmap_dfr(Day, possibly(~fix_sunhour_NAs(year = year, months = months, day = .x, per_day = TRUE))) %>%
           bind_rows() %>% 
@@ -133,37 +133,57 @@ sebms_sunhours_data <- function(year = year(today())-1, months = 4:9, per_month 
         map2(year, months, dayfunc) %>% ##iterate through year plus month and send that to sunHdata via dayfunc and fix_sunhour_NAs, se above
           set_names(months) %>% # set the names of month to list items
           bind_rows(.id = "month") %>% # Take the nmae of list items (month) and set them in a variable
-          group_by(gapvalue, lat, lon) %>%
+          group_by(month, gapvalue, lat, lon) %>%
           summarise(total_sunH = sum(daysunH),
-                    .groups = "drop") %>%
-          mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
+                    .groups = "drop")
         
       }
-    }else {
+    }else { # Use monthly data to summarise on
       
       allyears <- function(year, months){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
         map2(year, months, possibly(fix_sunhour_NAs)) %>% ##iterate through year plus month and send that to sunHdata, se above
           set_names(months) %>% # set the names of month to list items
           bind_rows(.id = "month") %>% # Take the name of list items (month) and set them in a variable
-          group_by(gapvalue, lat, lon) %>%
-          summarise(total_sunH = sum(value),.groups = "drop") %>%
-          mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
+          group_by(month, gapvalue, lat, lon) %>%
+          summarise(total_sunH = sum(value),.groups = "drop")
       }
     }
+  }
+  
+  if (length(months) < 6 && per_month == FALSE) {
+    message("IF YOU ARE DOING A FIGURE, IT IS OPTIMIZED FOR THE SUNHOURS OVER 6 SUMMER MONTH\n")
+    message("USE 'per_month = TRUE' TO GET VALUES PER MONTH")
   }
   sunlist <- map(year, ~allyears(year = .x, months = months), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
     set_names(year) %>% # set names to Year
     bind_rows(.id = "Year")
   
-  if (per_month) {
+  if (per_month) { #per month sunlist data
+    
+    lmon <- sunlist %>% distinct(month) %>% pull()
+    if(length(lmon) < length(months)) {
+      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n 'per_day=TRUE' MIGHT WORK.")
+    }
+    
     sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.
       select(Year, month, gapvalue, total_sunH, lon, lat) %>% # Put year in a column
       filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
       st_as_sf(coords = c("lon", "lat")) %>%
       st_set_crs(4326) %>%
       st_intersection(SE)
-  }else {
+    
+  }else { # Per year sunlist data
+    
+    lmon <- sunlist %>% distinct(month) %>% pull()
+    
+    if(length(lmon) < length(months)) {
+      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n 'per_day=TRUE' MIGHT WORK.")
+    }
+    
     sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.
+      group_by(Year, gapvalue, lat, lon) %>% 
+      summarise(total_sunH = sum(total_sunH)) %>% 
+      mutate(total_sunH = total_sunH / 60) %>% # Convert minutes to hours
       select(Year, gapvalue, total_sunH, lon, lat) %>% # Put year in a column
       filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
       st_as_sf(coords = c("lon", "lat")) %>%
@@ -250,7 +270,7 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
     df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day, to_env = TRUE)
   }
   
-  if (per_month) {
+  if (per_month) { # Figures per month
     #FIXME: check actual min and max for each month for years 2017:2022
     ## This makes limits specific for each month
     jan = c(60, 200) 
@@ -284,7 +304,7 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
         )
     }
     
-  }else {
+  }else { # Figures per year
     sunHplot <- function(df) {  
       ggplot(data = df) +
         geom_sf(aes(colour = {{ sunvar }}), size = 0.01, show.legend = legends) +
@@ -304,7 +324,7 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
   }
   
   cat("\nMaking plots........\n")
-  if (per_month) {
+  if (per_month) { # make a figure per month
     
     lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()
     
@@ -323,17 +343,12 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
     
     return(ggs$plots) 
     
-  }else {
+  }else { # make a figure per year
+    
     if (length(months) < 6 && per_month == FALSE) {
       message("THIS FIGURE IF OPTIMIZED FOR THE SUM OF SUNHOURS OVER 6 SUMMER MONTH\n")
       message("IT MIGHT LOOK VERY BLUE (LOW NR HOURS) OR RED (HIGH NR HOURS) IF FEWER OR MORE MONTH IS USED\n\n")
       message("USE 'per_month = TRUE' TO GET VALUES PER MONTH")
-    }
-    
-    lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()
-    
-    if(length(lmon) < length(months)) {
-      return(message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n 'per_day=TRUE' MIGHT WORK."))
     }
     
     ggs <- df %>% 

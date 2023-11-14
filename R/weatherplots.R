@@ -275,7 +275,7 @@ sebms_precipplot <- function(precip, colours = sebms_palette) {
   
   plotfunc <- function(df){
     ggplot(data = df, aes(x = fct_reorder(month, monthnr), y = nb, fill = forcats::fct_rev(period))) + 
-      geom_bar(stat = "identity", position = "dodge", width = .7) + 
+      geom_bar(stat = "identity", position = position_dodge(preserve = "single"), width = .7) + 
       facet_wrap(~ name, ncol = 1) +
       #scale_x_continuous(breaks = br, labels = lab) +
       scale_y_continuous(expand = c(0,0), limits = c(0,250)) +
@@ -287,6 +287,7 @@ sebms_precipplot <- function(precip, colours = sebms_palette) {
   p <- precip %>% 
     group_by(id) %>% 
     nest() %>%  # Nest by name
+    ungroup() %>% 
     mutate(plots = map(data, plotfunc, .progress = "Create precip figures")) # Iterate over the station names and make a plot for each
   
   p$plots

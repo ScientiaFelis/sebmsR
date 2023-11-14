@@ -6,6 +6,10 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v1.5.2
+
+* add the `per_day` argument in `sebms_sundiff_plot()` and `sebms_sundiff_data()` too.
+
 # v 1.5.1
 
 This is a bugfix version.

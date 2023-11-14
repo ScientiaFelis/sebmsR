@@ -142,16 +142,22 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
   all_temp <- stations %>% 
     pull(id) %>% 
     set_names() %>% # To keep the id-names of the list
-    map(\(x) read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",x,"/period/corrected-archive/data.csv")), skip = 12), .progress = "Downloading temperatures") %>% 
+    map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",.x,"/period/corrected-archive/data.csv")), skip = 12)), .progress = "Downloading temperatures") %>% 
     map(\(x) rename_with(x, ~c("FrDate", "ToDate", "month", "temp", "Delete", "Delete2", "Delete3"))) %>% # Set column names 
     bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
     as_tibble() %>% 
     select(!starts_with("Delete")) %>% # Remove the columns we do not need
     filter(lubridate::year(ymd_hms(FrDate)) == year,
-           #filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())), ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
            month(ymd_hms(FrDate)) %in% 4:9) %>% 
     left_join(stations, by = "id") %>% # Join in the names
-    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd_hms(FrDate), label = T, abbr = T, locale = "sv_SE.UTF-8"), temp = as.numeric(temp), monthnr = month(ymd_hms(FrDate)), period = "2") %>%  # Change name and variables I want to keep/have
+    transmute(name,
+              id = as.numeric(id),
+              latitud = latitude,
+              longitud = longitude,
+              month = month(ymd_hms(FrDate), label = T, abbr = T, locale = "sv_SE.UTF-8"),
+              temp = as.numeric(temp),
+              monthnr = month(ymd_hms(FrDate)),
+              period = "2") %>%  # Change name and variables I want to keep/have
   mutate(month = str_to_lower(month))
   
   filt_temp <- all_temp  %>%
@@ -163,10 +169,40 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
     select(-name)
   
   #FIXME To retrieve data from last three month, go to:
-  # https://www.smhi.se/data/meteorologi/ladda-ner-meteorologiska-observationer/#param=airtemperatureInstant,stations=core,stationid={stationid}
-  # Open rstudioapi::selectFile  for all station ids
-  # Group by month
-  #summarise mean(temp)
+  # https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",x,"/period/latest-month/data.csv
+    if(year == lubridate::year(lubridate::today())) {
+      
+     all_temp_latest <- stations %>% 
+        pull(id) %>% 
+        set_names() %>% # To keep the id-names of the list
+        map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",.x,"/period/latest-months/data.csv")), skip = 9, header = F, na.strings = c("NA", ""))), .progress = "Downloading temperatures") %>% 
+        map(possibly(~rename_with(.x, ~c("FrDate", "ToDate", "month", "temp", "Delete", "Delete2", "Delete3")))) %>% # Set column names 
+       
+        bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
+        as_tibble() %>% 
+        select(!starts_with("Delete")) %>% # Remove the columns we do not need
+        filter(lubridate::year(ymd_hms(FrDate)) == year,
+               month(ymd_hms(FrDate)) %in% 4:9,
+               !str_detect(temp, "[Ll]uft"),
+               !is.na(temp)) %>% 
+       suppressWarnings() %>% 
+        left_join(stations, by = "id") %>% # Join in the names
+        transmute(name,
+                  id = as.numeric(id),
+                  latitud = latitude,
+                  longitud = longitude,
+                  month = month(ymd_hms(FrDate), label = T, abbr = T, locale = "sv_SE.UTF-8"),
+                  temp = as.numeric(temp),
+                  monthnr = month(ymd_hms(FrDate)),
+                  period = "2") %>%  # Change name and variables I want to keep/have
+        mutate(month = str_to_lower(month))
+     
+     all_temp <- all_temp %>% 
+       bind_rows(all_temp_latest) %>% 
+       distinct()
+  }
+  
+  
   temp <- filt_temp  %>%
     left_join(all_temp, by = "id") %>% # Join in the data from the chosen station
     bind_rows(norm_temp %>% filter(id %in% c(filt_temp %>% pull(id)))) %>% # add in the normal temperatures from the internal data for the chosen stations

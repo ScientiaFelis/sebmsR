@@ -383,10 +383,10 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
 #' @importFrom lubridate year today
 #'
 #' @noRd
-sebms_sunhour_diff <- function(df, year = year(today())-1, months = 4:9, per_month = FALSE) {
+sebms_sunhour_diff <- function(df, year = year(today())-1, months = 4:9, per_month = FALSE, per_day = FALSE) {
   
   if (missing(df)) {
-    df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, to_env = TRUE)
+    df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day, to_env = TRUE)
   }
   
   if (per_month) {
@@ -427,13 +427,13 @@ sebms_sunhour_diff <- function(df, year = year(today())-1, months = 4:9, per_mon
 #'
 #' @return a figure that shows diffeence in sunhours
 #' @export
-sebms_sundiff_plot <- function(year = year(today())-1, df, months = 4:9, per_month = FALSE, legends = FALSE) {
+sebms_sundiff_plot <- function(year = year(today())-1, df, months = 4:9, per_month = FALSE, legends = FALSE, per_day = FALSE) {
   
   if(missing(df)) {
     cat("Please be pacient...")
     cat("THIS CAN TAKE A MINUTE OR FIVE\n\n")
     cat("Downloading sunhour data from SMHI........\n")
-    dff <- sebms_sunhour_diff(year = year, months = months, per_month = per_month)
+    dff <- sebms_sunhour_diff(year = year, months = months, per_month = per_month, per_day = per_day)
   }else{
     dff <- df %>% sebms_sunhour_diff(year = year, months = months, per_month = per_month)
   }

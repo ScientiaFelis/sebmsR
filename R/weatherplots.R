@@ -63,17 +63,16 @@ sebms_user_station <- function(my_place) {
 #' @import stringr
 #' @import ggplot2
 #' @noRd
-sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::today())-1) {
+sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_place = NA) {
   
   if(year == lubridate::year(lubridate::today()) & lubridate::month(lubridate::today()) < 11){
-    cat("THERE IS NO PRECIPITATION DATA FOR THIS YEAR YET!\n")
-    cat("You have to wait until at least NOVEMBER.\n\n")
+    warning("THERE IS NO PRECIPITATION DATA FOR THE LAST THREE MONTH YET!\nYou have to wait until at least DECEMBER.\n\n")
     return()
   }
   
   if(year > lubridate::year(lubridate::today())){
-    cat("YOU ARE WAY AHEAD OF YOURSELF!")
-    cat("Chose a year that is not in the future.")
+    warning("YOU ARE WAY AHEAD OF YOURSELF!")
+    message("Chose a year that is not in the future.")
     return()
   }
   
@@ -122,15 +121,15 @@ sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::t
 #' @import purrr
 #' @import ggplot2
 #' @noRd
-sebms_temp_data <- function(my_place = NA, year = lubridate::year(lubridate::today())-1) {
+sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_place = NA) {
   if(year == lubridate::year(lubridate::today()) & lubridate::month(lubridate::today()) < 11){
-    cat("THERE IS NO TEMPERATURE DATA FOR THIS YEAR YET!\n")
-    cat("You have to wait until at least NOVEMBER.\n\n")
+    warning("\nTHERE IS NO TEMPERATURE DATA FOR ALL MONTH THIS YEAR YET!\nYou have to wait until at least DECEMBER.\n\n")
     return()
+    
   }
   if(year > lubridate::year(lubridate::today())){
-    cat("YOU ARE WAY AHEAD OF YOURSELF!")
-    cat("Chose a year that is not in the future.")
+    warning("YOU ARE WAY AHEAD OF YOURSELF!")
+    message("Chose a year that is not in the future.")
     return()
   }
   
@@ -163,6 +162,11 @@ sebms_temp_data <- function(my_place = NA, year = lubridate::year(lubridate::tod
     ungroup() %>% 
     select(-name)
   
+  #FIXME To retrieve data from last three month, go to:
+  # https://www.smhi.se/data/meteorologi/ladda-ner-meteorologiska-observationer/#param=airtemperatureInstant,stations=core,stationid={stationid}
+  # Open rstudioapi::selectFile  for all station ids
+  # Group by month
+  #summarise mean(temp)
   temp <- filt_temp  %>%
     left_join(all_temp, by = "id") %>% # Join in the data from the chosen station
     bind_rows(norm_temp %>% filter(id %in% c(filt_temp %>% pull(id)))) %>% # add in the normal temperatures from the internal data for the chosen stations
@@ -310,9 +314,9 @@ sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_p
     return()
   }
   
-  plotst <- sebms_temp_data(my_place = my_place, year = year) %>% 
+  plotst <- sebms_temp_data(year = year, my_place = my_place) %>% 
     sebms_tempplot(colours = colours)
-  plotsp <- sebms_precip_data(my_place = my_place, year = year) %>% 
+  plotsp <- sebms_precip_data(year = year, my_place = my_place) %>% 
     sebms_precipplot(colours = colours)
   
   if(savepng) {

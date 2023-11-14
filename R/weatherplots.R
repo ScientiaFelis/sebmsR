@@ -63,17 +63,16 @@ sebms_user_station <- function(my_place) {
 #' @import stringr
 #' @import ggplot2
 #' @noRd
-sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::today())-1) {
+sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_place = NA) {
   
   if(year == lubridate::year(lubridate::today()) & lubridate::month(lubridate::today()) < 11){
-    cat("THERE IS NO PRECIPITATION DATA FOR THIS YEAR YET!\n")
-    cat("You have to wait until at least NOVEMBER.\n\n")
+    warning("THERE IS NO PRECIPITATION DATA FOR THE LAST THREE MONTH YET!\nYou have to wait until at least DECEMBER.\n\n")
     return()
   }
   
   if(year > lubridate::year(lubridate::today())){
-    cat("YOU ARE WAY AHEAD OF YOURSELF!")
-    cat("Chose a year that is not in the future.")
+    warning("YOU ARE WAY AHEAD OF YOURSELF!")
+    message("Chose a year that is not in the future.")
     return()
   }
   
@@ -92,10 +91,16 @@ sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::t
     as_tibble() %>% 
     select(!starts_with("Delete")) %>% # Remove the columns we do not need
     filter(lubridate::year(ymd_hms(FrDate)) == year,
-           # filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())), ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
            month(ymd_hms(FrDate)) %in% 4:9) %>% 
     left_join(stations, by = "id") %>% 
-    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd_hms(FrDate), label = T, abbr = T, locale = "sv_SE.UTF-8"), nb = as.numeric(nb), monthnr = month(ymd_hms(FrDate)), period = "2") %>% 
+    transmute(name,
+              id = as.numeric(id),
+              latitud = latitude,
+              longitud = longitude,
+              month = month(ymd_hms(FrDate),label = T, abbr = T, locale = "sv_SE.UTF-8"),
+              nb = as.numeric(nb),
+              monthnr = month(ymd_hms(FrDate)),
+              period = "2") %>% 
     mutate(month = str_to_lower(month))
   
   filt_precip <- all_precip  %>%
@@ -105,6 +110,39 @@ sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::t
     slice(1) %>%
     ungroup() %>% 
     select(-name)
+  
+  
+    if(year == lubridate::year(lubridate::today())) {
+      
+      all_precip_latest <- stations %>% 
+        pull(id) %>% 
+        set_names() %>% # To keep the id-names of the list
+        map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/23/station/",.x,"/period/latest-months/data.csv")), skip = 9, header = F, na.strings = c("NA", ""))), .progress = "Downloading precipitation") %>% 
+        map(possibly(~rename_with(.x, ~c("FrDate", "ToDate", "month", "nb", "Delete", "Delete2", "Delete3")))) %>% # Set column names 
+        bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
+        as_tibble() %>%  
+        select(!starts_with("Delete")) %>% # Remove the columns we do not need
+        filter(lubridate::year(ymd_hms(FrDate)) == year,
+               month(ymd_hms(FrDate)) %in% 4:9,
+               !str_detect(nb, "[Nn]eder"),
+               !is.na(nb)) %>% 
+        suppressWarnings() %>% 
+        left_join(stations, by = "id") %>% 
+        transmute(name,
+                  id = as.numeric(id),
+                  latitud = latitude,
+                  longitud = longitude,
+                  month = month(ymd_hms(FrDate), label = T, abbr = T, locale = "sv_SE.UTF-8"),
+                  nb = as.numeric(nb),
+                  monthnr = month(ymd_hms(FrDate)),
+                  period = "2") %>% 
+        mutate(month = str_to_lower(month))
+      
+      all_precip <- all_precip %>% 
+        bind_rows(all_precip_latest) %>% 
+        distinct()
+      
+  }
   
   precip <- filt_precip  %>%
     left_join(all_precip, by = "id") %>% 
@@ -122,15 +160,11 @@ sebms_precip_data <- function(my_place = NA, year = lubridate::year(lubridate::t
 #' @import purrr
 #' @import ggplot2
 #' @noRd
-sebms_temp_data <- function(my_place = NA, year = lubridate::year(lubridate::today())-1) {
-  if(year == lubridate::year(lubridate::today()) & lubridate::month(lubridate::today()) < 11){
-    cat("THERE IS NO TEMPERATURE DATA FOR THIS YEAR YET!\n")
-    cat("You have to wait until at least NOVEMBER.\n\n")
-    return()
-  }
+sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_place = NA) {
+  
   if(year > lubridate::year(lubridate::today())){
-    cat("YOU ARE WAY AHEAD OF YOURSELF!")
-    cat("Chose a year that is not in the future.")
+    warning("YOU ARE WAY AHEAD OF YOURSELF!")
+    message("Chose a year that is not in the future.")
     return()
   }
   
@@ -143,16 +177,22 @@ sebms_temp_data <- function(my_place = NA, year = lubridate::year(lubridate::tod
   all_temp <- stations %>% 
     pull(id) %>% 
     set_names() %>% # To keep the id-names of the list
-    map(\(x) read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",x,"/period/corrected-archive/data.csv")), skip = 12), .progress = "Downloading temperatures") %>% 
+    map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",.x,"/period/corrected-archive/data.csv")), skip = 12)), .progress = "Downloading temperatures") %>% 
     map(\(x) rename_with(x, ~c("FrDate", "ToDate", "month", "temp", "Delete", "Delete2", "Delete3"))) %>% # Set column names 
     bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
     as_tibble() %>% 
     select(!starts_with("Delete")) %>% # Remove the columns we do not need
     filter(lubridate::year(ymd_hms(FrDate)) == year,
-           #filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())), ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
            month(ymd_hms(FrDate)) %in% 4:9) %>% 
     left_join(stations, by = "id") %>% # Join in the names
-    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd_hms(FrDate), label = T, abbr = T, locale = "sv_SE.UTF-8"), temp = as.numeric(temp), monthnr = month(ymd_hms(FrDate)), period = "2") %>%  # Change name and variables I want to keep/have
+    transmute(name,
+              id = as.numeric(id),
+              latitud = latitude,
+              longitud = longitude,
+              month = month(ymd_hms(FrDate), label = T, abbr = T, locale = "sv_SE.UTF-8"),
+              temp = as.numeric(temp),
+              monthnr = month(ymd_hms(FrDate)),
+              period = "2") %>%  # Change name and variables I want to keep/have
   mutate(month = str_to_lower(month))
   
   filt_temp <- all_temp  %>%
@@ -162,6 +202,41 @@ sebms_temp_data <- function(my_place = NA, year = lubridate::year(lubridate::tod
     slice(1) %>% # This take the first station id from the location name if there are several
     ungroup() %>% 
     select(-name)
+  
+  #FIXME To retrieve data from last three month, go to:
+  # https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",x,"/period/latest-month/data.csv
+    if(year == lubridate::year(lubridate::today())) {
+      
+     all_temp_latest <- stations %>% 
+        pull(id) %>% 
+        set_names() %>% # To keep the id-names of the list
+        map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",.x,"/period/latest-months/data.csv")), skip = 9, header = F, na.strings = c("NA", ""))), .progress = "Downloading temperatures") %>% 
+        map(possibly(~rename_with(.x, ~c("FrDate", "ToDate", "month", "temp", "Delete", "Delete2", "Delete3")))) %>% # Set column names 
+       
+        bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
+        as_tibble() %>% 
+        select(!starts_with("Delete")) %>% # Remove the columns we do not need
+        filter(lubridate::year(ymd_hms(FrDate)) == year,
+               month(ymd_hms(FrDate)) %in% 4:9,
+               !str_detect(temp, "[Ll]uft"),
+               !is.na(temp)) %>% 
+       suppressWarnings() %>% 
+        left_join(stations, by = "id") %>% # Join in the names
+        transmute(name,
+                  id = as.numeric(id),
+                  latitud = latitude,
+                  longitud = longitude,
+                  month = month(ymd_hms(FrDate), label = T, abbr = T, locale = "sv_SE.UTF-8"),
+                  temp = as.numeric(temp),
+                  monthnr = month(ymd_hms(FrDate)),
+                  period = "2") %>%  # Change name and variables I want to keep/have
+        mutate(month = str_to_lower(month))
+     
+     all_temp <- all_temp %>% 
+       bind_rows(all_temp_latest) %>% 
+       distinct()
+  }
+  
   
   temp <- filt_temp  %>%
     left_join(all_temp, by = "id") %>% # Join in the data from the chosen station
@@ -310,9 +385,9 @@ sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_p
     return()
   }
   
-  plotst <- sebms_temp_data(my_place = my_place, year = year) %>% 
+  plotst <- sebms_temp_data(year = year, my_place = my_place) %>% 
     sebms_tempplot(colours = colours)
-  plotsp <- sebms_precip_data(my_place = my_place, year = year) %>% 
+  plotsp <- sebms_precip_data(year = year, my_place = my_place) %>% 
     sebms_precipplot(colours = colours)
   
   if(savepng) {

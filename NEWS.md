@@ -6,9 +6,20 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+
+# v 1.6.0
+
+This version add functionality which include the latest four month
+to the current year in the `sebms_weather_png()`.
+
+* If `year` is current year, the `sebms_weather_png()` function read in data
+from the latest months from SMHI, whhich otherwise is missing from corrected archive.
+
+
 # v1.5.2
 
 * add the `per_day` argument in `sebms_sundiff_plot()` and `sebms_sundiff_data()` too.
+
 
 # v 1.5.1
 
@@ -17,7 +28,7 @@ The function `sebms_sunhour_plot()` did not work if there where missing month in
 which can happen if there are lacking data for some days in a month.
 This can be fixed by gathering data per day and fill in the missing sunhours 
 with last days data for example, however the `sebms_sunhour_plot()` did not have
-the `per_day` argument as it takes a lot of time and usually is ot needed.
+the `per_day` argument as it takes a lot of time and usually is not needed.
 In this function we add:
 
 * possibility to use `per_day = TRUE` in the `sebms_sunhour_plot()`

@@ -91,10 +91,16 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
     as_tibble() %>% 
     select(!starts_with("Delete")) %>% # Remove the columns we do not need
     filter(lubridate::year(ymd_hms(FrDate)) == year,
-           # filter(lubridate::year(FrDate) == if_else(lubridate::month(lubridate::today()) < 11,lubridate::year(lubridate::today())-1, lubridate::year(lubridate::today())), ## This filter out the previous year if it is before november, otherwise it take this year. The archives have data upp until three month back, and you want the summer month of a recording year. 
            month(ymd_hms(FrDate)) %in% 4:9) %>% 
     left_join(stations, by = "id") %>% 
-    transmute(name, id = as.numeric(id), latitud = latitude, longitud = longitude, month = month(ymd_hms(FrDate), label = T, abbr = T, locale = "sv_SE.UTF-8"), nb = as.numeric(nb), monthnr = month(ymd_hms(FrDate)), period = "2") %>% 
+    transmute(name,
+              id = as.numeric(id),
+              latitud = latitude,
+              longitud = longitude,
+              month = month(ymd_hms(FrDate),label = T, abbr = T, locale = "sv_SE.UTF-8"),
+              nb = as.numeric(nb),
+              monthnr = month(ymd_hms(FrDate)),
+              period = "2") %>% 
     mutate(month = str_to_lower(month))
   
   filt_precip <- all_precip  %>%
@@ -104,6 +110,39 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
     slice(1) %>%
     ungroup() %>% 
     select(-name)
+  
+  
+    if(year == lubridate::year(lubridate::today())) {
+      
+      all_precip_latest <- stations %>% 
+        pull(id) %>% 
+        set_names() %>% # To keep the id-names of the list
+        map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/23/station/",.x,"/period/latest-months/data.csv")), skip = 9, header = F, na.strings = c("NA", ""))), .progress = "Downloading precipitation") %>% 
+        map(possibly(~rename_with(.x, ~c("FrDate", "ToDate", "month", "nb", "Delete", "Delete2", "Delete3")))) %>% # Set column names 
+        bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
+        as_tibble() %>%  
+        select(!starts_with("Delete")) %>% # Remove the columns we do not need
+        filter(lubridate::year(ymd_hms(FrDate)) == year,
+               month(ymd_hms(FrDate)) %in% 4:9,
+               !str_detect(nb, "[Nn]eder"),
+               !is.na(nb)) %>% 
+        suppressWarnings() %>% 
+        left_join(stations, by = "id") %>% 
+        transmute(name,
+                  id = as.numeric(id),
+                  latitud = latitude,
+                  longitud = longitude,
+                  month = month(ymd_hms(FrDate), label = T, abbr = T, locale = "sv_SE.UTF-8"),
+                  nb = as.numeric(nb),
+                  monthnr = month(ymd_hms(FrDate)),
+                  period = "2") %>% 
+        mutate(month = str_to_lower(month))
+      
+      all_precip <- all_precip %>% 
+        bind_rows(all_precip_latest) %>% 
+        distinct()
+      
+  }
   
   precip <- filt_precip  %>%
     left_join(all_precip, by = "id") %>% 
@@ -122,11 +161,7 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
 #' @import ggplot2
 #' @noRd
 sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_place = NA) {
-  if(year == lubridate::year(lubridate::today()) & lubridate::month(lubridate::today()) < 11){
-    warning("\nTHERE IS NO TEMPERATURE DATA FOR ALL MONTH THIS YEAR YET!\nYou have to wait until at least DECEMBER.\n\n")
-    return()
-    
-  }
+  
   if(year > lubridate::year(lubridate::today())){
     warning("YOU ARE WAY AHEAD OF YOURSELF!")
     message("Chose a year that is not in the future.")

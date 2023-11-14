@@ -144,10 +144,12 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
       
   }
   
-  precip <- filt_precip  %>%
+  precip <- filt_precip %>%
     left_join(all_precip, by = "id") %>% 
     bind_rows(norm_precip %>% filter(id %in% c(filt_precip %>% pull(id)))) %>% 
-    mutate(name = str_remove(name, " .*|-.*"))
+    mutate(name = str_remove(name, " .*|-.*")) %>%
+    complete(id, monthnr, period, fill = list(nb = 0)) %>%
+    fill(c(name,latitud, longitud, month), .direction = "down") 
   
   return(precip)
 }

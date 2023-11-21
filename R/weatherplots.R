@@ -243,7 +243,9 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
   temp <- filt_temp  %>%
     left_join(all_temp, by = "id") %>% # Join in the data from the chosen station
     bind_rows(norm_temp %>% filter(id %in% c(filt_temp %>% pull(id)))) %>% # add in the normal temperatures from the internal data for the chosen stations
-    mutate(name = str_remove(name, " .*|-.*"))
+    mutate(name = str_remove(name, " .*|-.*")) %>%
+    complete(id, monthnr, period, fill = list(temp = 0)) %>%
+    fill(c(name,latitud, longitud, month), .direction = "down") 
   
   return(temp) 
 }

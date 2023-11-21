@@ -398,7 +398,7 @@ sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_p
   if(savepng) {
     
     if(unique(is.na(my_place))) # This is the default station names
-      my_place <- c("Lund","Stockholm", "Umeå","Visby")
+      my_place <- c("Lund","Visby","Stockholm", "Umeå")
     
     try(map2(plotst, my_place, sebms_ggsave, weathervar = glue("Temp_{year}"), .progress = "Saving temp figure"), silent = T) # This iterates over plot + name and save it to file
     try(map2(plotsp, my_place, sebms_ggsave, weathervar = glue("Precip_{year}"), .progress = "Saving precip figure"), silent = T)

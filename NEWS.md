@@ -6,13 +6,19 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 1.6.1
+
+This version fix small issues of bars being of different size if missing data.
+
+* complete data frame if data is missing even after latest month added
+* fix bars of precipitation plot to be of equal size if data is missing
 
 # v 1.6.0
 
 This version add functionality which include the latest four month
 to the current year in the `sebms_weather_png()`.
 
-* If `year` is current year, the `sebms_weather_png()` function read in data
+* if `year` is current year, the `sebms_weather_png()` function read in data
 from the latest months from SMHI, whhich otherwise is missing from corrected archive.
 
 

@@ -76,7 +76,7 @@ fix_sunhour_NAs <- function(year, months, day, per_day = FALSE) {
 #' @returns a sf spatial point object with the WGS84 coordinate system
 #'
 #' @export
-sebms_sunhours_data <- function(year = year(today())-1, months = 4:9, per_month = FALSE, per_day = FALSE, to_env = FALSE) {
+sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, months = 4:9, per_month = FALSE, per_day = FALSE, to_env = FALSE) {
   
   if (per_month) { #This runs two different versions of the functions. Summarise per month or per year.
     
@@ -263,7 +263,7 @@ sebms_sunmean_data <- function(year = 2017:2021, months = 4:9, per_month = FALSE
 #' @return a figure saved as a png with the sunhours in coloour from, high (red)
 #'   to low (blue)
 #' @export
-sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, months = 4:9, per_month = FALSE, per_day = FALSE, legends = FALSE) {
+sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df, sunvar = total_sunH, months = 4:9, per_month = FALSE, per_day = FALSE, legends = FALSE) {
   
   if(missing(df)) {
     cat("Please be pacient...")
@@ -383,7 +383,7 @@ sebms_sunhour_plot <- function(year = year(today())-1, df, sunvar = total_sunH, 
 #' @importFrom lubridate year today
 #'
 #' @noRd
-sebms_sunhour_diff <- function(df, year = year(today())-1, months = 4:9, per_month = FALSE, per_day = FALSE) {
+sebms_sunhour_diff <- function(df, year = lubridate::year(lubridate::today())-1, months = 4:9, per_month = FALSE, per_day = FALSE) {
   
   if (missing(df)) {
     df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day, to_env = TRUE)
@@ -427,7 +427,7 @@ sebms_sunhour_diff <- function(df, year = year(today())-1, months = 4:9, per_mon
 #'
 #' @return a figure that shows diffeence in sunhours
 #' @export
-sebms_sundiff_plot <- function(year = year(today())-1, df, months = 4:9, per_month = FALSE, legends = FALSE, per_day = FALSE) {
+sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df, months = 4:9, per_month = FALSE, legends = FALSE, per_day = FALSE) {
   
   if(missing(df)) {
     cat("Please be pacient...")

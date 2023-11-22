@@ -196,12 +196,10 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
   if (to_env) {
     
     if(length(year) > 1) {
-      Year <- glue("{min(year)}-{max(year)}") 
-    }else {
-      Year <- glue("{year}")
+      year <- glue("{min(year)}-{max(year)}") 
     }
     
-    assign(glue("spatsunlist_{Year}"), sunlist, envir = .GlobalEnv) # Send the result to Global environment if the function is used inside a plot function. This way you do not need to download the data again if you want a diff plt to. You can just feed the spatsunlist data to the sun_diff_plot function
+    assign(glue("SunHours_{year}"), sunlist, envir = .GlobalEnv) # Send the result to Global environment if the function is used inside a plot function. This way you do not need to download the data again if you want a diff plt to. You can just feed the spatsunlist data to the sun_diff_plot function
   }
   return(sunlist) # Also return the data frame to consol
 }

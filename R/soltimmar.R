@@ -540,15 +540,34 @@ sebms_sundiff_plot <- function(year = year(today())-1, df, months = 4:9, per_mon
 #'   mean and diff from mean at that location. It also gives the name of the
 #'   nearest city or village for that location.
 #' @export
-sebms_minmax_sunhour <- function(df, year = 2017:2022, months = 4:9, sunvar = total_sunH) {
+sebms_minmax_sunhour <- function(df, year = 2017:2022, months = 4:9, sunvar = total_sunH, per_month = FALSE, per_day = FALSE) {
   
   if(missing(df)) {
     
-    df <- sebms_sunhours_data(year = year, months = months)
+    detectvar <- as.character(enquos(sunvar))
+
+    if (str_detect(detectvar, "diff")) {
+      df <- sebms_sunhour_diff(year = year, months = months, per_month = per_month, per_day = per_day) %>% 
+        group_by(Year) %>% 
+        mutate(max = max({{ sunvar }}),
+               min = min({{ sunvar }})) %>% 
+        filter({{ sunvar }} == max | {{ sunvar }} == min) %>% 
+        ungroup()
+    } else {
+      df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day) %>% 
+        group_by(Year) %>% 
+        mutate(max = max({{ sunvar }}),
+               min = min({{ sunvar }})) %>% 
+        filter({{ sunvar }} == max | {{ sunvar }} == min) %>% 
+        ungroup()
+      
+    }
   }
   
   minmaxsun <- df %>%
-    get_nearby_SunHour(sunvar = {{ sunvar }}, findMaxMin = TRUE)
+    get_nearby_SunHour(sunvar = {{ sunvar }}) %>%
+    select(Year, lon, lat, name, MaxMin = {{ sunvar }}) %>% 
+    arrange(Year, desc(MaxMin)) 
   
   return(minmaxsun)
 }

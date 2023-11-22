@@ -79,7 +79,7 @@ get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limi
 #' @return a data frame with location names nearby your coordinates
 #' @export
 #' 
-get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, population_limit = 0, sunvar = total_sunH, findMaxMin = TRUE){
+get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, population_limit = 0, sunvar = total_sunH){
   #TODO: Make it use only Swedish locals
   options(geonamesUsername = "sebms") 
   
@@ -116,18 +116,9 @@ get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, populat
     mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, pupulation_limit = population_limit), .progress = "Finding nearest location")) %>% 
     unnest(loc) %>%
     unnest(data) %>% 
-    transmute(Year, lon, lat, name, Sunhours = {{ sunvar }}) 
+    transmute(Year, lon, lat, name, {{ sunvar }}) 
   
-  if (findMaxMin) {
-    locations <- locations %>% 
-      group_by(Year) %>% 
-      mutate(max = max(Sunhours),
-             min = min(Sunhours)) %>% 
-      filter(Sunhours == max | Sunhours == min) %>% 
-      ungroup() %>% 
-      select(Year, lon, lat, name, MaxMin_sunhours = Sunhours) %>% 
-      arrange(Year, desc(MaxMin_sunhours)) 
-  }
+
   
   return(locations)
 }

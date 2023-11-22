@@ -6,6 +6,11 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 1.6.2
+
+* fix bug in default year where we needed to add package name, `lubridate::year()` instead of `year()`
+* move function to find the min and max values from `get_nearby_SunHour()` to `sebms_minmax_sunhour()`
+
 # v 1.6.1
 
 This version fix small issues of bars being of different size if missing data.

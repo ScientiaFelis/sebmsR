@@ -381,10 +381,10 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
 #' @importFrom lubridate year today
 #'
 #' @noRd
-sebms_sunhour_diff <- function(df, year = lubridate::year(lubridate::today())-1, months = 4:9, per_month = FALSE, per_day = FALSE) {
+sebms_sunhour_diff <- function(df, year = lubridate::year(lubridate::today())-1, months = 4:9, per_month = FALSE, per_day = FALSE, to_env=FALSE) {
   
   if (missing(df)) {
-    df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day, to_env = TRUE)
+    df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day)
   }
   
   if (per_month) {
@@ -405,6 +405,14 @@ sebms_sunhour_diff <- function(df, year = lubridate::year(lubridate::today())-1,
       st_as_sf()
   }
   
+  if (to_env) {
+    
+    if(length(year) > 1) {
+      year <- glue("{min(year)}-{max(year)}") 
+    }
+  }
+    
+    assign(glue("SunHourDiff_{Year}"), sundiff, envir = .GlobalEnv) # Send the result to Global environment if the function is used inside a plot function. This way you do not need to download the data again if you want a diff plt to. You can just feed the spatsunlist data to the sun_diff_plot function
   return(sundiff)
 } 
 
@@ -431,7 +439,7 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     cat("Please be pacient...")
     cat("THIS CAN TAKE A MINUTE OR FIVE\n\n")
     cat("Downloading sunhour data from SMHI........\n")
-    dff <- sebms_sunhour_diff(year = year, months = months, per_month = per_month, per_day = per_day)
+    dff <- sebms_sunhour_diff(year = year, months = months, per_month = per_month, per_day = per_day, to_env = TRUE)
   }else{
     dff <- df %>% sebms_sunhour_diff(year = year, months = months, per_month = per_month)
   }

@@ -219,7 +219,7 @@ suncols <- colorRampPalette(colors = c(rgb(43,131,186,maxColorValue = 255), rgb(
 #' @import dplyr
 #' @importFrom purrr map set_names
 #' @noRd
-sebms_sunmean_data <- function(year = 2017:2021, months = 4:9, per_month = FALSE) {
+sebms_sunmean_data <- function(year = 2018:2022, months = 4:9, per_month = FALSE) {
   
   if (per_month) {
     meansunH_M <- sebms_sunhours_data(year, months = months, per_month = per_month, per_day = FALSE) %>% 

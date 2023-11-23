@@ -92,7 +92,13 @@ sebms_sites_map <- function(year=2021, width=5, height=3.5) {
 #
 sebms_distribution_map <- function(occ_sp, year=2021, species = 80, width= 5, height=3.5) {
   
-  
+  if (missing(occ_sp)) {
+    occ_sp <- sebms_occurances_distribution(year = year, Art = species) %>%
+      select(art, lokalnamn, lat, lon) %>% 
+      st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
+      st_set_crs(3006) %>% 
+      st_transform(3021)
+  }
   # TODO: add in species data from sebms database.
   
   SweLandGrid <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "SweLandGrid") %>% 

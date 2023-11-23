@@ -8,7 +8,7 @@
 #' @import ggplot2
 #' @import sf
 #' @importFrom rasterVis gplot
-#' @importFrom terra ext rast rasterize crs crs<- coltab project values
+#' @importFrom terra ext ext<- rast rasterize crs crs<- coltab project values
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom sp SpatialPixelsDataFrame
 #' @importFrom cowplot ggdraw draw_grob 
@@ -79,10 +79,8 @@ sebms_sites_map <- function(year=2021, width=5, height=3.5) {
 #' @import ggthemes
 #' @import ggplot2
 #' @import sf
-#' @importFrom rasterVis gplot
-#' @importFrom terra ext rast rasterize crs crs<- coltab project values
+#' @importFrom terra ext ext<- rast rasterize crs crs<- coltab project values
 #' @importFrom RColorBrewer brewer.pal
-#' @importFrom sp SpatialPixelsDataFrame
 #' @importFrom cowplot ggdraw draw_grob 
 #'
 #' @inheritParams sebms_sites_map 

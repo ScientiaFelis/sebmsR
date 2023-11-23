@@ -5,7 +5,7 @@
 \title{Create an Image with Sun Hour Data}
 \usage{
 sebms_sunhour_plot(
-  year = year(today()) - 1,
+  year = lubridate::year(lubridate::today()) - 1,
   df,
   sunvar = total_sunH,
   months = 4:9,

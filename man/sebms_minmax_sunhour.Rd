@@ -4,7 +4,14 @@
 \alias{sebms_minmax_sunhour}
 \title{Maximum and Minimum Sun Hours for Given Years}
 \usage{
-sebms_minmax_sunhour(df, year = 2017:2022, months = 4:9, sunvar = total_sunH)
+sebms_minmax_sunhour(
+  df,
+  year = 2017:2022,
+  months = 4:9,
+  sunvar = total_sunH,
+  per_month = FALSE,
+  per_day = FALSE
+)
 }
 \arguments{
 \item{df}{a sf object with `year` and `total_sunhour` created by
@@ -17,6 +24,10 @@ to 4:9)}
 
 \item{sunvar}{which variable to calculate the min and max on, can be
 `total_sunH` or `diffsun`}
+
+\item{per_month}{logical; summarise per month instead of per year}
+
+\item{per_day}{logical; if data should be downloaded per day}
 }
 \value{
 a data frame with the max and min of total sun hours per year and the

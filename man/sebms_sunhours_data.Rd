@@ -5,7 +5,7 @@
 \title{Calculate Total Sun Hours from SMHI Open Data}
 \usage{
 sebms_sunhours_data(
-  year = year(today()) - 1,
+  year = lubridate::year(lubridate::today()) - 1,
   months = 4:9,
   per_month = FALSE,
   per_day = FALSE,

@@ -5,11 +5,12 @@
 \title{Create a Figure that Shows the Difference in Sun Hours}
 \usage{
 sebms_sundiff_plot(
-  year = year(today()) - 1,
+  year = lubridate::year(lubridate::today()) - 1,
   df,
   months = 4:9,
   per_month = FALSE,
-  legends = FALSE
+  legends = FALSE,
+  per_day = FALSE
 )
 }
 \arguments{
@@ -23,6 +24,8 @@ to 4:9)}
 \item{per_month}{logical; summarise per month instead of per year}
 
 \item{legends}{logical; if you want a legend to the figures (default: FALSE)}
+
+\item{per_day}{logical; if data should be downloaded per day}
 }
 \value{
 a figure that shows diffeence in sunhours

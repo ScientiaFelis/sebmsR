@@ -10,8 +10,7 @@ get_nearby_SunHour(
   top = 1,
   limited = TRUE,
   population_limit = 0,
-  sunvar = total_sunH,
-  findMaxMin = TRUE
+  sunvar = total_sunH
 )
 }
 \arguments{

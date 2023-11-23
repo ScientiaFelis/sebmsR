@@ -133,24 +133,14 @@ sebms_distribution_map <- function(occ_sp, year=2021, species = 80, width= 5, he
     rename_with(.fn = ~c("x", "y","Red", "Green", "Blue", "Max")) %>% 
     filter(Red != 0)
   
-  ggplot(data = tiff, aes(x = x, y = y)) +                   #plot map
-    geom_raster(aes(fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) +
-    #geom_sf(data = bg) +
-    geom_sf(data = bf, inherit.aes = F, alpha = 0, linewidth = 0.3, colour = "black") +
-    geom_sf(data = alla, colour = "red", alpha = 0.2, inherit.aes = F) +
+  ggplot() +                   #plot map
+    geom_raster(data = tiff, aes(x = x, y = y,fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) +
+    geom_sf(data = occ_sp, colour = "red", size = 0.3, inherit.aes = F) +
+    geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = "black", inherit.aes = F) +
+    #geom_sf(data = alla, colour = "red", alpha = 0.2, inherit.aes = F) +
     scale_fill_identity() +
     theme_void()
   
-  gplot(tiff, maxpixels = 1e6) +
-    geom_raster(aes(x = x, y = y, fill = factor(value)), show.legend = F) +
-    geom_sf(data = bg) +
-    geom_sf(data = bf, inherit.aes = F, alpha = 0, linewidth = 0.3, colour = "black") +
-    geom_sf(data = alla, colour = "red", alpha = 0.2, inherit.aes = F) +
-    scale_fill_manual(values = col_map(tiff), guide = "none") +
-    theme_void()
-  
-
-
 
 }
 

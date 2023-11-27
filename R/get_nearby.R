@@ -79,7 +79,7 @@ get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limi
 #' @return a data frame with location names nearby your coordinates
 #' @export
 #' 
-get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, population_limit = 0, sunvar = total_sunH){
+get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, population_limit = 0, sunvar = total_sunH, per_month = F){
   #TODO: Make it use only Swedish locals
   options(geonamesUsername = "sebms") 
   
@@ -96,16 +96,25 @@ get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, populat
   }
   )
   
+  
   if(inherits(df, "sf")) {
-    df <- df %>% 
+    df1 <- df %>% 
       st_coordinates() %>% 
       as_tibble() %>%
-      rename(lat = Y, lon = X) %>% 
+      rename(lat = Y, lon = X)
+    if (per_month) {
+      df <- df1 %>% 
+        bind_cols(df %>% 
+                    st_drop_geometry() %>% 
+                    select(Year, month, {{ sunvar }})
+        )
+    }else {
+    df <- df1 %>% 
       bind_cols(df %>% 
                   st_drop_geometry() %>% 
                   select(Year, {{ sunvar }})
       )
-    
+    }
   }
   
   locations <- df %>%
@@ -115,9 +124,15 @@ get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, populat
     ungroup() %>%
     mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, pupulation_limit = population_limit), .progress = "Finding nearest location")) %>% 
     unnest(loc) %>%
-    unnest(data) %>% 
-    transmute(Year, lon, lat, name, {{ sunvar }}) 
+    unnest(data) 
   
+  if (per_month) {
+    locations <- locations %>% 
+      transmute(Year, month, lon, lat, name, {{ sunvar }}) 
+  }else {
+localtions <- locations  %>% 
+    transmute(Year, lon, lat, name, {{ sunvar }}) 
+  }
 
   
   return(locations)

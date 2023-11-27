@@ -67,9 +67,8 @@ get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limi
 #'
 #' @inheritParams get_nearby
 #' @param sunvar variable with sun hour data`
-#' @param findMaxMin logical (default TRUE); do you want only the location with
-#'   most and least sunhours.
-#'
+#' @param per_month logical; summarise per month instead of per year
+#' 
 #' @importFrom geonames GNfindNearbyPlaceName
 #' @import dplyr
 #' @importFrom tidyr nest unnest

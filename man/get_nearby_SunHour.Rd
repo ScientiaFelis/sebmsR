@@ -10,7 +10,8 @@ get_nearby_SunHour(
   top = 1,
   limited = TRUE,
   population_limit = 0,
-  sunvar = total_sunH
+  sunvar = total_sunH,
+  per_month = F
 )
 }
 \arguments{
@@ -27,8 +28,7 @@ locations}
 
 \item{sunvar}{variable with sun hour data`}
 
-\item{findMaxMin}{logical (default TRUE); do you want only the location with
-most and least sunhours.}
+\item{per_month}{logical; summarise per month instead of per year}
 }
 \value{
 a data frame with location names nearby your coordinates

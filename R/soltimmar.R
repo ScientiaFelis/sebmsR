@@ -384,23 +384,29 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
 sebms_sunhour_diff <- function(df, year = lubridate::year(lubridate::today())-1, months = 4:9, per_month = FALSE, per_day = FALSE, to_env=FALSE) {
   
   if (missing(df)) {
-    df1 <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day)
+    df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day)
   }
   
   if (per_month) {
-    sundiff <- df1 %>% 
+    
+    lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()
+    if (length(lmon) < length(months)) {
+      months <- as.integer(lmon)
+    }
+    
+    sundiffs <- df %>% 
       st_drop_geometry() %>%  
       select(Year, total_sunH) %>% # Take only Year and the sunhour var here as I am binding with the meansunH_M that contains what we need otherwise and is in the same order.  
       bind_cols(meansunH_M %>% filter(month %in% months)) %>% 
       #inner_join(meansunH_M, by = c("month", "geometry")) %>% 
-      group_by(month) %>% 
-      mutate(diffsun = total_sunH - mean_sunH) %>% 
+      group_by(Year, month) %>% 
+      mutate(sundiff = total_sunH - mean_sunH) %>% 
       ungroup() %>% 
       st_as_sf()
     
   }else {
-    sundiff <- meansunH %>%  
-      bind_cols(df1 %>% st_drop_geometry()) %>% 
+    sundiffs <- meansunH %>%  
+      bind_cols(df %>% st_drop_geometry()) %>% 
       mutate(diffsun = total_sunH - mean_sunH) %>% 
       st_as_sf()
   }
@@ -410,10 +416,10 @@ sebms_sunhour_diff <- function(df, year = lubridate::year(lubridate::today())-1,
     if(length(year) > 1) {
       year <- glue("{min(year)}-{max(year)}") 
     }
-    assign(glue("SunHourDiff_{year}"), sundiff, envir = .GlobalEnv) # Send the result to Global environment if the function is used inside a plot function. This way you do not need to download the data again if you want a diff plt to. You can just feed the spatsunlist data to the sun_diff_plot function
+    assign(glue("SunHourDiff_{year}"), sundiffs, envir = .GlobalEnv) # Send the result to Global environment if the function is used inside a plot function. This way you do not need to download the data again if you want a diff plt to. You can just feed the spatsunlist data to the sun_diff_plot function
   }
   
-  return(sundiff)
+  return(sundiffs)
 } 
 
 #' Create a Figure that Shows the Difference in Sun Hours
@@ -536,7 +542,7 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
 #' @param df a sf object with `year` and `total_sunhour` created by
 #'   [sebms_sunhous_data()]
 #' @param sunvar which variable to calculate the min and max on, can be
-#'   `total_sunH` or `diffsun`
+#'   `total_sunH` or `sundiff`
 #' @inheritParams sebms_sunhours_data
 #'
 #' @importFrom sf st_drop_geometry st_coordinates
@@ -585,7 +591,7 @@ sebms_minmax_sunhour <- function(df, year = 2017:2022, months = 4:9, sunvar = to
           mutate(max = max({{ sunvar }}),
                  min = min({{ sunvar }})) %>% 
           filter({{ sunvar }} == max | {{ sunvar }} == min) %>% 
-          ungroup() 
+          ungroup()
       }
     }
   }else { # If df is supplied
@@ -602,14 +608,24 @@ sebms_minmax_sunhour <- function(df, year = 2017:2022, months = 4:9, sunvar = to
         mutate(max = max({{ sunvar }}),
                min = min({{ sunvar }})) %>% 
         filter({{ sunvar }} == max | {{ sunvar }} == min) %>% 
-        ungroup() 
+        ungroup()
     }
   }
   
   minmaxsun <- df %>%
-    get_nearby_SunHour(sunvar = {{ sunvar }}) %>%
-    select(Year, lon, lat, name, MaxMin = {{ sunvar }}) %>% 
-    arrange(Year, desc(MaxMin)) 
+    get_nearby_SunHour(sunvar = {{ sunvar }}, per_month = per_month) %>%
+    #select(Year, lon, lat, name, MaxMin = {{ sunvar }}) %>% 
+    rename(MaxMin = {{ sunvar }}) %>% 
+    relocate(MaxMin, .after = last_col()) %>% 
+    relocate(lon, lat, .before = name)
+  
+  if (per_month) {
+    minmaxsun <- minmaxsun %>% 
+      arrange(Year, month, desc(MaxMin))
+  }else {
+    minmaxsun <- minmaxsun %>% 
+      arrange(Year, desc(MaxMin))
+  }
   
   return(minmaxsun)
 }

@@ -384,11 +384,11 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
 sebms_sunhour_diff <- function(df, year = lubridate::year(lubridate::today())-1, months = 4:9, per_month = FALSE, per_day = FALSE, to_env=FALSE) {
   
   if (missing(df)) {
-    df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day)
+    df1 <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day)
   }
   
   if (per_month) {
-    sundiff <- df %>% 
+    sundiff <- df1 %>% 
       st_drop_geometry() %>%  
       select(Year, total_sunH) %>% # Take only Year and the sunhour var here as I am binding with the meansunH_M that contains what we need otherwise and is in the same order.  
       bind_cols(meansunH_M %>% filter(month %in% months)) %>% 
@@ -400,7 +400,7 @@ sebms_sunhour_diff <- function(df, year = lubridate::year(lubridate::today())-1,
     
   }else {
     sundiff <- meansunH %>%  
-      bind_cols(df %>% st_drop_geometry()) %>% 
+      bind_cols(df1 %>% st_drop_geometry()) %>% 
       mutate(diffsun = total_sunH - mean_sunH) %>% 
       st_as_sf()
   }
@@ -410,9 +410,9 @@ sebms_sunhour_diff <- function(df, year = lubridate::year(lubridate::today())-1,
     if(length(year) > 1) {
       year <- glue("{min(year)}-{max(year)}") 
     }
+    assign(glue("SunHourDiff_{year}"), sundiff, envir = .GlobalEnv) # Send the result to Global environment if the function is used inside a plot function. This way you do not need to download the data again if you want a diff plt to. You can just feed the spatsunlist data to the sun_diff_plot function
   }
   
-  assign(glue("SunHourDiff_{Year}"), sundiff, envir = .GlobalEnv) # Send the result to Global environment if the function is used inside a plot function. This way you do not need to download the data again if you want a diff plt to. You can just feed the spatsunlist data to the sun_diff_plot function
   return(sundiff)
 } 
 

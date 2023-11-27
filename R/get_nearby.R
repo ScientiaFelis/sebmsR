@@ -66,7 +66,7 @@ get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limi
 #' available and the number of inhabitants.
 #'
 #' @inheritParams get_nearby
-#' @param sunvar variable with sun hour data`
+#' @param sunvar variable with sun hour data, can be `total_sunH` or `sundiff`
 #' @param per_month logical; summarise per month instead of per year
 #' 
 #' @importFrom geonames GNfindNearbyPlaceName
@@ -123,15 +123,16 @@ get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, populat
     ungroup() %>%
     mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, pupulation_limit = population_limit), .progress = "Finding nearest location")) %>% 
     unnest(loc) %>%
-    unnest(data) 
+    unnest(data) %>% 
+    select(-ID)
   
-  if (per_month) {
-    locations <- locations %>% 
-      transmute(Year, month, lon, lat, name, {{ sunvar }}) 
-  }else {
-localtions <- locations  %>% 
-    transmute(Year, lon, lat, name, {{ sunvar }}) 
-  }
+#   if (per_month) {
+#     locations <- locations %>% 
+#       transmute(Year, month, lon, lat, name, {{ sunvar }}) 
+#   }else {
+# localtions <- locations  %>% 
+#     transmute(Year, lon, lat, name, {{ sunvar }}) 
+#   }
 
   
   return(locations)

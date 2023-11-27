@@ -138,7 +138,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
                     .groups = "drop")
         
       }
-    }else { # Use monthly data to summarise on
+    }else { # Use monthly data from SMHI to summarise on
       
       allyears <- function(year, months){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
         map2(year, months, possibly(fix_sunhour_NAs)) %>% ##iterate through year plus month and send that to sunHdata, se above
@@ -411,8 +411,8 @@ sebms_sunhour_diff <- function(df, year = lubridate::year(lubridate::today())-1,
       year <- glue("{min(year)}-{max(year)}") 
     }
   }
-    
-    assign(glue("SunHourDiff_{Year}"), sundiff, envir = .GlobalEnv) # Send the result to Global environment if the function is used inside a plot function. This way you do not need to download the data again if you want a diff plt to. You can just feed the spatsunlist data to the sun_diff_plot function
+  
+  assign(glue("SunHourDiff_{Year}"), sundiff, envir = .GlobalEnv) # Send the result to Global environment if the function is used inside a plot function. This way you do not need to download the data again if you want a diff plt to. You can just feed the spatsunlist data to the sun_diff_plot function
   return(sundiff)
 } 
 
@@ -551,22 +551,58 @@ sebms_minmax_sunhour <- function(df, year = 2017:2022, months = 4:9, sunvar = to
   if(missing(df)) {
     
     detectvar <- as.character(enquos(sunvar))
-
-    if (str_detect(detectvar, "diff")) {
-      df <- sebms_sunhour_diff(year = year, months = months, per_month = per_month, per_day = per_day) %>% 
-        group_by(Year) %>% 
-        mutate(max = max({{ sunvar }}),
-               min = min({{ sunvar }})) %>% 
-        filter({{ sunvar }} == max | {{ sunvar }} == min) %>% 
-        ungroup()
-    } else {
-      df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day) %>% 
-        group_by(Year) %>% 
-        mutate(max = max({{ sunvar }}),
-               min = min({{ sunvar }})) %>% 
-        filter({{ sunvar }} == max | {{ sunvar }} == min) %>% 
-        ungroup()
+    
+    if (str_detect(detectvar, "diff")) { # Calculate max min for the diff sun hours
+      df <- sebms_sunhour_diff(year = year, months = months, per_month = per_month, per_day = per_day) 
+      if (per_month) { # Set min-max diff per month
+        df <- df %>% 
+          group_by(Year, month) %>% 
+          mutate(max = max({{ sunvar }}),
+                 min = min({{ sunvar }})) %>% 
+          filter({{ sunvar }} == max | {{ sunvar }} == min) %>% 
+          ungroup()
+      }else { # Set min-max diff per year
+        df <- df %>% 
+          group_by(Year) %>% 
+          mutate(max = max({{ sunvar }}),
+                 min = min({{ sunvar }})) %>% 
+          filter({{ sunvar }} == max | {{ sunvar }} == min) %>% 
+          ungroup() 
+      }
+    } else { # Calculate max-min for the total sun hours
+      df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day) 
       
+      if (per_month) { # Set min max sun hour per month
+        df <- df %>% 
+          group_by(Year, month) %>% 
+          mutate(max = max({{ sunvar }}),
+                 min = min({{ sunvar }})) %>% 
+          filter({{ sunvar }} == max | {{ sunvar }} == min) %>% 
+          ungroup()
+      }else { # Set min-max sun hour per year
+        df <- df %>% 
+          group_by(Year) %>% 
+          mutate(max = max({{ sunvar }}),
+                 min = min({{ sunvar }})) %>% 
+          filter({{ sunvar }} == max | {{ sunvar }} == min) %>% 
+          ungroup() 
+      }
+    }
+  }else { # If df is supplied
+    if (per_month) { # Set min max sun hour per month
+      df <- df %>% 
+        group_by(Year, month) %>% 
+        mutate(max = max({{ sunvar }}),
+               min = min({{ sunvar }})) %>% 
+        filter({{ sunvar }} == max | {{ sunvar }} == min) %>% 
+        ungroup()
+    }else { # Set min-max sun hour per year
+      df <- df %>% 
+        group_by(Year) %>% 
+        mutate(max = max({{ sunvar }}),
+               min = min({{ sunvar }})) %>% 
+        filter({{ sunvar }} == max | {{ sunvar }} == min) %>% 
+        ungroup() 
     }
   }
   

@@ -23,7 +23,7 @@ sebms_minmax_sunhour(
 to 4:9)}
 
 \item{sunvar}{which variable to calculate the min and max on, can be
-`total_sunH` or `diffsun`}
+`total_sunH` or `sundiff`}
 
 \item{per_month}{logical; summarise per month instead of per year}
 

@@ -26,7 +26,7 @@ get_nearby_SunHour(
 \item{population_limit}{the smallest amount of poeple that should be in the
 locations}
 
-\item{sunvar}{variable with sun hour data`}
+\item{sunvar}{variable with sun hour data, can be `total_sunH` or `sundiff`}
 
 \item{per_month}{logical; summarise per month instead of per year}
 }

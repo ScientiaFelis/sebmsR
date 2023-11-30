@@ -24,36 +24,27 @@ sunHdata <- function(year, months, day, per_day = FALSE) {
     
     polite_GET_nrt(glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{months}{day}/parameter/119/data.json?interval=daily")) %>% 
       httr::content(encoding = "UTF-8") %>% 
-      bind_rows()
-  }else {
-    httr::GET(glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{months}/parameter/119/data.json?interval=monthly")) %>% 
-      httr::content(encoding = "UTF-8") %>% 
-      bind_rows()
-  }
-}
-
-#' Replace Faulting Sun Hour Values with Mean of Surrounding Values
-#'
-#' This function look for gaps in sun hour values (set to -999) and replace them
-#' with the mean of the before and following value.
-#'
-#' @inheritParams sunHdata
-#' @importFrom dplyr mutate if_else lag lead
-#'
-#' @return a data frame with no gaps in sun hour values.
-#' @noRd
-fix_sunhour_NAs <- function(year, months, day, per_day = FALSE) {
-  
-  fixna <- sunHdata(year=year, months=months, day=day, per_day = per_day) %>% 
-    mutate(gapvalue = if_else(value < 0,
+      bind_rows() %>% 
+      mutate(gapvalue = if_else(value < 0,
                               "Low value",
                               "Normal value"),
            value = if_else(value < 0,
                            mean(c(lag(value), lead(value)), na.rm = T),
                            value))
-  return(fixna)
-  
+  }else {
+    httr::GET(glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{months}/parameter/119/data.json?interval=monthly")) %>% 
+      httr::content(encoding = "UTF-8") %>% 
+      bind_rows() %>% 
+      mutate(gapvalue = if_else(value < 0,
+                              "Low value",
+                              "Normal value"),
+           value = if_else(value < 0,
+                           mean(c(lag(value), lead(value)), na.rm = T),
+                           value))
+  }
 }
+
+
 #' Calculate Total Sun Hours from SMHI Open Data
 #'
 #' Produce a data frame of the total sun hours in Sweden for the given month.
@@ -83,7 +74,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
     # TODO Check what allyears give with dayfunc not goruping per month
     if (per_day) {
       dayfunc <- function(year, months) {
-        pmap_dfr(Day, possibly(~fix_sunhour_NAs(year = year, months = months, day = .x, per_day = TRUE))) %>%
+        pmap_dfr(Day, possibly(~sunHdata(year = year, months = months, day = .x, per_day = TRUE))) %>%
           bind_rows() %>% 
           group_by(gapvalue, lat, lon) %>% 
           summarise(daysunH = sum(value), .groups = "drop")
@@ -102,7 +93,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
     }else {# This function summarise per month but do not use per day values.
       
       allyears <- function(year, months){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
-        map2(year, months, possibly(fix_sunhour_NAs)) %>% ##iterate through year plus month and send that to sunHdata, se above
+        map2(year, months, possibly(sunHdata)) %>% ##iterate through year plus month and send that to sunHdata, se above
           set_names(months) %>% # set the names of month to list items
           bind_rows(.id = "month") %>% # Take the name of list items (month) and set them in a variable
           group_by(month, gapvalue, lat, lon) %>%
@@ -113,17 +104,15 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
   }else { # Below functions summarise per year instead.
     
     
-    # 
     # DayHour <- list(day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"),# All days in a month
     #   hour = c("00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23")
     # )  # All hours of the day
-    # Day <- list(day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31")) # All hours of the day
-    # # 
-    #Days <- list(c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "31")) # To test with specific days
+    
+    # Day <- list(day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31")) # All days in a month
     
     if (per_day) { # Take out data per day
       dayfunc <- function(year, months) {
-        pmap_dfr(Day, possibly(~fix_sunhour_NAs(year = year, months = months, day = .x, per_day = TRUE))) %>%
+        pmap_dfr(Day, possibly(~sunHdata(year = year, months = months, day = .x, per_day = TRUE))) %>%
           bind_rows() %>% 
           group_by(gapvalue, lat, lon) %>% 
           summarise(daysunH = sum(value), .groups = "drop")
@@ -141,7 +130,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
     }else { # Use monthly data from SMHI to summarise on
       
       allyears <- function(year, months){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
-        map2(year, months, possibly(fix_sunhour_NAs)) %>% ##iterate through year plus month and send that to sunHdata, se above
+        map2(year, months, possibly(sunHdata)) %>% ##iterate through year plus month and send that to sunHdata, se above
           set_names(months) %>% # set the names of month to list items
           bind_rows(.id = "month") %>% # Take the name of list items (month) and set them in a variable
           group_by(month, gapvalue, lat, lon) %>%

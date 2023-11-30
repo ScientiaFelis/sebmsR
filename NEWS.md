@@ -6,6 +6,13 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 1.7.0
+
+This version add `per_month` capability to more functions and fix some bugs
+
+* Add per month capability to `sebms_minmax_sunhour()` and `get_nearby_SunHour()`
+* Fix bugs in `per_month` for functions
+
 # v 1.6.2
 
 * fix bug in default year where we needed to add package name, `lubridate::year()` instead of `year()`

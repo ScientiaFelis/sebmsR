@@ -74,7 +74,7 @@ sebms_sites_map <- function(year=2021, species = 118, width = 12, height = 18, o
       geom_sf(data = spocc, colour = "red", alpha = 0.2, inherit.aes = F) +
       scale_fill_identity() +
       theme_void() +
-       theme(plot.background = element_rect(fill = "white", colour = "white"),
+      theme(plot.background = element_rect(fill = "white", colour = "white"),
             #legend.position = "left",
             legend.position = c(0.2,0.8))
   }
@@ -142,12 +142,7 @@ sebms_distribution_map <- function(year=2021, species = 118, width=12, height=18
     suppressWarnings() %>% 
     st_transform(3021)
   
-  bg <- sebms_swe_borders %>%
-    st_as_sf() %>% 
-    st_set_crs(3857) %>% 
-    st_transform(3021)
-  
-  
+
   ## Species raster
   n_points_in_cell <- function(x, na.rm = TRUE){ 
     if (na.rm) length(na.omit(x)) else (length(x))

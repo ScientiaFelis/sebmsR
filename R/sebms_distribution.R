@@ -179,7 +179,7 @@ sebms_distribution_map <- function(year=2021, species = 118, width=12, height=18
     filter(Red != 0)
   
   #pal_orig <- c("#EAAD44","#CB8D35","#AB6D25","#944D15","#5C4504")
-  pal_orig <- c(rgb(234,173,68, alpha = 96, maxColorValue = 255),rgb(203,141,53, alpha = 96, maxColorValue = 255),rgb(171,109,37, alpha = 96, maxColorValue = 255), rgb(148,77,21, alpha = 96, maxColorValue = 255),rgb(92,69,4, alpha = 96, maxColorValue = 255))
+  pal_orig <- c(rgb(0,0,0, alpha = 0, maxColorValue = 255), rgb(234,173,68, alpha = 96, maxColorValue = 255),rgb(203,141,53, alpha = 96, maxColorValue = 255),rgb(171,109,37, alpha = 96, maxColorValue = 255), rgb(148,77,21, alpha = 96, maxColorValue = 255),rgb(92,69,4, alpha = 96, maxColorValue = 255))
   #pals <- brewer.pal(5, "OrRd")#[c(1, 4, 7)]
   #  c("#FEF0D9", "#FDCC8A", "#FC8D59", "#E34A33", "#B30000")
   
@@ -190,18 +190,21 @@ sebms_distribution_map <- function(year=2021, species = 118, width=12, height=18
       scale_fill_identity() +
       #coord_sf(expand = F) +
       new_scale_fill() +
-      geom_tile(aes(x, y, fill = as.factor(value)), data = df, inherit.aes = FALSE, alpha = 0.5, size = 0.2) +
+      geom_tile(aes(x, y, fill = as.factor(value)), colour = rgb(128,128,128, maxColorValue = 255), data = df, inherit.aes = FALSE, alpha = 0.5, size = 0.2) +
       geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = F) +
       geom_sf(data = spda, colour = rgb(255,0,0,maxColorValue = 255), size = 0.5, inherit.aes = F) +
-      scale_fill_manual(name = "Lokaler (n)",
-                        breaks = 1:5,
-                        labels = c(1:4, ">= 5"),
+      scale_fill_manual(name = NULL,
+                        breaks = 0:5,
+                        labels = c(0:4, "5+"),
                         values = pal_orig,
                         guide = "legend",
                         na.value = "transparent") +
       theme_void() +
       theme(plot.background = element_rect(fill = "white", colour = "white"),
-            legend.position = c(0.2,0.8))
+            legend.position = c(0.2,0.8),
+            legend.spacing.y = unit(2, units = "mm"),
+            legend.key.size = unit(5, units = "mm")) +
+      guides(fill = guide_legend(byrow = TRUE))
     
     #scale_fill_gradient2(name = "Lokaler (n)", labels = c(1:4, ">= 5"), 
     # guide = "legend", na.value = "transparent", 

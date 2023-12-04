@@ -7,27 +7,38 @@
 #' @import ggthemes
 #' @import ggplot2
 #' @import sf
-#' @importFrom rasterVis gplot
-#' @importFrom terra ext ext<- rast rasterize crs crs<- coltab project values
-#' @importFrom RColorBrewer brewer.pal
-#' @importFrom sp SpatialPixelsDataFrame
-#' @importFrom cowplot ggdraw draw_grob 
+#' @importFrom terra ext ext<- rast rasterize crs crs<- project values
+#' @importFrom dplyr mutate group_by ungroup
+#' @importFrom tidyr nest
+#' @importFrom purrr map map2
+#' @importFrom glue glue
 #' 
 #' @param year the year of interest
-#' @param width the plot width, default 5 inches
-#' @param height the plot height, default 3.5 inches
+#' @param width the plot width, default 12 inches
+#' @param species the species of interest as a species id
+#' @param height the plot height, default 18 inches
+#' @param occ_sp SpatialPoints with occurrence data
+#' @param print logical; should the plots be printed in window, default FALSE
 #' @return ggplot object
-
 #' @export
-sebms_sites_map <- function(year=2021, width=5, height=3.5) {
+sebms_sites_map <- function(year=2021, species = 118, width = 12, height = 18, occ_sp, print = FALSE) {
   
-  SweLandGrid <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "SweLandGrid") %>% 
+  if (missing(occ_sp)) {
+    occ_sp <- sebms_occurances_distribution(year = year, Art = species) %>%
+      select(art, lokalnamn, lat, lon) %>% 
+      st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
+      st_set_crs(3006) %>% 
+      st_transform(3021)
+  }
+  
+  
+  SweLandGrid <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "SweLandGrid", quiet = TRUE) %>% 
     st_set_crs(3021)
   
-  alla <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "alla_2010-2014_sites") %>% 
+  alla <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "alla_2010-2014_sites", quiet = TRUE) %>% 
     st_set_crs(3021)
   
-  bf <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "ButterflySquares0423") %>% 
+  bf <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "ButterflySquares0423", quiet = TRUE) %>% 
     st_set_crs(3021)
   
   #a = rast("data-raw/figures/MapDistribution-data/R_files_for_similar_map/MapSweden.tif")
@@ -55,17 +66,30 @@ sebms_sites_map <- function(year=2021, width=5, height=3.5) {
     select(-Max)
   
   #terra::rasterize(as.matrix(tiff[1:2]), y= tiff1)
-  #FIXME: make alla as raster too
   
-  ggplot(data = tiff, aes(x = x, y = y)) +                   #plot map
-    geom_raster(aes(fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) +
-    geom_sf(data = bf, inherit.aes = F, alpha = 0, linewidth = 0.3, colour = "black") +
-    geom_sf(data = alla, colour = "red", alpha = 0.2, inherit.aes = F) +
-    scale_fill_identity() +
-    theme_void()
+  speplot <- function(spocc) {
+    ggplot(data = tiff, aes(x = x, y = y)) +
+      geom_raster(aes(fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) +
+      geom_sf(data = bf, inherit.aes = F, alpha = 0, linewidth = 0.3, colour = "black") +
+      geom_sf(data = spocc, colour = "red", alpha = 0.2, inherit.aes = F) +
+      scale_fill_identity() +
+      theme_void() +
+       theme(plot.background = element_rect(fill = "white", colour = "white"),
+            #legend.position = "left",
+            legend.position = c(0.2,0.8))
+  }
   
-  ggsave("Butterfly_sites.png", width = 7, height = 15, units = "cm")
+  ggs <- occ_sp %>% 
+    group_by(art) %>% 
+    nest() %>% 
+    ungroup() %>% 
+    mutate(plots = map(data, speplot))
   
+  map2(ggs$plots, ggs$art, ~sebms_ggsave(plot = .x, "Butterfly_sites", weathervar = .y, width = width, height = height))
+  
+  if (print) {
+    return(ggs$plots)
+  }
 }
 
 

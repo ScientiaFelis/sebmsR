@@ -156,21 +156,23 @@ sebms_distribution_map <- function(year=2021, species = 118, width=12, height=18
   pals <- brewer.pal(7, "OrRd")[c(1, 4, 7)]
   
   # TODO: Make maps iterate over species
-  ggplot() +                   #plot map
-    geom_raster(data = tiff, aes(x = x, y = y,fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) +
-    geom_sf(data = occ_sp, colour = "red", size = 0.5, inherit.aes = F) +
-    geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = "black", inherit.aes = F) +
-    scale_fill_identity() +
-    new_scale_fill() +
-    geom_tile(aes(x, y, fill = as.factor(value)), data = df, inherit.aes = FALSE, alpha = 0.5, size = 0.2) +
-    # scale_fill_gradient2(name = "Lokaler (n)",
-    #                     breaks = 1:5,
-    #                     labels = c(1:4, ">= 5"),
-    #                     guide = "legend",
-    #                     na.value = "transparent",
-    #                     low = pal_orig[1], mid = pal_orig[3], high = pal_orig[5],
-    #                     midpoint = mean(df$value)) +
-    scale_fill_manual(name = "Lokaler (n)",
+  speplot <- function(spda) {
+    ggplot() +                   #plot map
+      geom_raster(data = tiff, aes(x = x, y = y,fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) +
+      geom_sf(data = spda, colour = "red", size = 0.8, inherit.aes = F) +
+      geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = "black", inherit.aes = F) +
+      scale_fill_identity() +
+      #coord_sf(expand = F) +
+      new_scale_fill() +
+      geom_tile(aes(x, y, fill = as.factor(value)), data = df, inherit.aes = FALSE, alpha = 0.5, size = 0.2) +
+      # scale_fill_gradient2(name = "Lokaler (n)",
+      #                     breaks = 1:5,
+      #                     labels = c(1:4, ">= 5"),
+      #                     guide = "legend",
+      #                     na.value = "transparent",
+      #                     low = pal_orig[1], mid = pal_orig[3], high = pal_orig[5],
+      #                     midpoint = mean(df$value)) +
+      scale_fill_manual(name = "Lokaler (n)",
                         breaks = 1:5,
                         labels = c(1:4, ">= 5"),
                         values = pal_orig,
@@ -178,17 +180,29 @@ sebms_distribution_map <- function(year=2021, species = 118, width=12, height=18
                         na.value = "transparent",
                         #low = pal_orig[1], mid = pal_orig[3], high = pal_orig[5],
                         #midpoint = mean(df$value)
-                        ) +
-    theme_void() +
-    theme(plot.background = element_rect(fill = "white", colour = "white"),
-          #legend.position = "left",
-          legend.position = c(0.1,0.8))
+      ) +
+      theme_void() +
+      theme(plot.background = element_rect(fill = "white", colour = "white"),
+            #legend.position = "left",
+            legend.position = c(0.2,0.8))
+    
+    #scale_fill_gradient2(name = "Lokaler (n)", labels = c(1:4, ">= 5"), 
+    # guide = "legend", na.value = "transparent", 
+    # low = pal_orig[1], mid = pal_orig[3], high = pal_orig[5], 
+    # midpoint = mean(df$value)) +
+  }
   
-  #scale_fill_gradient2(name = "Lokaler (n)", labels = c(1:4, ">= 5"), 
-                       # guide = "legend", na.value = "transparent", 
-                       # low = pal_orig[1], mid = pal_orig[3], high = pal_orig[5], 
-                       # midpoint = mean(df$value)) +
-
+  ggs <- occ_sp %>% 
+    group_by(art) %>% 
+    nest() %>% 
+    ungroup() %>% 
+    mutate(plots = map(data, speplot))
+  
+  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, .y, width = width, height = height, weathervar = glue("{year}")))
+  
+   if (print) {
+    return(ggs$plots)
+  }
 }
 
 

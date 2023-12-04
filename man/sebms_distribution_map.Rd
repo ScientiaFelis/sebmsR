@@ -5,16 +5,14 @@
 \title{Swedish Map of SeBMS Distribution Data}
 \usage{
 sebms_distribution_map(
-  occ_sp,
   year = 2021,
-  species = 80,
+  species = 118,
   width = 5,
-  height = 3.5
+  height = 3.5,
+  occ_sp
 )
 }
 \arguments{
-\item{occ_sp}{SpatialPoints with occurrence data}
-
 \item{year}{the year of interest}
 
 \item{species}{the species of interest as a species id}
@@ -22,6 +20,8 @@ sebms_distribution_map(
 \item{width}{the plot width, default 5 inches}
 
 \item{height}{the plot height, default 3.5 inches}
+
+\item{occ_sp}{SpatialPoints with occurrence data}
 }
 \value{
 ggplot object

@@ -474,32 +474,26 @@ sebms_naturum_climate <- function() {
   naturum_climate <- map(res$api, smhi_call)
   names(naturum_climate) <- res$Namn
   res <- bind_rows(naturum_climate, .id = "id")
-  return (res)
+  return(res)
 }
-
-##' @importFrom utils globalVariables
-#if (getRversion() >= "2.15.1")
-#  globalVariables(names = unlist(strsplit(split = " ",
-# paste0("word1 ",
-#  "word2"))))
-
 
 
 #' Retrieve Species Abundance List per Site with Coordinates
 #'
-#' Returns a data frame of counts per species, site, with coordinates in SWEREF.
-#' This is used for the [sebms_distribution_map()]
+#' Returns a data frame of counts per species and site with their coordinates in
+#' SWEREF. This is used for the [sebms_distribution_map()]
+#'
 #'
 #' @inheritParams sebms_abundance_per_species_plot
-#'  
+#'
 #' @import tibble
 #' @importFrom glue glue
 #' @import dplyr
 #' @importFrom stringr str_detect str_to_lower
 #' @importFrom DBI dbGetQuery
 #'
-#' @returns a tibble with species ids and names, filtered for trimed species
-#'   names, the site ids and names, site type, number of individuals for eahc
+#' @returns a tibble with species ids and names, filtered for trimmed species
+#'   names, the site ids and names, site type, number of individuals for each
 #'   species, the date, county, region, and municipality
 #' @export
 sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", source = c(54,55,56,63,64,66,67,84)) {

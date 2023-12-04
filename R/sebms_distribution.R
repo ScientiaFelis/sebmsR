@@ -19,7 +19,6 @@
 #' @return ggplot object
 
 #' @export
-#
 sebms_sites_map <- function(year=2021, width=5, height=3.5) {
   
   SweLandGrid <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "SweLandGrid") %>% 
@@ -81,7 +80,8 @@ sebms_sites_map <- function(year=2021, width=5, height=3.5) {
 #' @import sf
 #' @importFrom terra ext ext<- rast rasterize crs crs<- coltab project values
 #' @importFrom RColorBrewer brewer.pal
-#' @importFrom cowplot ggdraw draw_grob 
+#' @importFrom cowplot ggdraw draw_grob
+#' @importFrom ggnewscale new_scale_fill
 #'
 #' @inheritParams sebms_sites_map 
 #' @param occ_sp SpatialPoints with occurrence data
@@ -89,8 +89,7 @@ sebms_sites_map <- function(year=2021, width=5, height=3.5) {
 #' @return ggplot object
 
 #' @export
-#
-sebms_distribution_map <- function(occ_sp, year=2021, species = 80, width= 5, height=3.5) {
+sebms_distribution_map <- function(year=2021, species = 118, width= 5, height=3.5, occ_sp) {
   
   if (missing(occ_sp)) {
     occ_sp <- sebms_occurances_distribution(year = year, Art = species) %>%
@@ -99,8 +98,7 @@ sebms_distribution_map <- function(occ_sp, year=2021, species = 80, width= 5, he
       st_set_crs(3006) %>% 
       st_transform(3021)
   }
-  # TODO: add in species data from sebms database.
-  
+
   SweLandGrid <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "SweLandGrid") %>% 
     st_set_crs(3021)
   
@@ -115,6 +113,7 @@ sebms_distribution_map <- function(occ_sp, year=2021, species = 80, width= 5, he
   grid <- sebms_swe_grid %>% 
     st_as_sf() %>% 
     st_set_crs(3021) %>% 
+    suppressWarnings() %>% 
     st_transform(3021)
   
   bg <- sebms_swe_borders %>%
@@ -122,10 +121,30 @@ sebms_distribution_map <- function(occ_sp, year=2021, species = 80, width= 5, he
     st_set_crs(3857) %>% 
     st_transform(3021)
   
-  tiff1 <- terra::rast(system.file("extdata", "MapSweden_RGB.png", 
-                                  package = "sebmsR", mustWork = TRUE))
+
+## Species raster
+  n_points_in_cell <- function(x, na.rm = TRUE){ 
+    if (na.rm) length(na.omit(x)) else (length(x))
+  }
   
-  ext(tiff1) <- c(1179998, 1948697, 6129692, 7679610)
+  rs <- rast(ext(grid), nrows = 62, ncols = 28, 
+               crs = crs(grid))
+  
+  rl <- rasterize(occ_sp, rs, fun = n_points_in_cell)
+  idx_n_large <- which(values(rl) >= 5)
+  rl[][idx_n_large] <- 5
+  
+  
+  df <- as.data.frame(rl, xy = T)
+  colnames(df) <- c("x", "y", "value")
+  
+  
+  ## Sweden map
+  tiff1 <- terra::rast(system.file("extdata", "MapSweden_RGB.png", 
+                                  package = "sebmsR", mustWork = TRUE)) %>% 
+    suppressWarnings()
+  
+  terra::ext(tiff1) <- c(1179998, 1948697, 6129692, 7679610)
   crs(tiff1) <- "epsg:3021"  
   
   tiff <- tiff1 %>%   
@@ -133,14 +152,42 @@ sebms_distribution_map <- function(occ_sp, year=2021, species = 80, width= 5, he
     rename_with(.fn = ~c("x", "y","Red", "Green", "Blue", "Max")) %>% 
     filter(Red != 0)
   
+  pal_orig <- c("#EAAD44","#CB8D35","#AB6D25","#944D15","#5C4504")
+  pals <- brewer.pal(7, "OrRd")[c(1, 4, 7)]
+  
+  # TODO: Make maps iterate over species
   ggplot() +                   #plot map
     geom_raster(data = tiff, aes(x = x, y = y,fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) +
-    geom_sf(data = occ_sp, colour = "red", size = 0.3, inherit.aes = F) +
+    geom_sf(data = occ_sp, colour = "red", size = 0.5, inherit.aes = F) +
     geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = "black", inherit.aes = F) +
-    #geom_sf(data = alla, colour = "red", alpha = 0.2, inherit.aes = F) +
     scale_fill_identity() +
-    theme_void()
+    new_scale_fill() +
+    geom_tile(aes(x, y, fill = as.factor(value)), data = df, inherit.aes = FALSE, alpha = 0.5, size = 0.2) +
+    # scale_fill_gradient2(name = "Lokaler (n)",
+    #                     breaks = 1:5,
+    #                     labels = c(1:4, ">= 5"),
+    #                     guide = "legend",
+    #                     na.value = "transparent",
+    #                     low = pal_orig[1], mid = pal_orig[3], high = pal_orig[5],
+    #                     midpoint = mean(df$value)) +
+    scale_fill_manual(name = "Lokaler (n)",
+                        breaks = 1:5,
+                        labels = c(1:4, ">= 5"),
+                        values = pal_orig,
+                        guide = "legend",
+                        na.value = "transparent",
+                        #low = pal_orig[1], mid = pal_orig[3], high = pal_orig[5],
+                        #midpoint = mean(df$value)
+                        ) +
+    theme_void() +
+    theme(plot.background = element_rect(fill = "white", colour = "white"),
+          #legend.position = "left",
+          legend.position = c(0.1,0.8))
   
+  #scale_fill_gradient2(name = "Lokaler (n)", labels = c(1:4, ">= 5"), 
+                       # guide = "legend", na.value = "transparent", 
+                       # low = pal_orig[1], mid = pal_orig[3], high = pal_orig[5], 
+                       # midpoint = mean(df$value)) +
 
 }
 

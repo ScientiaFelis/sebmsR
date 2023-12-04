@@ -128,13 +128,20 @@ sebms_distribution_map <- function(year=2021, species = 118, width=12, height=18
   SweLandGrid <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "SweLandGrid", quiet = TRUE) %>% 
     st_set_crs(3021)
   
+  # gr <- sebms_occurances_distribution(year = year) %>% 
+  #   select(art, lokalnamn, lat, lon) %>% 
+  #     st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
+  #     st_set_crs(3006) %>% 
+  #     st_transform(3021)
+  # 
   alla <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "alla_2010-2014_sites", quiet = TRUE) %>% 
     st_set_crs(3021)
   
-  bf <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "ButterflySquares0423", quiet = TRUE) %>% 
+  bf <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "ButterflySquares0423", quiet = TRUE) %>%
     st_set_crs(3021)
   
-  #a = rast("data-raw/figures/MapDistribution-data/R_files_for_similar_map/MapSweden.tif")
+  # bf <- gr %>% st_join(SweLandGrid)
+  
   
   grid <- sebms_swe_grid %>% 
     st_as_sf() %>% 

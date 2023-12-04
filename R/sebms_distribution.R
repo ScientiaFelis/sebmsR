@@ -218,9 +218,9 @@ sebms_distribution_map <- function(year=2021, species = 118, width=12, height=18
     group_by(art) %>% 
     nest() %>% 
     ungroup() %>% 
-    mutate(plots = map(data, speplot))
+    mutate(plots = map(data, speplot, .progress = "Making plots:"))
   
-  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, .y, width = width, height = height, weathervar = glue("{year}")))
+  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, .y, width = width, height = height, weathervar = glue("{year}")), .progress = "Saving plots:")
   
   if (print) {
     return(ggs$plots)

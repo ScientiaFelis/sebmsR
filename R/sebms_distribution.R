@@ -43,7 +43,7 @@ sebms_sites_map <- function(year=2021, width=5, height=3.5) {
     st_transform(3021)
   
   tiff1 <- terra::rast(system.file("extdata", "MapSweden_RGB.png", 
-                                  package = "sebmsR", mustWork = TRUE))
+                                   package = "sebmsR", mustWork = TRUE))
   
   ext(tiff1) <- c(1179998, 1948697, 6129692, 7679610)
   crs(tiff1) <- "epsg:3021"  
@@ -70,26 +70,26 @@ sebms_sites_map <- function(year=2021, width=5, height=3.5) {
 
 
 #' Swedish Map of SeBMS Distribution Data
-#' 
+#'
 #' Producing distribution map for species on the Swedish grid.
-#' 
+#'
 #' @import grid
 #' @import magick
 #' @import ggthemes
 #' @import ggplot2
 #' @import sf
 #' @importFrom terra ext ext<- rast rasterize crs crs<- coltab project values
-#' @importFrom RColorBrewer brewer.pal
-#' @importFrom cowplot ggdraw draw_grob
 #' @importFrom ggnewscale new_scale_fill
 #'
-#' @inheritParams sebms_sites_map 
+#' @inheritParams sebms_sites_map
 #' @param occ_sp SpatialPoints with occurrence data
 #' @param species the species of interest as a species id
-#' @return ggplot object
+#' @param print logical; should the plots be printed in window, default FALSE
+#' @return ggplot object of map with grid coloured by local density and with
+#'   species occurence points.
 
 #' @export
-sebms_distribution_map <- function(year=2021, species = 118, width= 5, height=3.5, occ_sp) {
+sebms_distribution_map <- function(year=2021, species = 118, width=12, height=18, occ_sp, print = FALSE) {
   
   if (missing(occ_sp)) {
     occ_sp <- sebms_occurances_distribution(year = year, Art = species) %>%
@@ -98,7 +98,7 @@ sebms_distribution_map <- function(year=2021, species = 118, width= 5, height=3.
       st_set_crs(3006) %>% 
       st_transform(3021)
   }
-
+  
   SweLandGrid <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "SweLandGrid") %>% 
     st_set_crs(3021)
   
@@ -121,14 +121,14 @@ sebms_distribution_map <- function(year=2021, species = 118, width= 5, height=3.
     st_set_crs(3857) %>% 
     st_transform(3021)
   
-
-## Species raster
+  
+  ## Species raster
   n_points_in_cell <- function(x, na.rm = TRUE){ 
     if (na.rm) length(na.omit(x)) else (length(x))
   }
   
   rs <- rast(ext(grid), nrows = 62, ncols = 28, 
-               crs = crs(grid))
+             crs = crs(grid))
   
   rl <- rasterize(occ_sp, rs, fun = n_points_in_cell)
   idx_n_large <- which(values(rl) >= 5)
@@ -141,7 +141,7 @@ sebms_distribution_map <- function(year=2021, species = 118, width= 5, height=3.
   
   ## Sweden map
   tiff1 <- terra::rast(system.file("extdata", "MapSweden_RGB.png", 
-                                  package = "sebmsR", mustWork = TRUE)) %>% 
+                                   package = "sebmsR", mustWork = TRUE)) %>% 
     suppressWarnings()
   
   terra::ext(tiff1) <- c(1179998, 1948697, 6129692, 7679610)

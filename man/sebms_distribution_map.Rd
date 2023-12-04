@@ -7,9 +7,10 @@
 sebms_distribution_map(
   year = 2021,
   species = 118,
-  width = 5,
-  height = 3.5,
-  occ_sp
+  width = 12,
+  height = 18,
+  occ_sp,
+  print = FALSE
 )
 }
 \arguments{
@@ -22,9 +23,12 @@ sebms_distribution_map(
 \item{height}{the plot height, default 3.5 inches}
 
 \item{occ_sp}{SpatialPoints with occurrence data}
+
+\item{print}{logical; should the plots be printed in window, default FALSE}
 }
 \value{
-ggplot object
+ggplot object of map with grid coloured by local density and with
+  species occurence points.
 }
 \description{
 Producing distribution map for species on the Swedish grid.

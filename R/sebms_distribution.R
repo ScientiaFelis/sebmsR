@@ -155,9 +155,9 @@ sebms_distribution_map <- function(year=2021, species = 118, width=12, height=18
   pal_orig <- c("#EAAD44","#CB8D35","#AB6D25","#944D15","#5C4504")
   pals <- brewer.pal(7, "OrRd")[c(1, 4, 7)]
   
-  # TODO: Make maps iterate over species
+  # QUESTION: Is it possible to add a colour to each df grid value and let scale_fill identity use that with fill = colour in geom_tile()?
   speplot <- function(spda) {
-    ggplot() +                   #plot map
+    ggplot() +
       geom_raster(data = tiff, aes(x = x, y = y,fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) +
       geom_sf(data = spda, colour = "red", size = 0.8, inherit.aes = F) +
       geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = "black", inherit.aes = F) +

@@ -104,11 +104,13 @@ sebms_sites_map <- function(year=2021, species = 118, width = 12, height = 18, o
 #' @import sf
 #' @importFrom terra ext ext<- rast rasterize crs crs<- coltab project values
 #' @importFrom ggnewscale new_scale_fill
+#' @importFrom dplyr mutate group_by ungroup
+#' @importFrom tidyr nest
+#' @importFrom purrr map map2
+#' @importFrom glue glue
 #'
 #' @inheritParams sebms_sites_map
-#' @param occ_sp SpatialPoints with occurrence data
-#' @param species the species of interest as a species id
-#' @param print logical; should the plots be printed in window, default FALSE
+#' 
 #' @return ggplot object of map with grid coloured by local density and with
 #'   species occurence points.
 
@@ -123,13 +125,13 @@ sebms_distribution_map <- function(year=2021, species = 118, width=12, height=18
       st_transform(3021)
   }
   
-  SweLandGrid <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "SweLandGrid") %>% 
+  SweLandGrid <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "SweLandGrid", quiet = TRUE) %>% 
     st_set_crs(3021)
   
-  alla <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "alla_2010-2014_sites") %>% 
+  alla <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "alla_2010-2014_sites", quiet = TRUE) %>% 
     st_set_crs(3021)
   
-  bf <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "ButterflySquares0423") %>% 
+  bf <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "ButterflySquares0423", quiet = TRUE) %>% 
     st_set_crs(3021)
   
   #a = rast("data-raw/figures/MapDistribution-data/R_files_for_similar_map/MapSweden.tif")
@@ -176,38 +178,29 @@ sebms_distribution_map <- function(year=2021, species = 118, width=12, height=18
     rename_with(.fn = ~c("x", "y","Red", "Green", "Blue", "Max")) %>% 
     filter(Red != 0)
   
-  pal_orig <- c("#EAAD44","#CB8D35","#AB6D25","#944D15","#5C4504")
-  pals <- brewer.pal(7, "OrRd")[c(1, 4, 7)]
+  #pal_orig <- c("#EAAD44","#CB8D35","#AB6D25","#944D15","#5C4504")
+  pal_orig <- c(rgb(234,173,68, alpha = 96, maxColorValue = 255),rgb(203,141,53, alpha = 96, maxColorValue = 255),rgb(171,109,37, alpha = 96, maxColorValue = 255), rgb(148,77,21, alpha = 96, maxColorValue = 255),rgb(92,69,4, alpha = 96, maxColorValue = 255))
+  #pals <- brewer.pal(5, "OrRd")#[c(1, 4, 7)]
+  #  c("#FEF0D9", "#FDCC8A", "#FC8D59", "#E34A33", "#B30000")
   
   # QUESTION: Is it possible to add a colour to each df grid value and let scale_fill identity use that with fill = colour in geom_tile()?
   speplot <- function(spda) {
     ggplot() +
       geom_raster(data = tiff, aes(x = x, y = y,fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) +
-      geom_sf(data = spda, colour = "red", size = 0.8, inherit.aes = F) +
-      geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = "black", inherit.aes = F) +
       scale_fill_identity() +
       #coord_sf(expand = F) +
       new_scale_fill() +
       geom_tile(aes(x, y, fill = as.factor(value)), data = df, inherit.aes = FALSE, alpha = 0.5, size = 0.2) +
-      # scale_fill_gradient2(name = "Lokaler (n)",
-      #                     breaks = 1:5,
-      #                     labels = c(1:4, ">= 5"),
-      #                     guide = "legend",
-      #                     na.value = "transparent",
-      #                     low = pal_orig[1], mid = pal_orig[3], high = pal_orig[5],
-      #                     midpoint = mean(df$value)) +
+      geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = F) +
+      geom_sf(data = spda, colour = rgb(255,0,0,maxColorValue = 255), size = 0.5, inherit.aes = F) +
       scale_fill_manual(name = "Lokaler (n)",
                         breaks = 1:5,
                         labels = c(1:4, ">= 5"),
                         values = pal_orig,
                         guide = "legend",
-                        na.value = "transparent",
-                        #low = pal_orig[1], mid = pal_orig[3], high = pal_orig[5],
-                        #midpoint = mean(df$value)
-      ) +
+                        na.value = "transparent") +
       theme_void() +
       theme(plot.background = element_rect(fill = "white", colour = "white"),
-            #legend.position = "left",
             legend.position = c(0.2,0.8))
     
     #scale_fill_gradient2(name = "Lokaler (n)", labels = c(1:4, ">= 5"), 
@@ -224,7 +217,7 @@ sebms_distribution_map <- function(year=2021, species = 118, width=12, height=18
   
   map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, .y, width = width, height = height, weathervar = glue("{year}")))
   
-   if (print) {
+  if (print) {
     return(ggs$plots)
   }
 }

@@ -4,14 +4,27 @@
 \alias{sebms_sites_map}
 \title{Swedish Map of SeBMS Sites}
 \usage{
-sebms_sites_map(year = 2021, width = 5, height = 3.5)
+sebms_sites_map(
+  year = 2021,
+  species = 118,
+  width = 12,
+  height = 18,
+  occ_sp,
+  print = FALSE
+)
 }
 \arguments{
 \item{year}{the year of interest}
 
-\item{width}{the plot width, default 5 inches}
+\item{species}{the species of interest as a species id}
 
-\item{height}{the plot height, default 3.5 inches}
+\item{width}{the plot width, default 12 inches}
+
+\item{height}{the plot height, default 18 inches}
+
+\item{occ_sp}{SpatialPoints with occurrence data}
+
+\item{print}{logical; should the plots be printed in window, default FALSE}
 }
 \value{
 ggplot object

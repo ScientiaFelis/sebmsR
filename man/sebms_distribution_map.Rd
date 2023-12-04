@@ -18,9 +18,9 @@ sebms_distribution_map(
 
 \item{species}{the species of interest as a species id}
 
-\item{width}{the plot width, default 5 inches}
+\item{width}{the plot width, default 12 inches}
 
-\item{height}{the plot height, default 3.5 inches}
+\item{height}{the plot height, default 18 inches}
 
 \item{occ_sp}{SpatialPoints with occurrence data}
 

@@ -26,21 +26,21 @@ sunHdata <- function(year, months, day, per_day = FALSE) {
       httr::content(encoding = "UTF-8") %>% 
       bind_rows() %>% 
       mutate(gapvalue = if_else(value < 0,
-                              "Low value",
-                              "Normal value"),
-           value = if_else(value < 0,
-                           mean(c(lag(value), lead(value)), na.rm = T),
-                           value))
+                                "Low value",
+                                "Normal value"),
+             value = if_else(value < 0,
+                             mean(c(lag(value), lead(value)), na.rm = T),
+                             value))
   }else {
     httr::GET(glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{months}/parameter/119/data.json?interval=monthly")) %>% 
       httr::content(encoding = "UTF-8") %>% 
       bind_rows() %>% 
       mutate(gapvalue = if_else(value < 0,
-                              "Low value",
-                              "Normal value"),
-           value = if_else(value < 0,
-                           mean(c(lag(value), lead(value)), na.rm = T),
-                           value))
+                                "Low value",
+                                "Normal value"),
+             value = if_else(value < 0,
+                             mean(c(lag(value), lead(value)), na.rm = T),
+                             value))
   }
 }
 
@@ -71,11 +71,10 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
   
   if (per_month) { #This runs two different versions of the functions. Summarise per month or per year.
     
-    # TODO Check what allyears give with dayfunc not goruping per month
     if (per_day) {
       dayfunc <- function(year, months) {
-        pmap_dfr(Day, possibly(~sunHdata(year = year, months = months, day = .x, per_day = TRUE))) %>%
-          bind_rows() %>% 
+        pmap(Day, possibly(~sunHdata(year = year, months = months, day = .x, per_day = TRUE))) %>%
+          list_rbind() %>% 
           group_by(gapvalue, lat, lon) %>% 
           summarise(daysunH = sum(value), .groups = "drop")
       } # This function iterate over days (and hour combinations if wanted) in combination with the year and month.
@@ -83,7 +82,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
       allyears <- function(year, months){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
         map2(year, months, dayfunc) %>% ##iterate through year plus month and send that to sunHdata via dayfunc and fix_sunhour_NAs, se above
           set_names(months) %>% # set the names of month to list items
-          bind_rows(.id = "month") %>% # Take the nmae of list items (month) and set them in a variable
+          bind_rows(.id = "month") %>% # Take the name of list items (month) and set them in a variable
           group_by(month, gapvalue, lat, lon) %>% 
           summarise(total_sunH = sum(daysunH),
                     .groups = "drop") %>%
@@ -112,8 +111,8 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
     
     if (per_day) { # Take out data per day
       dayfunc <- function(year, months) {
-        pmap_dfr(Day, possibly(~sunHdata(year = year, months = months, day = .x, per_day = TRUE))) %>%
-          bind_rows() %>% 
+        pmap(Day, possibly(~sunHdata(year = year, months = months, day = .x, per_day = TRUE))) %>%
+          list_rbind() %>% 
           group_by(gapvalue, lat, lon) %>% 
           summarise(daysunH = sum(value), .groups = "drop")
       } # This function iterate over days (and hour combinations if wanted) in combination with the year and month.
@@ -147,6 +146,8 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
     set_names(year) %>% # set names to Year
     bind_rows(.id = "Year")
   
+  # Now we take the data frame and convert it to a sf object and intersect with a sf object over Sweden.
+  # We then also bind the mean values to the resulting data frame and calculate a diff from the total sun hours
   if (per_month) { #per month sunlist data
     
     lmon <- sunlist %>% distinct(month) %>% pull()
@@ -154,16 +155,16 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
       message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n 'per_day=TRUE' MIGHT WORK.")
       months <- as.integer(lmon)
     }
-     
+    
     sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.
       select(Year, month, gapvalue, total_sunH, lon, lat) %>% # Put year in a column
       filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
       st_as_sf(coords = c("lon", "lat")) %>%
       st_set_crs(4326) %>%
-      st_intersection(SE) %>% 
-      bind_cols(meansunH_M %>% st_drop_geometry() %>% filter(month %in% months) %>% select(-month)) %>% 
+      st_intersection(SE) %>% # Filter out points for Sweden
+      bind_cols(meansunH_M %>% st_drop_geometry() %>% filter(month %in% months) %>% select(-month)) %>% # Bind in the mean sun hours per month
       group_by(Year, month) %>% 
-      mutate(sundiff = total_sunH - mean_sunH) %>% 
+      mutate(sundiff = total_sunH - mean_sunH) %>% # Calculate difference of sunhours to mean
       ungroup() 
     
   }else { # Per year sunlist data
@@ -179,15 +180,15 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
     sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.
       group_by(Year, gapvalue, lat, lon) %>% 
       summarise(total_sunH = sum(total_sunH)) %>% 
+      ungroup() %>% 
       mutate(total_sunH = total_sunH / 60) %>% # Convert minutes to hours
       select(Year, gapvalue, total_sunH, lon, lat) %>% # Put year in a column
       filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
-      ungroup() %>% 
       st_as_sf(coords = c("lon", "lat")) %>%
       st_set_crs(4326) %>%
-      st_intersection(SE) %>% 
-      bind_cols(meansunH %>% st_drop_geometry()) %>% 
-      mutate(sundiff = total_sunH - mean_sunH) 
+      st_intersection(SE) %>% # Filter out points in Sweden
+      bind_cols(meansunH %>% st_drop_geometry()) %>% # bind in the mean sun hours per month
+      mutate(sundiff = total_sunH - mean_sunH) # Calculate difference of sunhours to mean
   }
   
   if (to_env) {

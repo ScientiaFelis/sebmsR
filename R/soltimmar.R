@@ -502,42 +502,25 @@ sebms_minmax_sunhour <- function(df, year = 2017:2022, months = 4:9, sunvar = to
   
   if(missing(df)) {
     
-      df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day) 
-      
-      if (per_month) { # Set min max sun hour per month
-        df <- df %>% 
-          group_by(Year, month) %>% 
-          mutate(max = max({{ sunvar }}),
-                 min = min({{ sunvar }})) %>% 
-          filter({{ sunvar }} == max | {{ sunvar }} == min) %>% 
-          ungroup()
-      }else { # Set min-max sun hour per year
-        df <- df %>% 
-          group_by(Year) %>% 
-          mutate(max = max({{ sunvar }}),
-                 min = min({{ sunvar }})) %>% 
-          filter({{ sunvar }} == max | {{ sunvar }} == min) %>% 
-          ungroup()
-      }
-
-  }else { # If df is supplied
+    df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day) 
+  }
+  
     if (per_month) { # Set min max sun hour per month
       df <- df %>% 
         group_by(Year, month) %>% 
         mutate(max = max({{ sunvar }}),
                min = min({{ sunvar }})) %>% 
-        filter({{ sunvar }} == max | {{ sunvar }} == min) %>% 
-        ungroup()
+        ungroup() %>% 
+        filter({{ sunvar }} == max | {{ sunvar }} == min)
     }else { # Set min-max sun hour per year
       df <- df %>% 
         group_by(Year) %>% 
         mutate(max = max({{ sunvar }}),
                min = min({{ sunvar }})) %>% 
-        filter({{ sunvar }} == max | {{ sunvar }} == min) %>% 
-        ungroup()
+        ungroup() %>% 
+        filter({{ sunvar }} == max | {{ sunvar }} == min)
     }
-  }
-  
+
   minmaxsun <- df %>%
     get_nearby_SunHour(sunvar = {{ sunvar }}, per_month = per_month) %>%
     #select(Year, lon, lat, name, MaxMin = {{ sunvar }}) %>% 

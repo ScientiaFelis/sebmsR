@@ -22,8 +22,8 @@ editcred <- function(homepath = "~/") {
   if (file.exists(Renv.file)) {
     
     write("\n\nDBUSER = 'username'\nDBPASS = 'passw'\nDBNAME = 'database name'\nDBPORT = 'database port'", file = Renv.file, append = TRUE)
-   file.edit(Renv.file)
-   
+    file.edit(Renv.file)
+    
   }else {
     cat("THERE IS NO .Renviron FILE IN THE GIVEN DIRECTORY\n")
     
@@ -41,7 +41,7 @@ editcred <- function(homepath = "~/") {
   }
   
   
-
+  
 }
 
 
@@ -66,7 +66,7 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   source <- glue("({paste0({source}, collapse = ',')})")
-                 
+  
   Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement
   Landskap <- paste0(str_to_lower(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
   Kommun <- paste0(str_to_lower(Kommun),collapse = "|") # Make the list of Kommun to s regex statement
@@ -580,7 +580,7 @@ sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Län = 
           INNER JOIN lsk ON sit.sit_reg_provinceid = lsk.landskaps_id
           INNER JOIN mun ON sit.sit_reg_municipalityid = mun.kommun_id
          
-        WHERE (spv.spv_istrim=TRUE or spe_uid in (135,131,133,139) ) -- Include nullobs and 4 aggregated species groups
+        WHERE (spv.spv_istrim=TRUE or spe_uid in (135,131,132,133,139) ) -- Include nullobs and 4 aggregated species groups
           AND extract('YEAR' from vis_begintime) IN {year}
           AND vis_typ_datasourceid IN {source}
           AND not (vis_typ_datasourceid = 55  and sit_reg_countyid=2)
@@ -596,12 +596,68 @@ sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Län = 
         t.speUId, t.art,t.situid,t.Lokalnamn,t.lat,t.lon,t.sumval_rank, t.dag, t.län, t.kommun, t.landskap, t.sitetype
       ORDER BY
         t.speuid, MAX DESC, t.situid;"
-          
-)
- 
-
-  sebms_pool <- sebms_assert_connection()
-  res <- dbGetQuery(sebms_pool, q)
-  as_tibble(res)
+      
+  )
   
+  t <- glue("SELECT
+ 
+t.speUId,
+t.artnamn,
+t.sitUId,
+t.Lokalnamn,
+t.lokaltyp,
+t.Landskap,
+t.dag,
+t.N,
+t.E,
+t.sumval_rank,
+MAX(sumval)
+ 
+FROM
+( SELECT
+spe.spe_uid AS speUId,
+spe.spe_semainname As artnamn,
+sit.sit_uid AS sitUId,
+sit.sit_name AS Lokalnamn,
+reg.reg_name AS Landskap,
+vis.vis_begintime AS dag,
+sit.sit_type as lokaltyp,
+sit.sit_geort9025gonvlat AS N,
+sit.sit_geort9025gonvlon AS E,
+EXTRACT (week FROM vis_begintime::date) AS vecka,
+SUM(obs.obs_count) AS sumval,
+dense_rank() OVER (PARTITION BY spe.spe_uid,sit.sit_uid ORDER BY SUM(obs.obs_count) DESC, vis.vis_uid ) AS sumval_rank
+FROM obs_observation AS obs
+INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
+INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
+INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
+INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
+INNER JOIN reg_region AS reg ON sit.sit_reg_provinceid = reg.reg_uid
+INNER JOIN  spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid      -- så här bör det väl vara?
+
+
+WHERE date_trunc('YEAR', vis_begintime) =(DATE '2022-01-01')
+AND (spv.spv_istrim=TRUE or spe_uid in (135,131,133,139) )
+AND 
+vis_typ_datasourceid in (54,55,56,63,64,66,67,84)   
+and not (vis_typ_datasourceid = 55  and sit_reg_countyid=2)
+--AND sit.sit_uid=6
+--AND spe.spe_uid =119
+GROUP BY
+  spe.spe_uid, sit.sit_uid , vis.vis_uid, reg.reg_name,lokaltyp
+ORDER BY
+   spe.spe_uid,sit.sit_uid) AS t
+ 
+WHERE t.sumval_rank =1 --between 1 and 3 
+GROUP BY
+t.speUId, t.artnamn,t.sitUId,t.Lokalnamn,t.N,t.E,t.sumval_rank, t.dag, t.Landskap,t.lokaltyp
+ORDER BY
+   t.speUId, MAX DESC, t.sitUId
+  ")
+
+
+sebms_pool <- sebms_assert_connection()
+res <- dbGetQuery(sebms_pool, q)
+as_tibble(res)
+
 } 

@@ -115,11 +115,11 @@ sebms_sites_map <- function(year=2021, species = 118, width = 12, height = 18, o
 #'   species occurence points.
 
 #' @export
-sebms_distribution_map <- function(year=2021, species = 118, width=12, height=18, occ_sp, print = FALSE) {
+sebms_distribution_map <- function(year=2022, species = 118, width=12, height=18, occ_sp, print = FALSE) {
   
   if (missing(occ_sp)) {
-    occ_sp <- sebms_occurances_distribution(year = year, Art = species) %>%
-      select(art, lokalnamn, lat, lon) %>% 
+    occ_sp <- sebms_occurances_distribution(year = year) %>%
+      transmute(speuid, art, lokalnamn, lat, lon, maxobs = as.numeric(max)) %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
       st_set_crs(3006) %>% 
       st_transform(3021)
@@ -154,13 +154,6 @@ sebms_distribution_map <- function(year=2021, species = 118, width=12, height=18
   rs <- rast(ext(grid), nrows = 62, ncols = 28, 
              crs = crs(grid))
   
-  rl <- rasterize(occ_sp, rs, fun = n_points_in_cell)
-  idx_n_large <- which(values(rl) >= 5)
-  rl[][idx_n_large] <- 5
-  
-  
-  df <- as.data.frame(rl, xy = T)
-  colnames(df) <- c("x", "y", "value")
   
   
   ## Sweden map
@@ -177,20 +170,34 @@ sebms_distribution_map <- function(year=2021, species = 118, width=12, height=18
     filter(Red != 0)
   
   #pal_orig <- c("#EAAD44","#CB8D35","#AB6D25","#944D15","#5C4504")
-  pal_orig <- c(rgb(0,0,0, alpha = 0, maxColorValue = 255), rgb(234,173,68, alpha = 96, maxColorValue = 255),rgb(203,141,53, alpha = 96, maxColorValue = 255),rgb(171,109,37, alpha = 96, maxColorValue = 255), rgb(148,77,21, alpha = 96, maxColorValue = 255),rgb(92,69,4, alpha = 96, maxColorValue = 255))
+  pal_orig <- c(rgb(1,1,1, alpha =  1 * 255 / 100, maxColorValue = 255), rgb(234,173,68, alpha = 96, maxColorValue = 255),rgb(203,141,53, alpha = 96, maxColorValue = 255),rgb(171,109,37, alpha = 96, maxColorValue = 255), rgb(148,77,21, alpha = 96, maxColorValue = 255),rgb(92,69,4, alpha = 96, maxColorValue = 255))
   #pals <- brewer.pal(5, "OrRd")#[c(1, 4, 7)]
+  
+  #  c("#01010102", "#EAAD4460", "#CB8D3560", "#AB6D2560", "#944D1560", "#5C450460")
   #  c("#FEF0D9", "#FDCC8A", "#FC8D59", "#E34A33", "#B30000")
   
   # QUESTION: Is it possible to add a colour to each df grid value and let scale_fill identity use that with fill = colour in geom_tile()?
-  speplot <- function(spda) {
+  speplot <- function(spda, spid) {
+    
+    # Create data frame to construct the fill colour
+    rl <- occ_sp %>%
+      filter(speuid %in% c(spid, 135)) %>%
+      rasterize(rs, field = "maxobs")
+    
+    rl[rl>4] <- 5
+    
+    df <- as.data.frame(rl, xy = T)
+    colnames(df) <- c("x", "y", "value")
+    
+    # Make the plot
     ggplot() +
-      geom_raster(data = tiff, aes(x = x, y = y,fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) +
+      geom_raster(data = tiff, aes(x = x, y = y,fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) + # The swedish map
       scale_fill_identity() +
       #coord_sf(expand = F) +
-      new_scale_fill() +
-      geom_tile(aes(x, y, fill = as.factor(value)), colour = rgb(128,128,128, maxColorValue = 255), data = df, inherit.aes = FALSE, alpha = 0.5, size = 0.2) +
-      geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = F) +
-      geom_sf(data = spda, colour = rgb(255,0,0,maxColorValue = 255), size = 0.5, inherit.aes = F) +
+      new_scale_fill() + # Start new scale
+      geom_tile(data = df %>% mutate(value = na_if(value, 0)), aes(x, y, fill = as.factor(value)), colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = FALSE, alpha = 0.5, size = 0.2) + # Dataframe from occurence data with values of max obs 1-5+
+      geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = F) + # Visited grids
+      geom_sf(data = spda, colour = rgb(255,0,0,maxColorValue = 255), size = 0.5, inherit.aes = F) + # Species occurences
       scale_fill_manual(name = NULL,
                         breaks = 0:5,
                         labels = c(0:4, "5+"),
@@ -211,16 +218,18 @@ sebms_distribution_map <- function(year=2021, species = 118, width=12, height=18
   }
   
   ggs <- occ_sp %>% 
-    group_by(art) %>% 
+    filter(maxobs > 0, speuid %in% species) %>% 
+    group_by(speuid, art) %>% 
     nest() %>% 
     ungroup() %>% 
-    mutate(plots = map(data, speplot, .progress = "Making plots:"))
+    mutate(plots = map2(data, speuid, speplot, .progress = "Making plots:"))
   
   map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, .y, width = width, height = height, weathervar = glue("{year}")), .progress = "Saving plots:")
   
   if (print) {
     return(ggs$plots)
   }
+  
 }
 
 

@@ -130,15 +130,15 @@ sebms_distribution_map <- function(year=2022, species = 118, width=12, height=18
     st_set_crs(3021)
   
   
-  alla <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "alla_2010-2014_sites", quiet = TRUE) %>% 
+  # bf <- occ_sp %>% st_join(SweLandGrid, .) %>%  # Filter out grids which have been visited
+  #   distinct(lokalnamn, .keep_all = T)
+  
+  # Create a grid for all the visited survey grids the given year
+  bf <- apply(st_intersects(SweLandGrid, occ_sp %>% distinct(lokalnamn, .keep_all = T), sparse = FALSE), 2, function(col) { SweLandGrid[which(col), ]}) %>% 
+    list_rbind() %>% 
+    st_as_sf() %>% 
     st_set_crs(3021)
   
-  # bf <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "ButterflySquares0423", quiet = TRUE) %>%
-  #   st_set_crs(3021)
-  # 
-  
-  
-  bf <- occ_sp %>% st_join(SweLandGrid) # Filter out grids which have been visited
   
   grid <- sebms_swe_grid %>% 
     st_as_sf() %>% 
@@ -206,7 +206,7 @@ sebms_distribution_map <- function(year=2022, species = 118, width=12, height=18
                         values = pal_orig,
                         guide = "legend",
                         na.value = "transparent"
-                        ) +
+      ) +
       theme_void() +
       theme(plot.background = element_rect(fill = "white", colour = "white"),
             legend.position = c(0.2,0.8),

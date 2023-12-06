@@ -146,11 +146,12 @@ sebms_distribution_map <- function(year=2022, species = 118, width=12, height=18
     st_transform(3021)
   
   
-  ## Species raster
-  n_points_in_cell <- function(x, na.rm = TRUE){ 
-    if (na.rm) length(na.omit(x)) else (length(x))
-  }
+  # n_points_in_cell <- function(x, na.rm = TRUE){ 
+  #   if (na.rm) length(na.omit(x)) else (length(x))
+  # }
+  # 
   
+  # Make a raster of all grid cells covering Sweden
   rs <- rast(ext(grid), nrows = 62, ncols = 28, 
              crs = crs(grid))
   
@@ -169,41 +170,42 @@ sebms_distribution_map <- function(year=2022, species = 118, width=12, height=18
     rename_with(.fn = ~c("x", "y","Red", "Green", "Blue", "Max")) %>% 
     filter(Red != 0)
   
+  
+  # Creating a colour scale for the occurrences fill
+  
+  pal_orig <- c(NA, rgb(234,173,68, alpha = 96, maxColorValue = 255),rgb(203,141,53, alpha = 96, maxColorValue = 255),rgb(171,109,37, alpha = 96, maxColorValue = 255), rgb(148,77,21, alpha = 96, maxColorValue = 255),rgb(92,69,4, alpha = 96, maxColorValue = 255))
   #pal_orig <- c("#EAAD44","#CB8D35","#AB6D25","#944D15","#5C4504")
-  pal_orig <- c(rgb(1,1,1, alpha =  1 * 255 / 100, maxColorValue = 255), rgb(234,173,68, alpha = 96, maxColorValue = 255),rgb(203,141,53, alpha = 96, maxColorValue = 255),rgb(171,109,37, alpha = 96, maxColorValue = 255), rgb(148,77,21, alpha = 96, maxColorValue = 255),rgb(92,69,4, alpha = 96, maxColorValue = 255))
-  #pals <- brewer.pal(5, "OrRd")#[c(1, 4, 7)]
   
-  #  c("#01010102", "#EAAD4460", "#CB8D3560", "#AB6D2560", "#944D1560", "#5C450460")
-  #  c("#FEF0D9", "#FDCC8A", "#FC8D59", "#E34A33", "#B30000")
   
-  # QUESTION: Is it possible to add a colour to each df grid value and let scale_fill identity use that with fill = colour in geom_tile()?
+  # Creating the plotting function
   speplot <- function(spda, spid) {
     
-    # Create data frame to construct the fill colour
+    # Create data frame to construct the fill colour for the given species + zeroes
     rl <- occ_sp %>%
       filter(speuid %in% c(spid, 135)) %>%
       rasterize(rs, field = "maxobs")
     
-    rl[rl>4] <- 5
+    rl[rl>4] <- 5 # Every max obs value over 5 should be 5
     
     df <- as.data.frame(rl, xy = T)
     colnames(df) <- c("x", "y", "value")
     
     # Make the plot
     ggplot() +
-      geom_raster(data = tiff, aes(x = x, y = y,fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) + # The swedish map
-      scale_fill_identity() +
+      geom_raster(data = tiff, aes(x = x, y = y,fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) + # The Swedish map
+      scale_fill_identity() + # This keep the correct original colours of map
       #coord_sf(expand = F) +
       new_scale_fill() + # Start new scale
-      geom_tile(data = df %>% mutate(value = na_if(value, 0)), aes(x, y, fill = as.factor(value)), colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = FALSE, alpha = 0.5, size = 0.2) + # Dataframe from occurence data with values of max obs 1-5+
-      geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = F) + # Visited grids
-      geom_sf(data = spda, colour = rgb(255,0,0,maxColorValue = 255), size = 0.5, inherit.aes = F) + # Species occurences
+      geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = F) + # Visited survey grids the given year
+      geom_tile(data = df, aes(x, y, fill = as.factor(value)), colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = FALSE, alpha = 0.5, size = 0.2) + # Tiles/raster with occurrence data with values of the max observation of individuals per day 0-5+
+      geom_sf(data = spda, colour = rgb(255,0,0,maxColorValue = 255), size = 0.5, inherit.aes = F) + # Species occurrences
       scale_fill_manual(name = NULL,
                         breaks = 0:5,
                         labels = c(0:4, "5+"),
                         values = pal_orig,
                         guide = "legend",
-                        na.value = "transparent") +
+                        na.value = "transparent"
+                        ) +
       theme_void() +
       theme(plot.background = element_rect(fill = "white", colour = "white"),
             legend.position = c(0.2,0.8),

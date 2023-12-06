@@ -120,6 +120,7 @@ sebms_distribution_map <- function(year=2022, species = 118, width=12, height=18
   if (missing(occ_sp)) {
     occ_sp <- sebms_occurances_distribution(year = year) %>%
       transmute(speuid, art, lokalnamn, lat, lon, maxobs = as.numeric(max)) %>% 
+      mutate(art = str_replace_all(art, "/", "-")) %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
       st_set_crs(3006) %>% 
       st_transform(3021)

@@ -167,22 +167,34 @@ sebms_distribution_map <- function(year=2023, Art = 118, width=12, height=18, oc
   
   # Creating a colour scale for the occurrences fill
   
-  pal_orig <- c(NA, rgb(234,173,68, alpha = 96, maxColorValue = 255),rgb(203,141,53, alpha = 96, maxColorValue = 255),rgb(171,109,37, alpha = 96, maxColorValue = 255), rgb(148,77,21, alpha = 96, maxColorValue = 255),rgb(92,69,4, alpha = 96, maxColorValue = 255))
+  # pal_orig <- c("0" = NA_integer_, "1" = rgb(234,173,68, alpha = 96, maxColorValue = 255), "2" = rgb(203,141,53, alpha = 96, maxColorValue = 255), "3" = rgb(171,109,37, alpha = 96, maxColorValue = 255), "4" = rgb(148,77,21, alpha = 96, maxColorValue = 255), "5" = rgb(92,69,4, alpha = 96, maxColorValue = 255))
   #pal_orig <- c("#EAAD44","#CB8D35","#AB6D25","#944D15","#5C4504")
   
   
   # Creating the plotting function
   speplot <- function(spda, spid) {
     
-    # Create data frame to construct the fill colour for the given species + zeroes
+    # Create data frame to construct the fill colour for the given species
     rl <- occ_sp %>%
-      filter(speuid %in% c(spid, 135)) %>%
+      filter(speuid %in% c(spid)) %>%
+      arrange(maxobs) %>% 
       rasterize(rs, field = "maxobs")
     
     rl[rl>4] <- 5 # Every max obs value over 5 should be 5
     
     df <- as.data.frame(rl, xy = T)
     colnames(df) <- c("x", "y", "value")
+    df <- df %>%
+      bind_rows(data.frame(x = NA, y = NA, value = 0:5)) %>% # Fill in all possible values to make legend always show all values 0-5
+      # Make a colour variable to make scale_fill work
+      mutate(colour = case_when(value == 0 ~ "NA",
+                               value == 1 ~ rgb(234,173,68, alpha = 96, maxColorValue = 255),
+                               value == 2 ~ rgb(203,141,53, alpha = 96, maxColorValue = 255),
+                               value == 3 ~ rgb(171,109,37, alpha = 96, maxColorValue = 255),
+                               value == 4 ~ rgb(148,77,21, alpha = 96, maxColorValue = 255),
+                               value == 5 ~ rgb(92,69,4, alpha = 96, maxColorValue = 255),
+                               TRUE ~ "white"),
+             colour = fct_rev(colour))
     
     # Make the plot
     ggplot() +
@@ -191,32 +203,33 @@ sebms_distribution_map <- function(year=2023, Art = 118, width=12, height=18, oc
       #coord_sf(expand = F) +
       new_scale_fill() + # Start new scale
       geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = F) + # Visited survey grids the given year
-      geom_tile(data = df, aes(x, y, fill = as.factor(value)), colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = FALSE, alpha = 0.5, size = 0.2) + # Tiles/raster with occurrence data with values of the max observation of individuals per day 0-5+
-      geom_sf(data = spda, colour = rgb(255,0,0,maxColorValue = 255), size = 0.5, inherit.aes = F) + # Species occurrences
-      scale_fill_manual(name = NULL,
-                        breaks = 0:5,
-                        labels = c(0:4, "5+"),
-                        values = pal_orig,
-                        guide = "legend",
-                        na.value = "transparent"
-      ) +
+      geom_tile(data = df, aes(x, y, fill = colour), colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = FALSE, alpha = 0.4, size = 0.2) + # Tiles/raster with occurrence data with values of the max observation of individuals per day 0-5+
+      geom_sf(data = spda, colour = rgb(255,0,0,maxColorValue = 255), size = 0.1, inherit.aes = F) + # Species occurrences
+      # scale_fill_manual(name = NULL,
+      #                   breaks = c("0", "1", "2", "3", "4", "5"),
+      #                   labels = c("0", "1", "2", "3", "4", "5+"),
+      #                   values = pal_orig,
+      #                   guide = "legend",
+      #                   drop = F,
+      #                   na.value = "transparent"
+      # ) +
+      scale_fill_identity(name = NULL,
+                          guide = "legend",
+                          labels = c("0", "1", "2", "3", "4", "5+")
+                          ) +
       theme_void() +
       theme(plot.background = element_rect(fill = "white", colour = "white"),
-            legend.position = c(0.2,0.8),
+            legend.position = c(0.2,0.85),
             legend.spacing.y = unit(2, units = "mm"),
-            legend.key.size = unit(5, units = "mm")) +
+            legend.key.size = unit(3, units = "mm")) +
       guides(fill = guide_legend(byrow = TRUE))
-    
-    #scale_fill_gradient2(name = "Lokaler (n)", labels = c(1:4, ">= 5"), 
-    # guide = "legend", na.value = "transparent", 
-    # low = pal_orig[1], mid = pal_orig[3], high = pal_orig[5], 
-    # midpoint = mean(df$value)) +
+ 
   }
   
   ggs <- occ_sp %>% 
     filter(maxobs > 0, speuid %in% species) %>% 
     group_by(speuid, art) %>% 
-    nest() %>% 
+    nest() %>% # Nest per species to save one png per species
     ungroup() %>% 
     mutate(plots = map2(data, speuid, speplot, .progress = "Making plots:"))
   

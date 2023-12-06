@@ -39,8 +39,6 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
   s2 <- sp %>%
     filter(count < median(count), !str_detect(art, "[Nn]oll"))
   
-  
-  
   # Modify theme
   theme_sebms2 <- function() {
     theme_sebms_species() +
@@ -305,7 +303,6 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
     summarise(count = sum(antal, na.rm = T), .groups = "drop") %>% 
     mutate(art = str_replace(art, "/", "_"))
   
-  
   # Week / month label to get label of month below first week in month.
   fmt_label <- function(w) {
     
@@ -490,8 +487,6 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
     summarise(sortorder = first(sortorder),
               medel = max(medel),
               site_count = sum(site_count), .groups = "drop")
-  
-  
   
   options(OutDec = ",") # Set decimal separator to comma. Perhaps test `withr::local_options(list(OutDec=",))`
   

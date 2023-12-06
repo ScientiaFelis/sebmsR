@@ -20,7 +20,7 @@
 #' 
 #' @return Figures in png for points, and transects the given year
 #' @export
-sebms_sites_map <- function(year=2021, width = 12, height = 18, occ_sp, print = FALSE) {
+sebms_sites_map <- function(year=lubridate::year(lubridate::today()), width = 12, height = 18, occ_sp, print = FALSE) {
   
  if (missing(occ_sp)) { #Load in data for all species from given year
     occ_sp <- sebms_occurances_distribution(year = year) %>%
@@ -109,7 +109,7 @@ sebms_sites_map <- function(year=2021, width = 12, height = 18, occ_sp, print = 
 #'   species occurence points.
 
 #' @export
-sebms_distribution_map <- function(year=2023, Art = 1:200, width=9, height=18, occ_sp, print = FALSE) {
+sebms_distribution_map <- function(year=lubridate::year(lubridate::today()), Art = 1:200, width=9, height=18, occ_sp, print = FALSE) {
   
   if (missing(occ_sp)) { #Load in data for all species from given year
     occ_sp <- sebms_occurances_distribution(year = year) %>%

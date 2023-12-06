@@ -1,95 +1,91 @@
 #' Swedish Map of SeBMS Sites
+#'
+#' Producing map for all visited sites on Swedish grid separating transects and
+#' points.
 #' 
-#' Producing map for all sites on Swedish grid.
-#' 
-#' @import grid
-#' @import magick
-#' @import ggthemes
 #' @import ggplot2
 #' @import sf
-#' @importFrom terra ext ext<- rast rasterize crs crs<- project values
+#' @importFrom terra ext ext<- rast rasterize crs crs<- coltab project values
+#' @importFrom ggnewscale new_scale_fill
 #' @importFrom dplyr mutate group_by ungroup
 #' @importFrom tidyr nest
 #' @importFrom purrr map map2
 #' @importFrom glue glue
-#' 
+#'
 #' @param year the year of interest
 #' @param width the plot width, default 12 inches
-#' @param Art the species of interest as a species id
 #' @param height the plot height, default 18 inches
 #' @param occ_sp SpatialPoints with occurrence data
 #' @param print logical; should the plots be printed in window, default FALSE
-#' @return ggplot object
+#' 
+#' @return Figures in png for points, and transects the given year
 #' @export
-sebms_sites_map <- function(year=2021, Art = 118, width = 12, height = 18, occ_sp, print = FALSE) {
+sebms_sites_map <- function(year=2021, width = 12, height = 18, occ_sp, print = FALSE) {
   
-  if (missing(occ_sp)) {
-    occ_sp <- sebms_occurances_distribution(year = year, Art = species) %>%
-      select(art, lokalnamn, lat, lon) %>% 
+ if (missing(occ_sp)) { #Load in data for all species from given year
+    occ_sp <- sebms_occurances_distribution(year = year) %>%
+      transmute(sitetype, speuid, lokalnamn, lat, lon) %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
       st_set_crs(3006) %>% 
       st_transform(3021)
   }
   
-  
   SweLandGrid <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "SweLandGrid", quiet = TRUE) %>% 
     st_set_crs(3021)
+
   
-  alla <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "alla_2010-2014_sites", quiet = TRUE) %>% 
-    st_set_crs(3021)
-  
-  bf <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "ButterflySquares0423", quiet = TRUE) %>% 
-    st_set_crs(3021)
-  
-  #a = rast("data-raw/figures/MapDistribution-data/R_files_for_similar_map/MapSweden.tif")
-  
-  grid <- sebms_swe_grid %>% 
-    st_as_sf() %>% 
-    st_set_crs(3021) %>% 
-    st_transform(3021)
-  
-  bg <- sebms_swe_borders %>%
-    st_as_sf() %>% 
-    st_set_crs(3021) %>% 
-    st_transform(3021)
-  
+  ## Sweden map
   tiff1 <- terra::rast(system.file("extdata", "MapSweden_RGB.png", 
-                                   package = "sebmsR", mustWork = TRUE))
+                                   package = "sebmsR", mustWork = TRUE)) %>% 
+    suppressWarnings()
   
-  ext(tiff1) <- c(1179998, 1948697, 6129692, 7679610)
+  terra::ext(tiff1) <- c(1179998, 1948697, 6129692, 7679610)
   crs(tiff1) <- "epsg:3021"  
   
   tiff <- tiff1 %>%   
     terra::as.data.frame(xy=T) %>% 
     rename_with(.fn = ~c("x", "y","Red", "Green", "Blue", "Max")) %>% 
-    filter(Red != 0) %>% 
-    select(-Max)
+    filter(Red != 0)
   
-  #terra::rasterize(as.matrix(tiff[1:2]), y= tiff1)
-  
-  speplot <- function(spocc) {
-    ggplot(data = tiff, aes(x = x, y = y)) +
-      geom_raster(aes(fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) +
-      geom_sf(data = bf, inherit.aes = F, alpha = 0, linewidth = 0.3, colour = "black") +
-      geom_sf(data = spocc, colour = "red", alpha = 0.2, inherit.aes = F) +
-      scale_fill_identity() +
+  # Creating the plotting function
+  speplot <- function(spda, spid) {
+    
+    # Create a grid for all the visited survey grids the given year and site type
+    bf <- apply(st_intersects(SweLandGrid, occ_sp %>% filter(sitetype %in% spid) %>% distinct(lokalnamn, .keep_all = T), sparse = FALSE), 2, function(col) { SweLandGrid[which(col), ]}) %>% 
+      list_rbind() %>% 
+      st_as_sf() %>% 
+      st_set_crs(3021)
+   
+    # Make the plot
+    ggplot() +
+      geom_raster(data = tiff, aes(x = x, y = y,fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) + # The Swedish map
+      scale_fill_identity() + # This keep the correct original colours of map
+      geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = F) + # Visited survey grids the given year
+      geom_sf(data = spda, colour = rgb(255,0,0,maxColorValue = 255), size = 0.1, inherit.aes = F) + # Species occurrences
+      coord_sf(expand = F) +
       theme_void() +
       theme(plot.background = element_rect(fill = "white", colour = "white"),
-            #legend.position = "left",
-            legend.position = c(0.2,0.8))
+            plot.margin = margin(t = 1,r = 0,b = 1,l = 0, unit = "mm"),
+            legend.position = c(0.1,0.91),
+            legend.spacing.y = unit(2, units = "mm"),
+            legend.key.size = unit(3, units = "mm")) +
+      guides(fill = guide_legend(byrow = TRUE))
+    
   }
   
-  ggs <- occ_sp %>% 
-    group_by(art) %>% 
-    nest() %>% 
+  ggs <- occ_sp %>%
+    distinct(sitetype, lokalnamn, .keep_all = T) %>% 
+    group_by(sitetype) %>% 
+    nest() %>% # Nest per species to save one png per species
     ungroup() %>% 
-    mutate(plots = map(data, speplot))
+    mutate(plots = map2(data, sitetype, speplot, .progress = "Making plots:"))
   
-  map2(ggs$plots, ggs$art, ~sebms_ggsave(plot = .x, "Butterfly_sites", weathervar = .y, width = width, height = height))
+  map2(ggs$plots, ggs$sitetype, ~sebms_ggsave(.x, .y, width = width, height = height, weathervar = glue("{year}")), .progress = "Saving plots:")
   
   if (print) {
     return(ggs$plots)
   }
+  
 }
 
 

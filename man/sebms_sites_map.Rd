@@ -5,8 +5,7 @@
 \title{Swedish Map of SeBMS Sites}
 \usage{
 sebms_sites_map(
-  year = 2021,
-  Art = 118,
+  year = lubridate::year(lubridate::today()),
   width = 12,
   height = 18,
   occ_sp,
@@ -15,8 +14,6 @@ sebms_sites_map(
 }
 \arguments{
 \item{year}{the year of interest}
-
-\item{Art}{the species of interest as a species id}
 
 \item{width}{the plot width, default 12 inches}
 
@@ -27,8 +24,9 @@ sebms_sites_map(
 \item{print}{logical; should the plots be printed in window, default FALSE}
 }
 \value{
-ggplot object
+Figures in png for points, and transects the given year
 }
 \description{
-Producing map for all sites on Swedish grid.
+Producing map for all visited sites on Swedish grid separating transects and
+points.
 }

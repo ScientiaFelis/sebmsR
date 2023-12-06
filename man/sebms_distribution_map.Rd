@@ -5,8 +5,8 @@
 \title{Swedish Map of SeBMS Distribution Data}
 \usage{
 sebms_distribution_map(
-  year = 2023,
-  Art = 118,
+  year = lubridate::year(lubridate::today()),
+  Art = 1:200,
   width = 9,
   height = 18,
   occ_sp,

@@ -115,7 +115,7 @@ sebms_sites_map <- function(year=2021, Art = 118, width = 12, height = 18, occ_s
 #'   species occurence points.
 
 #' @export
-sebms_distribution_map <- function(year=2023, Art = 118, width=12, height=18, occ_sp, print = FALSE) {
+sebms_distribution_map <- function(year=2023, Art = 118, width=9, height=18, occ_sp, print = FALSE) {
   
   if (missing(occ_sp)) { #Load in data for all species from given year
     occ_sp <- sebms_occurances_distribution(year = year) %>%
@@ -200,7 +200,6 @@ sebms_distribution_map <- function(year=2023, Art = 118, width=12, height=18, oc
     ggplot() +
       geom_raster(data = tiff, aes(x = x, y = y,fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) + # The Swedish map
       scale_fill_identity() + # This keep the correct original colours of map
-      #coord_sf(expand = F) +
       new_scale_fill() + # Start new scale
       geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = F) + # Visited survey grids the given year
       geom_tile(data = df, aes(x, y, fill = colour), colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = FALSE, alpha = 0.3, size = 0.2) + # Tiles/raster with occurrence data with values of the max observation of individuals per day 0-5+
@@ -217,9 +216,11 @@ sebms_distribution_map <- function(year=2023, Art = 118, width=12, height=18, oc
                           guide = "legend",
                           labels = c("0", "1", "2", "3", "4", "5+")
       ) +
+      coord_sf(expand = F) +
       theme_void() +
       theme(plot.background = element_rect(fill = "white", colour = "white"),
-            legend.position = c(0.2,0.85),
+            plot.margin = margin(t = 1,r = 0,b = 1,l = 0, unit = "mm"),
+            legend.position = c(0.1,0.91),
             legend.spacing.y = unit(2, units = "mm"),
             legend.key.size = unit(3, units = "mm")) +
       guides(fill = guide_legend(byrow = TRUE))
@@ -227,7 +228,7 @@ sebms_distribution_map <- function(year=2023, Art = 118, width=12, height=18, oc
   }
   
   ggs <- occ_sp %>% 
-    filter(maxobs > 0, speuid %in% species) %>% 
+    filter(maxobs > 0, speuid %in% Art) %>% 
     group_by(speuid, art) %>% 
     nest() %>% # Nest per species to save one png per species
     ungroup() %>% 

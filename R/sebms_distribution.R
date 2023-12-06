@@ -93,9 +93,6 @@ sebms_sites_map <- function(year=2021, width = 12, height = 18, occ_sp, print = 
 #'
 #' Producing distribution map for species on the Swedish grid.
 #'
-#' @import grid
-#' @import magick
-#' @import ggthemes
 #' @import ggplot2
 #' @import sf
 #' @importFrom terra ext ext<- rast rasterize crs crs<- coltab project values
@@ -106,12 +103,13 @@ sebms_sites_map <- function(year=2021, width = 12, height = 18, occ_sp, print = 
 #' @importFrom glue glue
 #'
 #' @inheritParams sebms_sites_map
+#' @param Art the species of interest as a species id
 #' 
 #' @return ggplot object of map with grid coloured by local density and with
 #'   species occurence points.
 
 #' @export
-sebms_distribution_map <- function(year=2023, Art = 118, width=9, height=18, occ_sp, print = FALSE) {
+sebms_distribution_map <- function(year=2023, Art = 1:200, width=9, height=18, occ_sp, print = FALSE) {
   
   if (missing(occ_sp)) { #Load in data for all species from given year
     occ_sp <- sebms_occurances_distribution(year = year) %>%

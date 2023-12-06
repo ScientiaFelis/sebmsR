@@ -15,13 +15,13 @@
 #' 
 #' @param year the year of interest
 #' @param width the plot width, default 12 inches
-#' @param species the species of interest as a species id
+#' @param Art the species of interest as a species id
 #' @param height the plot height, default 18 inches
 #' @param occ_sp SpatialPoints with occurrence data
 #' @param print logical; should the plots be printed in window, default FALSE
 #' @return ggplot object
 #' @export
-sebms_sites_map <- function(year=2021, species = 118, width = 12, height = 18, occ_sp, print = FALSE) {
+sebms_sites_map <- function(year=2021, Art = 118, width = 12, height = 18, occ_sp, print = FALSE) {
   
   if (missing(occ_sp)) {
     occ_sp <- sebms_occurances_distribution(year = year, Art = species) %>%
@@ -115,9 +115,9 @@ sebms_sites_map <- function(year=2021, species = 118, width = 12, height = 18, o
 #'   species occurence points.
 
 #' @export
-sebms_distribution_map <- function(year=2022, species = 118, width=12, height=18, occ_sp, print = FALSE) {
+sebms_distribution_map <- function(year=2023, Art = 118, width=12, height=18, occ_sp, print = FALSE) {
   
-  if (missing(occ_sp)) {
+  if (missing(occ_sp)) { #Load in data for all species from given year
     occ_sp <- sebms_occurances_distribution(year = year) %>%
       transmute(speuid, art, lokalnamn, lat, lon, maxobs = as.numeric(max)) %>% 
       mutate(art = str_replace_all(art, "/", "-")) %>% 
@@ -140,22 +140,15 @@ sebms_distribution_map <- function(year=2022, species = 118, width=12, height=18
     st_set_crs(3021)
   
   
+  # Make a raster of all grid cells covering Sweden
   grid <- sebms_swe_grid %>% 
-    st_as_sf() %>% 
+    st_as_sf() %>%
     st_set_crs(3021) %>% 
     suppressWarnings() %>% 
     st_transform(3021)
   
-  
-  # n_points_in_cell <- function(x, na.rm = TRUE){ 
-  #   if (na.rm) length(na.omit(x)) else (length(x))
-  # }
-  # 
-  
-  # Make a raster of all grid cells covering Sweden
   rs <- rast(ext(grid), nrows = 62, ncols = 28, 
              crs = crs(grid))
-  
   
   
   ## Sweden map

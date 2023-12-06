@@ -188,12 +188,12 @@ sebms_distribution_map <- function(year=2023, Art = 118, width=12, height=18, oc
       bind_rows(data.frame(x = NA, y = NA, value = 0:5)) %>% # Fill in all possible values to make legend always show all values 0-5
       # Make a colour variable to make scale_fill work
       mutate(colour = case_when(value == 0 ~ "NA",
-                               value == 1 ~ rgb(234,173,68, alpha = 96, maxColorValue = 255),
-                               value == 2 ~ rgb(203,141,53, alpha = 96, maxColorValue = 255),
-                               value == 3 ~ rgb(171,109,37, alpha = 96, maxColorValue = 255),
-                               value == 4 ~ rgb(148,77,21, alpha = 96, maxColorValue = 255),
-                               value == 5 ~ rgb(92,69,4, alpha = 96, maxColorValue = 255),
-                               TRUE ~ "white"),
+                                value == 1 ~ rgb(234,173,68, alpha = 96, maxColorValue = 255),
+                                value == 2 ~ rgb(203,141,53, alpha = 96, maxColorValue = 255),
+                                value == 3 ~ rgb(171,109,37, alpha = 96, maxColorValue = 255),
+                                value == 4 ~ rgb(148,77,21, alpha = 96, maxColorValue = 255),
+                                value == 5 ~ rgb(92,69,4, alpha = 96, maxColorValue = 255),
+                                TRUE ~ "white"),
              colour = fct_rev(colour))
     
     # Make the plot
@@ -203,7 +203,7 @@ sebms_distribution_map <- function(year=2023, Art = 118, width=12, height=18, oc
       #coord_sf(expand = F) +
       new_scale_fill() + # Start new scale
       geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = F) + # Visited survey grids the given year
-      geom_tile(data = df, aes(x, y, fill = colour), colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = FALSE, alpha = 0.4, size = 0.2) + # Tiles/raster with occurrence data with values of the max observation of individuals per day 0-5+
+      geom_tile(data = df, aes(x, y, fill = colour), colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = FALSE, alpha = 0.3, size = 0.2) + # Tiles/raster with occurrence data with values of the max observation of individuals per day 0-5+
       geom_sf(data = spda, colour = rgb(255,0,0,maxColorValue = 255), size = 0.1, inherit.aes = F) + # Species occurrences
       # scale_fill_manual(name = NULL,
       #                   breaks = c("0", "1", "2", "3", "4", "5"),
@@ -216,14 +216,14 @@ sebms_distribution_map <- function(year=2023, Art = 118, width=12, height=18, oc
       scale_fill_identity(name = NULL,
                           guide = "legend",
                           labels = c("0", "1", "2", "3", "4", "5+")
-                          ) +
+      ) +
       theme_void() +
       theme(plot.background = element_rect(fill = "white", colour = "white"),
             legend.position = c(0.2,0.85),
             legend.spacing.y = unit(2, units = "mm"),
             legend.key.size = unit(3, units = "mm")) +
       guides(fill = guide_legend(byrow = TRUE))
- 
+    
   }
   
   ggs <- occ_sp %>% 

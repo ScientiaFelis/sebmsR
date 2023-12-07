@@ -6,6 +6,15 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 1.8.0
+
+This version comes with new function `sebms_distribution map()` and `sebms_sites_map()` and new data request function `sebms_occurances_distribution()`.
+
+* new function `sebms_distribution map()` creates the distribution maps for reports with visited squares and occurrence data. Squares filled dependent on occurrences.
+* new function `sebms_sites_map()` show the transects and points sites with squares.
+* new function `sebms_occurances_distribution()` finds species and count the max number of individuals seen on a day for a given year.
+
+
 # v 1.7.0
 
 This version add `per_month` capability to more functions and fix some bugs

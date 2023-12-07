@@ -1,6 +1,6 @@
 Package: sebmsR
 Title: Swedish Butterfly Monitoring Programme Tools
-Version: 1.7.0
+Version: 1.8.0
 Authors@R: c(
     person(given="Markus", family="Skyttner",
       email="markus.skyttner@nrm.se",
@@ -27,6 +27,7 @@ Imports:
     dplyr,
     forcats,
     geonames,
+    ggnewscale,
     ggplot2 (>= 3.4.0),
     glue,
     httr,

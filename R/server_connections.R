@@ -103,10 +103,10 @@ sebms_connect <- function() {
 #' @noMd
 #sebms_pool <<- sebms_connect()
 
-sebms_assert_connection <- function(pool) {
+sebms_assert_connection <- function(pool, quiet = FALSE) {
   if (!missing(pool)) return(pool)
   if (is.null(sebms_pool)) {
-    message("Attempting reconnect to db...")
+    if(!quiet) {message("Attempting reconnect to db...")}
     if (exists("sebms_pool")) {
       sebms_pool <- base::get("sebms_pool")
       rm(sebms_pool)
@@ -115,7 +115,7 @@ sebms_assert_connection <- function(pool) {
     if (is.null(sebms_pool))
       warning("No connection. Please check connection settings in config.yml...")
     else
-      message("Connected!")
+      if(!quiet){ message("Connected!")}
   }
   return(sebms_pool)
 }

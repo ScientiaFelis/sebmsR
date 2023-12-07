@@ -439,7 +439,6 @@ sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Län = 
             spe.spe_uid,sit.sit_uid) AS t -- End of inner select
            
       WHERE t.sumval_rank =1 --between 1 and 3 
-          
       GROUP BY
         t.speUId, t.art,t.situid,t.Lokalnamn,t.lat,t.lon,t.sumval_rank, t.dag, t.län, t.kommun, t.landskap, t.sitetype
       ORDER BY
@@ -502,10 +501,126 @@ t.speUId, t.artnamn,t.sitUId,t.Lokalnamn,t.N,t.E,t.sumval_rank, t.dag, t.Landska
 ORDER BY
    t.speUId, MAX DESC, t.sitUId
   ")
-
-
-sebms_pool <- sebms_assert_connection()
-res <- dbGetQuery(sebms_pool, q)
-as_tibble(res)
-
+  
+  
+  sebms_pool <- sebms_assert_connection()
+  res <- dbGetQuery(sebms_pool, q)
+  as_tibble(res)
+  
 } 
+
+
+#' Retrieve Species Data for Trim Functions
+#'
+#' This function retrieve min and max flight week for each species. used for the
+#' trim indices
+#'
+#' @inheritParams sebms_abundance_per_species_plot
+#' @param filterPattern a regex pattern to filter SQL query
+#' @param topList logical; whether the top list of species should be used
+#'
+#' @return a tibble with species data
+#' @export
+sebms_trimSpecies <- function(year = 2010:lubridate::year(lubridate::today()), Art = 1:200, filterPattern = NULL, topList = FALSE, source = c(54,55,56,63,64,66,67,84)) {
+  
+  year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
+  Art <- glue("({paste0({Art}, collapse = ',')})")
+  source <- glue("({paste0({source}, collapse = ',')})")
+  
+  if (!is.null(filterPattern)) {
+    filterPattern <- glue("AND {filterPattern}")
+  }
+  
+  if (topList) {
+    
+    q <- glue("
+         SELECT
+            spe.spe_uid as speuid,
+            spe.spe_semainname AS species,
+            SUM(obs.obs_count) as speciesno
+          FROM obs_observation AS obs
+            INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
+            INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
+            INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
+            INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
+            INNER JOIN  typ_type as typ on vis.vis_typ_datasourceid = typ.typ_uid
+            INNER JOIN  spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid
+          WHERE EXTRACT('YEAR' from vis_begintime) IN {year}
+            AND vis_typ_datasourceid IN  {source} 
+            {filterPattern}
+            --AND spv.spv_istrim=TRUE 
+          GROUP BY
+            spe.spe_uid
+          ORDER BY
+            speciesno DESC;
+")
+  }else {
+    q <- glue("SELECT
+                spv_flightweekmin AS min,
+                spv_flightweekmax as max,
+                spv_spe_speciesid AS speuid,
+                spe_semainname AS art
+              FROM spv_speciesvalidation AS spv
+                INNER JOIN spe_species AS spe ON spe.spe_uid = spv_spe_speciesid
+              WHERE
+                spv_spe_speciesid IN {Art}
+                AND
+                spv_flightweekmin IS NOT NULL
+              ORDER BY speuid;")
+  }
+  
+  
+  
+  
+  sebms_pool <- sebms_assert_connection(quiet = T)
+  res <- dbGetQuery(sebms_pool, q) %>% 
+  as_tibble()
+  return(res)
+}
+
+
+#' Get Visits for Trim Indices
+#'
+#' Retrieve data with visits per sitre and number of observed individuals per
+#' year.
+#'
+#' @inheritParams sebms_trimdata
+#' @param minmax the first and last week of interest
+#'
+#' @return a tibble with visits and number of observed individuals per year and
+#'   site.
+#' @export
+sebms_trimviscount <- name <- function(year = 2010:lubridate::year(lubridate::today()), Art = 1:200, minmax = 22:32, source = c(54,55,56,63,64,66,67)) {
+  
+  minmax <- glue("({paste0({minmax}, collapse = ',')})") 
+  year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
+  source <- glue("({paste0({source}, collapse = ',')})")
+  Art <- glue("({paste0({Art}, collapse = ',')})")
+  
+ q <-  glue("SELECT
+                sit.sit_uid AS siteuid,
+                EXTRACT (year FROM vis_begintime::date) AS year,
+                COUNT(DISTINCT vis_begintime) AS visit,
+                SUM(obs.obs_count) AS total_number
+             FROM obs_observation AS obs
+                INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
+                INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
+                INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
+                INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
+                INNER JOIN rer_regionrelation AS rer ON sit.sit_reg_countyid = rer.rer_reg_childid
+                INNER JOIN reg_region AS reg on rer.rer_reg_parentid = reg.reg_uid
+                INNER JOIN  typ_type as typ on vis.vis_typ_datasourceid = typ.typ_uid
+             WHERE EXTRACT (week FROM vis_begintime::date) IN {minmax}
+                AND EXTRACT(YEAR FROM vis_begintime) IN {year}
+                AND vis_typ_datasourceid IN {source} --(54,55,56,63,64,66,67)
+                AND spe.spe_uid IN {Art}
+            GROUP BY
+                year, siteuid
+            ORDER BY
+                siteuid, year;")
+       
+    sebms_pool <- sebms_assert_connection(quiet = T)
+  res <- dbGetQuery(sebms_pool, q) %>% 
+  as_tibble()
+  return(res)
+}

@@ -76,35 +76,80 @@ get_trimInfile <- function(year=2010:2023, Art = 1:200, filterPattern=NULL, topL
   
 }
 
-################################################################################
-### Calculate TRIM Index
 
-get_trimIndex <- function(infile=NULL, year = 2010:2023, path=getwd(), ...) {
-  if(is.null(infile)){
+#' Calculate TRIM Index
+#'
+#' @inheritParams get_trimInfile
+#' @param infile file with site, year, total observations and reverse frequency weight (1/#visits), or an object from [get_trimInfile()]
+#' @param path path to ...
+#' @param ... further arguments to pass to [get_trimInfile()]
+#' 
+#' @importFrom rtrim trim
+#' @import dplyr
+#' @importFrom stringr str_detect
+#' @return
+#' @export
+#'
+#' @examples
+get_trimIndex <- function(infile=NULL, year = 2010:2023, Art = 1:200, path=getwd(), ...) {
+  
+  if(is.null(infile)) {
     arglist <- list(...)
-    if(!is.null(arglist$filterPattern)){
+    
+    if(!is.null(arglist$filterPattern)) {
       fp <- arglist$filterPattern
-      infile = get_trimInfile(filterPattern = fp, year = year)
+      infile <- get_trimInfile(filterPattern = fp, year = year, Art = Art) %>% 
+        select(siteuid, year, total_number, freq) %>% 
+        group_by(speuid) %>% 
+        nest() %>% 
+        ungroup()
+    }else{
+      infile <- get_trimInfile(year = year, Art = Art) %>% 
+        select(speuid, site = siteuid, year, total_number, freq) %>% 
+        group_by(speuid) %>% 
+        nest() %>% 
+        ungroup()
     }
-    else{
-      infile = get_trimInfile(year = year)}
+  }else {
+    infile <- infile %>% 
+      select(speuid, site = siteuid, year, total_number, freq) %>% 
+      group_by(speuid) %>% 
+      nest() %>% 
+      ungroup()
   }
+  
   if(length(infile) != 0){
-    dl.li <- vector(mode = 'list', length = length(infile))
-    names(dl.li) <- gsub("\ Spec.*","",names(infile)) #names(infile)
-    for(i in 1:length(infile)){
-      if(!is.null(infile[[i]])){
-        df.temp<-as.data.frame(infile[[i]])
-        print(names(infile)[i])
-        names(df.temp) <- c("site","year","total_number","freq")
-        
-        dl.li[[i]] <- tryCatch.W.E(trim(total_number ~ site + year,   data=df.temp, weights="freq",  model=2, serialcor=TRUE,overdisp=TRUE,changepoints="all",autodelete=TRUE, max_iter=1000))
-        dl.li[[i]]$data <- df.temp
-        dl.li[[i]]$speuid <- as.integer(gsub(".*: ","",names(infile)[i]))
-        # print(dl.li[[i]]$value)
-      }
+    
+    #    dl.li <- vector(mode = 'list', length = length(infile))
+    #names(dl.li) <- gsub("\ Spec.*","",names(infile)) #names(infile)
+    trimfun <- function(df){
+      rtrim::trim(total_number ~ site + year, data = df, weights = "freq",  model = 2, serialcor = TRUE,overdisp = TRUE,changepoints = "all",autodelete = TRUE, max_iter = 1000)
     }
-    return(dl.li)}
+    
+    trimList <- map(infile$data, trimfun, .progress = "Run trimfunction...") %>% 
+      suppressWarnings() %>% 
+       set_names(infile$speuid) #%>% 
+      # list_flatten() %>%
+      # map(~print(.x$coefficients), .progress = "Extracting coefficients...") %>%
+      # list_rbind(names_to = "speuid")
+      # 
+  
+    ## FromLars
+      # for(i in 1:length(infile)){
+    #   
+    #   if(!is.null(infile[[i]])){
+    #     
+    #     df.temp <- as.data.frame(infile[[i]])
+    #     print(names(infile)[i])
+    #     names(df.temp) <- c("speuid", "site","year","total_number","freq")
+    #     
+    #     dl.li[[i]] <- tryCatch.W.E(rtrim::trim(total_number ~ site + year, data = df.temp, weights = "freq",  model = 2, serialcor = TRUE,overdisp = TRUE,changepoints = "all",autodelete = TRUE, max_iter = 1000))
+    #     dl.li[[i]]$data <- df.temp
+    #     dl.li[[i]]$speuid <- as.integer(gsub(".*: ","",names(infile)[i]))
+    #     # print(dl.li[[i]]$value)
+    #   }
+    # }
+    return(trimList)}
   else {return(infile)}
 }
 
@@ -114,16 +159,20 @@ get_trimIndex <- function(infile=NULL, year = 2010:2023, path=getwd(), ...) {
 ################################################################################
 ### Create and save TRIM plots
 
-get_trimPlots<-function(trimIndex=NULL, startyear=2010,endyear=2023,path=getwd(), ...){
+get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path = getwd(), ...){
+  
   if(is.null(trimIndex)){
     arglist <- list(...)
+    
     if(!is.null(arglist$filterPattern)){
+      
       fp <- arglist$filterPattern
-      infile=get_trimInfile(filterPattern=fp)
-      trimIndex=get_trimIndex(infile=infile)
-    }
-    else{
-      trimIndex=get_trimIndex()}
+      infile <- get_trimInfile(filterPattern=fp)
+      trimIndex <- get_trimIndex(infile=infile)
+      
+    }else{
+      trimIndex <- get_trimIndex(year = year, Art = Art)
+      }
   }  
   
   
@@ -133,7 +182,7 @@ get_trimPlots<-function(trimIndex=NULL, startyear=2010,endyear=2023,path=getwd()
   # sebms_palette <- c("#9BBB59", "#C0504D")
   sebms_palette <- c("#FFB000", "#648FFF", "#DC267F")
   for(i in 1:length(trimIndex)){
-    if(inherits(trimIndex[[i]]$value, 'trim')){
+    if(inherits(trimIndex[[i]]$value, 'trim')) {
       
       # if(is.null(trimIndex[[i]])==FALSE){
       tryCatch({
@@ -333,7 +382,7 @@ get_trimComparedPlots<-function(imputedLocalList=NULL, trimmedImputedSwedishList
 
 ################################################################################
 ### Generate Index file for TRIM runs
-require(xlsx)
+#require(xlsx)
 
 get_trimIndexOutputXLS<-function(horisontalImputedList=NULL, imputedList=NULL, slopeList=NULL, filename='Namnlös',startyear=2010,endyear=2023,path=getwd()){
   polishedImputedList <- imputedList

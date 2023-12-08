@@ -4,7 +4,7 @@
 \alias{sebms_assert_connection}
 \title{Connection pool used for db connections}
 \usage{
-sebms_assert_connection(pool)
+sebms_assert_connection(pool, quiet = FALSE)
 }
 \arguments{
 \item{pool}{the connection pool}

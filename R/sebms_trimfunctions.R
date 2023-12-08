@@ -39,31 +39,31 @@ get_trimInfile <- function(year=2010:2023, Art = 1:200, filterPattern=NULL, topL
   spein <- function(df = data, speuid) {
     
     #print(paste("Working on species with ID",speuid))
+    minw <- df %>% pull(min) # first posible week of observation
+    maxw <- df %>% pull(max) # öast possible week of observation
     
-    min <- df %>% pull(min)
-    max <- df %>% pull(max) 
+    obses <- sebms_trimobs(year = year, Art = speuid, filterPattern = filterPattern, minmax = minw:maxw, source = source) %>% 
+      mutate(total_number = as.numeric(total_number))
     
-    visobs <- sebms_trimviscount(year = year, Art = speuid, minmax = min:max, source = source) %>% 
-      mutate(across(visit:total_number, as.numeric))
-   
-    if(nrow(visobs)>0){ #Precondition to skip species with zero observations
+    visits <- sebms_trimvisits(year = year, minmax = minw:maxw, source = source)%>% 
+      mutate(visit = as.numeric(visit))
+    
+    if(nrow(obses) > 0) { #Precondition to skip species with zero observations
       
       ##  TRIM infile generation (missing values are kept as NA)
-      
-      obsTidy <- visobs %>%
+      obsTidy <-  visits %>%
+        left_join(obses, by = c("siteuid", "year")) %>% 
         complete(siteuid, year = seq(min(year),max(year), by=1), fill=list(total_number=NA)) %>%
-        mutate(total_number = ifelse(is.na(visit), NA, total_number),
-               visit = ifelse(is.na(visit), 1, visit),
-               total_number = ifelse(total_number=='', 0, total_number),
-               freq = 1/visit,
-               total_number = as.numeric(total_number)) %>%
+        mutate(total_number = if_else(is.na(visit), NA, total_number),
+               visit = if_else(is.na(visit), 1, visit),
+               total_number = if_else(is.na(total_number) & !is.na(lag(total_number)), 0, total_number)
+               ) %>%
+        group_by(siteuid) %>% 
+        fill(total_number, .direction = "down") %>% 
+        ungroup() %>%
+        mutate(freq = 1/visit) %>% 
         select(-visit)
       
-      # obsTidy<-filter(obsTidy,year %in% startyear:endyear) #This is in order to avoid a wrong number of sites by counting sites monitored after the year of the report
-      # dl.tr[[i]]<-obsTidy
-      
-      # names(dl.tr)[i]<-minmax[,3]
-      # names(dl.tr)[i]<-paste0(minmax[,3], ' Species ID: ',  trimSpecies[i,1]) #test 1023
     }else{
       print(paste("Species with ID ",speuid," skipped, no observations!"))
     }

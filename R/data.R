@@ -6,6 +6,7 @@
 #' It can be in the user home directory or possibly in the R project working directory.
 #'
 #' @param homepath the path to the home directory
+#' 
 #'
 #' @return open the .Renviron file to add PostgreSQL credentials
 #' @export
@@ -518,7 +519,12 @@ ORDER BY
 #' @inheritParams sebms_abundance_per_species_plot
 #' @param filterPattern a regex pattern to filter SQL query
 #' @param topList logical; whether the top list of species should be used
-#'
+#' 
+#' @import tibble
+#' @importFrom glue glue
+#' @import dplyr
+#' @importFrom DBI dbGetQuery
+#' 
 #' @return a tibble with species IDs, name, and min and max flight time week
 #' @export
 sebms_trimSpecies <- function(year = 2010:lubridate::year(lubridate::today()), Art = 1:200, filterPattern = NULL, topList = FALSE, source = c(54,55,56,63,64,66,67,84)) {
@@ -585,7 +591,13 @@ sebms_trimSpecies <- function(year = 2010:lubridate::year(lubridate::today()), A
 #'
 #' @inheritParams sebms_trimSpecies
 #' @param minmax the first and last week of interest
-#'
+#' 
+#' @import tibble
+#' @importFrom glue glue
+#' @import dplyr
+#' @importFrom DBI dbGetQuery
+#' @importFrom pool localCheckout
+#' 
 #' @return a tibble with visits per year and site.
 #' 
 #' @export
@@ -594,7 +606,6 @@ sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()),  m
   minmax <- glue("({paste0({minmax}, collapse = ',')})") 
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   source <- glue("({paste0({source}, collapse = ',')})")
-  Art <- glue("({paste0({Art}, collapse = ',')})")
   
  q <-  glue("SELECT
                 sit.sit_uid AS siteuid,
@@ -616,9 +627,11 @@ sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()),  m
                 siteuid, year;")
        
     sebms_pool <- sebms_assert_connection(quiet = T)
+   # con <- pool::localCheckout(sebms_pool)
   res <- dbGetQuery(sebms_pool, q) %>% 
   as_tibble()
   return(res)
+
 }
 
 
@@ -628,7 +641,12 @@ sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()),  m
 #'
 #' @inheritParams sebms_trimSpecies
 #' @param minmax the first and last week of interest
-#'
+#' 
+#' @import tibble
+#' @importFrom glue glue
+#' @import dplyr
+#' @importFrom DBI dbGetQuery
+#' 
 #' @return a tibble with number of observed individuals per year and site.
 #' 
 #' @export

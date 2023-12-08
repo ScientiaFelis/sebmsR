@@ -12,19 +12,25 @@
 ################################################################################
 ### Get TRIM Infile
 
-#' Create an Object with 
+#' Create an Object with Species Number per Year and Site with Visit Frequency
+#' 
+#' Create a tibble with species ID and name together with the total number of observations of each species and the frequency (1 / #visits)
 #'
-#' @param year ther year of interest
-#' @param Art the species of interest 
+#' @param year the year of interest
+#' @param Art the species of interest
 #' @param filterPattern a regex pattern to filter SQL query
 #' @param topList logical; whether the top list of species should be used
-#' @param topNumber the number of species to use
+#' @param topNumber the number of top most observed species
 #' @param source the data sources
 #' 
-#' @return
-#' @export
+#' @import dplyr
+#' @importFrom tidyr complete fill nest unnest
+#' @importFrom purrr map2 possibly
+#' @importFrom glue glue
 #'
-#' @examples
+#' @return a tibble with site, year, as well as the number of individuals
+#'   observed and the observation frequency for that year, species, and site.
+#' @export
 get_trimInfile <- function(year=2010:2023, Art = 1:200, filterPattern=NULL, topList=FALSE, topNumber=200, source = c(54,55,56,63,64,66,67)){
   
   trimSpecies <- sebms_trimSpecies(year = year, Art = Art, topList = topList, source = source) %>% 

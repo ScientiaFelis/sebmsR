@@ -4,13 +4,8 @@
 ### Date: 25 October 2017
 ### Modified 2018-11-21
 ### 
-################################################################################
+###
 
-################################################################################
-
-
-################################################################################
-### Get TRIM Infile
 
 #' Create an Object with Species Number per Year and Site with Visit Frequency
 #' 
@@ -45,19 +40,19 @@ get_trimInfile <- function(year=2010:2023, Art = 1:200, filterPattern=NULL, topL
     obses <- sebms_trimobs(year = year, Art = speuid, filterPattern = filterPattern, minmax = minw:maxw, source = source) %>% 
       mutate(total_number = as.numeric(total_number))
     
-    visits <- sebms_trimvisits(year = year, minmax = minw:maxw, source = source)%>% 
+    visits <- sebms_trimvisits(year = year, minmax = minw:maxw, source = source) %>% 
       mutate(visit = as.numeric(visit))
     
     if(nrow(obses) > 0) { #Precondition to skip species with zero observations
       
       ##  TRIM infile generation (missing values are kept as NA)
-      obsTidy <-  visits %>%
-        left_join(obses, by = c("siteuid", "year")) %>% 
+      obsTidy <-  obses %>%
+        left_join(visits, by = c("siteuid", "year")) %>% 
         complete(siteuid, year = seq(min(year),max(year), by=1), fill=list(total_number=NA)) %>%
         mutate(total_number = if_else(is.na(visit), NA, total_number),
                visit = if_else(is.na(visit), 1, visit),
                total_number = if_else(is.na(total_number) & !is.na(lag(total_number)), 0, total_number)
-               ) %>%
+        ) %>%
         group_by(siteuid) %>% 
         fill(total_number, .direction = "down") %>% 
         ungroup() %>%

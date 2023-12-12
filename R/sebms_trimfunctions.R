@@ -195,7 +195,7 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path 
   sebms_palette <- c("#FFB000", "#648FFF", "#DC267F")
   
   for(i in 1:length(trimIndex)){
-    if(inherits(trimIndex[[i]]$value, 'trim')) {
+    if(inherits(trimIndex[[i]], 'trim')) {
       
       # if(is.null(trimIndex[[i]])==FALSE){
       tryCatch({

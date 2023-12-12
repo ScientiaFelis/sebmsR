@@ -658,9 +658,11 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
   Art <- glue("({paste0({Art}, collapse = ',')})")
    if (!is.null(filterPattern)) {
     filterPattern <- glue("AND {filterPattern}")
+   }else{
+     filterPattern <- glue("--NOTHING")
    }
   
- q <-  glue("SELECT
+ q <-  glue("SELECT DISTINCT
                 sit.sit_uid AS siteuid,
                 EXTRACT (year FROM vis_begintime::date) AS year,
                 SUM(obs.obs_count) AS total_number
@@ -676,6 +678,7 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
              WHERE EXTRACT (week FROM vis_begintime::date) IN {minmax}
                 AND EXTRACT(YEAR FROM vis_begintime) IN {year}
                 AND vis_typ_datasourceid IN {source} --(54,55,56,63,64,66,67)
+                {filterPattern}  -- THIS ADDS A FILTER TO THE SQL FROM THE FUNCTION
                 AND spe.spe_uid IN {Art}
             GROUP BY
                 year, siteuid

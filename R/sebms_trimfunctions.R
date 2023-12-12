@@ -333,7 +333,7 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path 
                   plot.margin = margin(8, 20, 0, 0),
                   axis.line = element_line(colour = "black")) #Axis colours
           
-          ggsave(glue("{path}{fname}.png"), width = 748, height = 868, units = "px")
+          ggsave(glue("{path}{fname}.png"), width = 22, height = 18)
           
         }else{i+1
         }

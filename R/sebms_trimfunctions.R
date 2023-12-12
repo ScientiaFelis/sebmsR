@@ -205,6 +205,11 @@ yAxisModifier <- function(x) {
 #' @param path the path to where to save figures
 #' @param ... optional; other arguments passed on to [get_trimInfile()]
 #'
+#' @import ggplot
+#' @importFrom stringr str_replace
+#' @importFrom glue glue
+#' @importFrom rtrim index overall
+#' 
 #' @return figures in png format of the species trends with confidence interval
 #' @export
 get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path = getwd(), ...){

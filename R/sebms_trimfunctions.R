@@ -196,16 +196,29 @@ yAxisModifier <- function(x) {
 ####
 ### 
 
+#' Create and Save TRIM Plots
+#'
+#' @param trimIndex optional; a trimIndex object from the [get_trimIndex()]
+#' @param year the years to calculate trimindex on, ignored if trimIndex is not
+#'   NULL
+#' @param Art the species of interest, ignored if trimIndex is not NULL
+#' @param path the path to where to save figures
+#' @param ... optional; other arguments passed on to [get_trimInfile()]
+#'
+#' @return figures in png format of the species trends with confidence interval
+#' @export
 get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path = getwd(), ...){
   
-  if(is.null(trimIndex)){
+  if(is.null(trimIndex)) {
+    
     arglist <- list(...)
     
     if(!is.null(arglist$filterPattern)){
       
       fp <- arglist$filterPattern
-      infile <- get_trimInfile(filterPattern=fp)
-      trimIndex <- get_trimIndex(infile=infile)
+      
+      trimIndex <- get_trimInfile(year = year, Art = Art, filterPattern = fp) %>% 
+        get_trimIndex()
       
     }else{
       trimIndex <- get_trimIndex(year = year, Art = Art)

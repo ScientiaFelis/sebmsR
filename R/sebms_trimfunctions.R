@@ -142,14 +142,14 @@ get_trimIndex <- function(infile=NULL, year = 2010:2023, Art = 1:200, path=getwd
     
     trimList <- map(infile$data, trimfun, .progress = "Run trimfunction...") %>% 
       suppressWarnings() %>% 
-       set_names(infile$speuid) #%>% 
-      # list_flatten() %>%
-      # map(~print(.x$coefficients), .progress = "Extracting coefficients...") %>%
-      # list_rbind(names_to = "speuid")
-      # 
-  
+      set_names(infile$speuid) #%>% 
+    # list_flatten() %>%
+    # map(~print(.x$coefficients), .progress = "Extracting coefficients...") %>%
+    # list_rbind(names_to = "speuid")
+    # 
+    
     ## FromLars
-      # for(i in 1:length(infile)){
+    # for(i in 1:length(infile)){
     #   
     #   if(!is.null(infile[[i]])){
     #     
@@ -170,7 +170,7 @@ get_trimIndex <- function(infile=NULL, year = 2010:2023, Art = 1:200, path=getwd
 
 
 
-################################################################################
+####
 ### Create and save TRIM plots
 
 get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path = getwd(), ...){
@@ -186,70 +186,77 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path 
       
     }else{
       trimIndex <- get_trimIndex(year = year, Art = Art)
-      }
+    }
   }  
   
   
   
-  require(rtrim)
-  require(ggplot2)
   # sebms_palette <- c("#9BBB59", "#C0504D")
   sebms_palette <- c("#FFB000", "#648FFF", "#DC267F")
+  
   for(i in 1:length(trimIndex)){
     if(inherits(trimIndex[[i]]$value, 'trim')) {
       
       # if(is.null(trimIndex[[i]])==FALSE){
       tryCatch({
-        m2<-trimIndex[[i]]$value
-        if(typeof(m2)=="list"){
-          fname<-as.character(names(trimIndex[i]))
-          fname<-gsub("/", "_", fname) #replacing escape characters in species name
+        m2 <- trimIndex[[i]]
+        if(typeof(m2) == "list"){
+          fname <- as.character(names(trimIndex[i]))
+          fname <- str_replace(fname, "/", "_") #replacing escape characters in species name
           print(m2)
           
-          yAxisAdjusted <- yAxisModifier(max(index(m2,base=min(m2$time.id))$imputed+1.96*index(m2,base=min(m2$time.id))$se_imp))
+          yAxisAdjusted <- yAxisModifier(max(index(m2,base = min(m2$time.id))$imputed + 1.96*index(m2,base = min(m2$time.id))$se_imp))
           
           gcomma <- function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = FALSE) #Called later, enables commas instead of points for decimal indication
           
           
-          indco<-(overall(m2))
-          indco<-as.vector(indco[[2]])
-          indco<-indco[8]
+          indco <- (overall(m2))
+          indco <- as.vector(indco[[2]])
+          indco <- indco[8]
           
-          if (indco=="Uncertain") {
-            col<-sebms_palette[3]
-            lt<-"longdash"
-          } else if (indco=="Strong decrease (p<0.05)"|indco=="Strong decrease (p<0.01)"|indco=="Moderate decrease (p<0.05)"|indco=="Moderate decrease (p<0.01)") {
-            col<-sebms_palette[2]
-            lt<-"solid"
-          } else if (indco=="Stable") {
-            col<-sebms_palette[3]
-            lt<-"solid"
+          #TODO This if else should be possible to do inside ggplot with lty and col by category
+          if (indco == "Uncertain") {
+            col <- sebms_palette[3]
+            lt <- "longdash"
+          } else if (indco == "Strong decrease (p<0.05)" | indco == "Strong decrease (p<0.01)" | indco == "Moderate decrease (p<0.05)" | indco == "Moderate decrease (p<0.01)") {
+            col <- sebms_palette[2]
+            lt <- "solid"
+          } else if (indco == "Stable") {
+            col <- sebms_palette[3]
+            lt <- "solid"
           }  else {
-            col<-sebms_palette[1]
-            lt<-"solid"
+            col <- sebms_palette[1]
+            lt <- "solid"
           }
           
-          cd1<-"as.theme(axis.text.y=element_text(size=42, #y-axis labels colour&size
+          cd1 <- "as.theme(axis.text.y=element_text(size=42, #y-axis labels colour&size
   angle=0),axis.text.x=element_text(size=42,  #x-axis labels colour&size
   angle=0),plot.title = element_text(size=48, #Chart title size
   margin=margin(0,0,30,0)),panel.grid.major = element_blank(), #Distance between title and chart
   panel.grid.minor = element_blank(),panel.background = element_blank(), #Grid and background
   axis.line = element_line)"
-          cd2<-"as.theme(axis.text.y=element_text(size=42, #y-axis labels colour&size
+          cd2 <- "as.theme(axis.text.y=element_text(size=42, #y-axis labels colour&size
   angle=0),axis.text.x=element_text(size=42,  #x-axis labels colour&size
   angle=0),plot.title = element_text(size=48, #Chart title size
   margin=margin(0,0,30,0)),panel.grid.major = element_blank(), #Distance between title and chart
   panel.grid.minor = element_blank(),panel.background = element_blank(), #Grid and background
   axis.line = element_line)"
           
-          mrgn1<-margin(0,0,80,0)
-          mrgn2<-margin(0,0,30,0)
+          mrgn1 <- margin(0,0,80,0)
+          mrgn2 <- margin(0,0,30,0)
           
-          if(nchar(fname)<18){mrgn<-mrgn1}else{mrgn<-mrgn2}
+          titles <- if((nchar(fname) < 18)) {
+            paste0(fname ,' ',"(", m2$nsite, " lokaler)")
+          }else{
+            paste0(fname ,' ',"\n(", m2$nsite, " lokaler)")}
           
-          path<-paste(path,"/",sep="")
+          if(nchar(fname) < 18) {
+            mrgn <- mrgn1
+          }else{
+            mrgn <- mrgn2}
+          
+          path <- paste(path,"/",sep = "")
           # png(filename=paste(path,noquote(fname),".png",sep=""), width=748, height=868, antialias = "cleartype")
-          png(filename=paste(path,noquote(fname),".png",sep=""), width=748, height=868)
           
           fname<-gsub("/", "_", fname)#Restoring species name to original string that will appear in graph title
           Encoding(fname)<-'UTF-8'
@@ -272,7 +279,7 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path 
           dev.off()
         }else{i+1
         }
-      }, error=function(e){cat(paste(fname,":"))})}else{
+      }, error=function(e){cat(paste(fname,":"))})}else{ ## End of tryyCatch
         i+1 
       }
   }

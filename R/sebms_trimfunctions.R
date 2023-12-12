@@ -45,19 +45,33 @@ get_trimInfile <- function(year=2010:2023, Art = 1:200, filterPattern=NULL, topL
     
     if(nrow(obses) > 0) { #Precondition to skip species with zero observations
       
-      ##  TRIM infile generation (missing values are kept as NA)
-      obsTidy <-  obses %>%
+      ## TRIM infile generation (If species have been seen any year in 'year' all site with a visit get 'total_number' of 0. Non-visited sites any year gets a NA)
+      obsTidy <- obses %>%
+        complete(siteuid, year = seq(min(year),max(year), by=1), fill=list(total_number=0)) %>%
         left_join(visits, by = c("siteuid", "year")) %>% 
-        complete(siteuid, year = seq(min(year),max(year), by=1), fill=list(total_number=NA)) %>%
         mutate(total_number = if_else(is.na(visit), NA, total_number),
                visit = if_else(is.na(visit), 1, visit),
-               total_number = if_else(is.na(total_number) & !is.na(lag(total_number)), 0, total_number)
+               #total_number = if_else(is.na(total_number) & !is.na(lag(total_number)), 0, total_number)
         ) %>%
-        group_by(siteuid) %>% 
-        fill(total_number, .direction = "down") %>% 
-        ungroup() %>%
+        # group_by(siteuid) %>% 
+        # fill(total_number, .direction = "down") %>% 
+        # ungroup() %>%
         mutate(freq = 1/visit) %>% 
         select(-visit)
+      
+      ## Lars code that works now
+      # obsTidy <- obses %>%
+      #   complete(siteuid,
+      #            year = seq(min(year), max(year), by = 1),
+      #            fill = list(total_number = 99999)) %>%
+      #   left_join(visits, by = c("siteuid", "year")) %>%
+      #   mutate(total_number = ifelse(is.na(visit), NA, total_number)) %>%
+      #   mutate(visit = ifelse(is.na(visit), 1, visit)) %>%
+      #   mutate(total_number = ifelse(total_number == 99999, 0, total_number)) %>%
+      #   mutate (freq = 1 / besok) %>%
+      #   select(-besok) %>%
+      #   mutate(total_number = as.numeric(total_number)) %>%
+      #   filter(year %in% year) #This is in order to avoid a wrong number of sites by counting sites monitored after the year of the report
       
     }else{
       print(paste("Species with ID ",speuid," skipped, no observations!"))

@@ -47,15 +47,11 @@ get_trimInfile <- function(year=2010:2023, Art = 1:200, filterPattern=NULL, topL
       
       ## TRIM infile generation (If species have been seen any year in 'year' all site with a visit get 'total_number' of 0. Non-visited sites any year gets a NA)
       obsTidy <- obses %>%
-        complete(siteuid, year = seq(min(year),max(year), by=1), fill=list(total_number=0)) %>%
+        complete(siteuid, year = seq(min(year), max(year), by = 1), fill = list(total_number = 0)) %>%
         left_join(visits, by = c("siteuid", "year")) %>% 
         mutate(total_number = if_else(is.na(visit), NA, total_number),
                visit = if_else(is.na(visit), 1, visit),
-               #total_number = if_else(is.na(total_number) & !is.na(lag(total_number)), 0, total_number)
         ) %>%
-        # group_by(siteuid) %>% 
-        # fill(total_number, .direction = "down") %>% 
-        # ungroup() %>%
         mutate(freq = 1/visit) %>% 
         select(-visit)
       
@@ -168,6 +164,11 @@ get_trimIndex <- function(infile=NULL, year = 2010:2023, Art = 1:200, path=getwd
 }
 
 
+#' Palette Used in ggplots for Trim Index
+#' @return vector of color hex codes
+#' @export
+sebms_trimpal <- c("#FFB000", "#648FFF", "#DC267F")
+
 
 
 ####
@@ -190,11 +191,8 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path 
   }  
   
   
-  
-  # sebms_palette <- c("#9BBB59", "#C0504D")
-  sebms_palette <- c("#FFB000", "#648FFF", "#DC267F")
-  
-  for(i in 1:length(trimIndex)){
+  for(i in 1:length(trimIndex)) {
+    #TODO make this plotting a function and run it in map per species instead. 
     if(inherits(trimIndex[[i]], 'trim')) {
       
       # if(is.null(trimIndex[[i]])==FALSE){
@@ -216,16 +214,16 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path 
           
           #TODO This if else should be possible to do inside ggplot with lty and col by category
           if (indco == "Uncertain") {
-            col <- sebms_palette[3]
+            col <- sebms_trimpal[3]
             lt <- "longdash"
           } else if (indco == "Strong decrease (p<0.05)" | indco == "Strong decrease (p<0.01)" | indco == "Moderate decrease (p<0.05)" | indco == "Moderate decrease (p<0.01)") {
-            col <- sebms_palette[2]
+            col <- sebms_trimpal[2]
             lt <- "solid"
           } else if (indco == "Stable") {
-            col <- sebms_palette[3]
+            col <- sebms_trimpal[3]
             lt <- "solid"
           }  else {
-            col <- sebms_palette[1]
+            col <- sebms_trimpal[1]
             lt <- "solid"
           }
           

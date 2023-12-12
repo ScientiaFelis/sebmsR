@@ -258,25 +258,50 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path 
           path <- paste(path,"/",sep = "")
           # png(filename=paste(path,noquote(fname),".png",sep=""), width=748, height=868, antialias = "cleartype")
           
-          fname<-gsub("/", "_", fname)#Restoring species name to original string that will appear in graph title
-          Encoding(fname)<-'UTF-8'
-          print((ggplot(data=index(m2,base=min(m2$time.id)), aes(x=time,y=imputed)) + geom_line(linetype=paste(lt),colour=paste(col),size=2.8) #central line #colour=rgb(155,187,89,max=255)
-                 + geom_line(linetype="longdash",size=1.6, data=index(m2,base=min(m2$time.id)), aes(x=time,y=index(m2,base=min(m2$time.id))$imputed-1.96*index(m2,base=min(m2$time.id))$se_imp)) #interval line 1
-                 + geom_line(linetype="longdash",size=1.6, data=index(m2,base=min(m2$time.id)), aes(x=time,y=index(m2,base=min(m2$time.id))$imputed+1.96*index(m2,base=min(m2$time.id))$se_imp)) #interval line 2
-                 # + xlim(startyear, endyear) #x-axis sectioning
-                 + expand_limits(x=2010)
-                 + geom_hline(yintercept = seq(from=0, to=yAxisAdjusted[1], by=yAxisAdjusted[2])) #Horizontal background lines #from=yAxisAdjusted[2]
-                 + scale_y_continuous(labels=gcomma,breaks=seq(from=0, to=yAxisAdjusted[1], by=yAxisAdjusted[2]),expand=c(0,0)) #y-axis sectioning & comma labelling #from=yAxisAdjusted[2]
-                 + scale_x_continuous(breaks= seq(2010,2020, by=5))
-                 + theme(axis.title.x=element_blank(),axis.title.y=element_blank(),plot.margin = margin(8, 20, 0, 0)) #enable axis titles #axis.title.x=element_blank()
-                 + ggtitle(if((nchar(fname)<18)){paste0(fname ,' ',"(", m2$nsite, " lokaler)")}else{paste0(fname ,' ',"\n(", m2$nsite, " lokaler)")}) #Chart title text
-                 + theme(axis.text.y=element_text(colour="black",size=42, #y-axis labels colour&size
-                                                  angle=0),axis.text.x=element_text(colour="black",size=42,  #x-axis labels colour&size
-                                                                                    angle=0),plot.title = element_text(size=48, #Chart title size
-                                                                                                                       margin=mrgn),panel.grid.major = element_blank(), #Distance between title and chart
-                         panel.grid.minor = element_blank(),panel.background = element_blank(), #Grid and background
-                         axis.line = element_line(colour = "black"))) + theme(axis.ticks.length=unit(0.5, "cm"))+ theme(plot.title = element_text(hjust = 0.5))) #Axis colours
-          dev.off()
+          fname <- str_replace(fname, "/", "_")#Restoring species name to original string that will appear in graph title
+          Encoding(fname) <- 'UTF-8'
+          
+          
+          fjrlplot <- ggplot(data = index(m2,base = min(m2$time.id)), aes(x = time,y = imputed)) +
+            geom_line(linetype = paste(lt),
+                      colour = paste(col),
+                      linewidth = 2.8) +#central line #colour=rgb(155,187,89,max=255)
+            geom_line(aes(x = time,
+                          y = index(m2,base = min(m2$time.id))$imputed-1.96*index(m2,base = min(m2$time.id))$se_imp),
+                      linetype = "longdash",
+                      linewidth = 1.6,
+                      data = index(m2,base = min(m2$time.id))) +#interval line 1
+            geom_line(aes(x = time,
+                          y = index(m2,base = min(m2$time.id))$imputed+1.96*index(m2, base = min(m2$time.id))$se_imp),
+                      linetype = "longdash",
+                      linewidth = 1.6,
+                      data = index(m2,base = min(m2$time.id))) +#interval line 2
+            # + xlim(startyear, endyear) #x-axis sectioning
+            expand_limits(x = 2010)+
+            geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by=yAxisAdjusted[2])) +#Horizontal background lines #from=yAxisAdjusted[2]
+            scale_y_continuous(labels = gcomma,
+                               breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
+                               expand = c(0,0)) +#y-axis sectioning & comma labelling #from=yAxisAdjusted[2]
+            scale_x_continuous(breaks = seq(2010,2020, by = 5))+
+            labs(title = titles) +#Chart title text
+            theme(plot.title = element_text(hjust = 0.5,
+                                            size = 48, #Chart title size
+                                            margin = mrgn),
+                  panel.grid.major = element_blank(), #Distance between title and chart
+                  panel.grid.minor = element_blank(),
+                  panel.background = element_blank(), #Grid and background
+                  axis.text.x = element_text(colour = "black", size = 42,  #x-axis labels colour&size 
+                                             angle = 0),
+                  axis.text.y = element_text(colour = "black",
+                                             size = 42, #y-axis labels colour&size
+                                             angle = 0),
+                  axis.title.x = element_blank(),
+                  axis.title.y = element_blank(),
+                  plot.margin = margin(8, 20, 0, 0),
+                  axis.line = element_line(colour = "black")) #Axis colours
+          
+          ggsave(glue("{path}{fname}.png"), width = 748, height = 868, units = "px")
+          
         }else{i+1
         }
       }, error=function(e){cat(paste(fname,":"))})}else{ ## End of tryyCatch

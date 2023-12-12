@@ -119,15 +119,15 @@ get_trimIndex <- function(infile=NULL, year = 2010:2023, Art = 1:200, path=getwd
         ungroup()
     }else{
       infile <- get_trimInfile(year = year, Art = Art) %>% 
-        select(speuid, site = siteuid, year, total_number, freq) %>% 
-        group_by(speuid) %>% 
+        select(site = siteuid, speuid, art, year, total_number, freq) %>% 
+        group_by(speuid, art) %>% 
         nest() %>% 
         ungroup()
     }
   }else {
     infile <- infile %>% 
-      select(speuid, site = siteuid, year, total_number, freq) %>% 
-      group_by(speuid) %>% 
+      select(site = siteuid, speuid, art, year, total_number, freq) %>% 
+      group_by(speuid, art) %>% 
       nest() %>% 
       ungroup()
   }
@@ -142,7 +142,7 @@ get_trimIndex <- function(infile=NULL, year = 2010:2023, Art = 1:200, path=getwd
     
     trimList <- map(infile$data, trimfun, .progress = "Run trimfunction...") %>% 
       suppressWarnings() %>% 
-      set_names(infile$speuid) #%>% 
+      set_names(infile$art) #%>% 
     # list_flatten() %>%
     # map(~print(.x$coefficients), .progress = "Extracting coefficients...") %>%
     # list_rbind(names_to = "speuid")

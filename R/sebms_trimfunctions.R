@@ -207,7 +207,7 @@ yAxisModifier <- function(x) {
 #'
 #' @return figures in png format of the species trends with confidence interval
 #' @export
-get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path = getwd(), ...){
+get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path = getwd(), ...) {
   
   if(is.null(trimIndex)) {
     
@@ -241,7 +241,7 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path 
         gcomma <- function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = FALSE) #Called later, enables commas instead of points for decimal indication
         
         
-        indco <- (overall(m2))
+        indco <- overall(m2)
         indco <- as.vector(indco[[2]])
         indco <- indco[8]
         
@@ -286,7 +286,7 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path 
         }else{
           mrgn <- mrgn2}
         
-        path <- paste(path,"/",sep = "")
+        #path <- paste(path,"/",sep = "")
         # png(filename=paste(path,noquote(fname),".png",sep=""), width=748, height=868, antialias = "cleartype")
         
         fname <- str_replace(fname, "/", "_")#Restoring species name to original string that will appear in graph title
@@ -333,22 +333,15 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path 
         
         
         
-      }else{i+1
       }
-    }else{
-      i+1 
     }
   }
   
   ggs <- vector("list", length = length(trimIndex))
   
-  for(i in 1:length(trimIndex)) {
-    
-    ggs[i] <- trimIndex[[i]] %>% 
-      trimplots(art = names(trimIndex[i]))
-  }
+  ggs <- map2(trimIndex, names(trimIndex), ~trimplots(.x, .y), .progress = "Making trimplots...")
   
-  walk2(ggs, trimIndex %>% names(), ~ggsave(plot = .x, filename = glue("{.y}.png"), width = 22, height = 18))
+  walk2(ggs, names(trimIndex), ~ggsave(plot = .x, filename = glue("{.y}.png"), width = 748, height = 868, units = "px", dpi = 72), .progress = "Saving trimplots...")
   
   
 }

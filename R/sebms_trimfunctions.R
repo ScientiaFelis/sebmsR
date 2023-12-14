@@ -91,7 +91,6 @@ get_trimInfile <- function(year=2010:2023, Art = 1:200, filterPattern=NULL, topL
 #'
 #' @inheritParams get_trimInfile
 #' @param infile file with site, year, total observations and reverse frequency weight (1/#visits), or an object from [get_trimInfile()]
-#' @param path path to ...
 #' @param ... further arguments to pass to [get_trimInfile()]
 #' 
 #' @importFrom rtrim trim
@@ -101,7 +100,7 @@ get_trimInfile <- function(year=2010:2023, Art = 1:200, filterPattern=NULL, topL
 #' @export
 #'
 #' @examples
-get_trimIndex <- function(infile=NULL, year = 2010:2023, Art = 1:200, path=getwd(), ...) {
+get_trimIndex <- function(infile=NULL, year = 2010:2023, Art = 1:200, ...) {
   
   if(is.null(infile)) {
     arglist <- list(...)
@@ -114,11 +113,14 @@ get_trimIndex <- function(infile=NULL, year = 2010:2023, Art = 1:200, path=getwd
         nest() %>% 
         ungroup()
     }else{
-      infile <- get_trimInfile(year = year, Art = Art) %>% 
-        select(site = siteuid, speuid, art, year, total_number, freq) %>% 
-        group_by(speuid, art) %>% 
-        nest() %>% 
-        ungroup()
+      infile <- get_trimInfile(year = year, Art = Art)
+      if (nrow(infile) > 0) {
+        infile <- infile %>% 
+          select(site = siteuid, speuid, art, year, total_number, freq) %>% 
+          group_by(speuid, art) %>% 
+          nest() %>% 
+          ungroup()
+      }
     }
   }else {
     infile <- infile %>% 
@@ -205,7 +207,7 @@ yAxisModifier <- function(x) {
 #' @param path the path to where to save figures
 #' @param ... optional; other arguments passed on to [get_trimInfile()]
 #'
-#' @import ggplot
+#' @import ggplot2
 #' @importFrom stringr str_replace
 #' @importFrom glue glue
 #' @importFrom rtrim index overall
@@ -214,28 +216,30 @@ yAxisModifier <- function(x) {
 #' @export
 get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path = getwd(), ...){
   
+  # This creates a trimIndex file if none is provided
   if(is.null(trimIndex)) {
     
     arglist <- list(...)
     
-    if(!is.null(arglist$filterPattern)){
+    if(!is.null(arglist$filterPattern)){ # If you need a filter for the trimInfile creation
       
       fp <- arglist$filterPattern
       
       trimIndex <- get_trimInfile(year = year, Art = Art, filterPattern = fp) %>% 
         get_trimIndex()
       
-    }else{
+    }else{ # If you want to use the defaults
       trimIndex <- get_trimIndex(year = year, Art = Art)
     }
   }  
   
   
   for(i in 1:length(trimIndex)) {
-    #TODO make this plotting a function and run it in map per species instead. 
+    #TODO: make this plotting a function and run it in map per species instead. 
     if(inherits(trimIndex[[i]], 'trim')) {
       
       # if(is.null(trimIndex[[i]])==FALSE){
+      #FIXME: it did not work run in map as function as the trim output class is removed if running through map, so input is wrong.
       tryCatch({
         m2 <- trimIndex[[i]]
         if(typeof(m2) == "list"){
@@ -338,7 +342,7 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path 
                   plot.margin = margin(8, 20, 0, 0),
                   axis.line = element_line(colour = "black")) #Axis colours
           
-          ggsave(glue("{path}{fname}.png"), width = 22, height = 18)
+          ggsave(filename = glue("{path}{fname}.png"), plot = fjrlplot, width = 22, height = 18)
           
         }else{i+1
         }

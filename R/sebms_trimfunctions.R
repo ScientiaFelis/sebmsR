@@ -96,10 +96,8 @@ get_trimInfile <- function(year=2010:2023, Art = 1:200, filterPattern=NULL, topL
 #' @importFrom rtrim trim
 #' @import dplyr
 #' @importFrom stringr str_detect
-#' @return
+#' @return a trim file with yearly changes of each species. 
 #' @export
-#'
-#' @examples
 get_trimIndex <- function(infile=NULL, year = 2010:2023, Art = 1:200, ...) {
   
   if(is.null(infile)) {

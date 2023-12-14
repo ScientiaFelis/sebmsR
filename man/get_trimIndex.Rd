@@ -4,13 +4,7 @@
 \alias{get_trimIndex}
 \title{Calculate TRIM Index}
 \usage{
-get_trimIndex(
-  infile = NULL,
-  year = 2010:2023,
-  Art = 1:200,
-  path = getwd(),
-  ...
-)
+get_trimIndex(infile = NULL, year = 2010:2023, Art = 1:200, ...)
 }
 \arguments{
 \item{infile}{file with site, year, total observations and reverse frequency weight (1/#visits), or an object from [get_trimInfile()]}
@@ -19,9 +13,10 @@ get_trimIndex(
 
 \item{Art}{the species of interest}
 
-\item{path}{path to ...}
-
 \item{...}{further arguments to pass to [get_trimInfile()]}
+}
+\value{
+a trim file with yearly changes of each species.
 }
 \description{
 Calculate TRIM Index

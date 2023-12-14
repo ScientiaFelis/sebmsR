@@ -139,26 +139,7 @@ get_trimIndex <- function(infile=NULL, year = 2010:2023, Art = 1:200, ...) {
     trimList <- map(infile$data, trimfun, .progress = "Run trimfunction...") %>% 
       suppressWarnings() %>% 
       set_names(infile$art) #%>% 
-    # list_flatten() %>%
-    # map(~print(.x$coefficients), .progress = "Extracting coefficients...") %>%
-    # list_rbind(names_to = "speuid")
-    # 
     
-    ## FromLars
-    # for(i in 1:length(infile)){
-    #   
-    #   if(!is.null(infile[[i]])){
-    #     
-    #     df.temp <- as.data.frame(infile[[i]])
-    #     print(names(infile)[i])
-    #     names(df.temp) <- c("speuid", "site","year","total_number","freq")
-    #     
-    #     dl.li[[i]] <- tryCatch.W.E(rtrim::trim(total_number ~ site + year, data = df.temp, weights = "freq",  model = 2, serialcor = TRUE,overdisp = TRUE,changepoints = "all",autodelete = TRUE, max_iter = 1000))
-    #     dl.li[[i]]$data <- df.temp
-    #     dl.li[[i]]$speuid <- as.integer(gsub(".*: ","",names(infile)[i]))
-    #     # print(dl.li[[i]]$value)
-    #   }
-    # }
     return(trimList)}
   else {return(infile)}
 }
@@ -202,7 +183,6 @@ yAxisModifier <- function(x) {
 #' @param year the years to calculate trimindex on, ignored if trimIndex is not
 #'   NULL
 #' @param Art the species of interest, ignored if trimIndex is not NULL
-#' @param path the path to where to save figures
 #' @param ... optional; other arguments passed on to [get_trimInfile()]
 #'
 #' @import ggplot2
@@ -212,7 +192,7 @@ yAxisModifier <- function(x) {
 #' 
 #' @return figures in png format of the species trends with confidence interval
 #' @export
-get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path = getwd(), ...){
+get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...) {
   
   # This creates a trimIndex file if none is provided
   if(is.null(trimIndex)) {
@@ -232,122 +212,122 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, path 
   }  
   
   
-  for(i in 1:length(trimIndex)) {
-    #TODO: make this plotting a function and run it in map per species instead. 
-    if(inherits(trimIndex[[i]], 'trim')) {
+  
+  trimplots <- function(df, art= "Luktgräsfjäril") {
+    #TODO make this plotting a function and run it in map per species instead. 
+    if(inherits(df, 'trim')) {
       
-      # if(is.null(trimIndex[[i]])==FALSE){
-      #FIXME: it did not work run in map as function as the trim output class is removed if running through map, so input is wrong.
-      tryCatch({
-        m2 <- trimIndex[[i]]
-        if(typeof(m2) == "list"){
-          fname <- as.character(names(trimIndex[i]))
-          fname <- str_replace(fname, "/", "_") #replacing escape characters in species name
-          print(m2)
-          
-          yAxisAdjusted <- yAxisModifier(max(index(m2,base = min(m2$time.id))$imputed + 1.96*index(m2,base = min(m2$time.id))$se_imp))
-          
-          gcomma <- function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = FALSE) #Called later, enables commas instead of points for decimal indication
-          
-          
-          indco <- (overall(m2))
-          indco <- as.vector(indco[[2]])
-          indco <- indco[8]
-          
-          #TODO This if else should be possible to do inside ggplot with lty and col by category
-          if (indco == "Uncertain") {
-            col <- sebms_trimpal[3]
-            lt <- "longdash"
-          } else if (indco == "Strong decrease (p<0.05)" | indco == "Strong decrease (p<0.01)" | indco == "Moderate decrease (p<0.05)" | indco == "Moderate decrease (p<0.01)") {
-            col <- sebms_trimpal[2]
-            lt <- "solid"
-          } else if (indco == "Stable") {
-            col <- sebms_trimpal[3]
-            lt <- "solid"
-          }  else {
-            col <- sebms_trimpal[1]
-            lt <- "solid"
-          }
-          
-          cd1 <- "as.theme(axis.text.y=element_text(size=42, #y-axis labels colour&size
-  angle=0),axis.text.x=element_text(size=42,  #x-axis labels colour&size
-  angle=0),plot.title = element_text(size=48, #Chart title size
-  margin=margin(0,0,30,0)),panel.grid.major = element_blank(), #Distance between title and chart
-  panel.grid.minor = element_blank(),panel.background = element_blank(), #Grid and background
-  axis.line = element_line)"
-          cd2 <- "as.theme(axis.text.y=element_text(size=42, #y-axis labels colour&size
-  angle=0),axis.text.x=element_text(size=42,  #x-axis labels colour&size
-  angle=0),plot.title = element_text(size=48, #Chart title size
-  margin=margin(0,0,30,0)),panel.grid.major = element_blank(), #Distance between title and chart
-  panel.grid.minor = element_blank(),panel.background = element_blank(), #Grid and background
-  axis.line = element_line)"
-          
-          mrgn1 <- margin(0,0,80,0)
-          mrgn2 <- margin(0,0,30,0)
-          
-          titles <- if((nchar(fname) < 18)) {
-            paste0(fname ,' ',"(", m2$nsite, " lokaler)")
-          }else{
-            paste0(fname ,' ',"\n(", m2$nsite, " lokaler)")}
-          
-          if(nchar(fname) < 18) {
-            mrgn <- mrgn1
-          }else{
-            mrgn <- mrgn2}
-          
-          path <- paste(path,"/",sep = "")
-          # png(filename=paste(path,noquote(fname),".png",sep=""), width=748, height=868, antialias = "cleartype")
-          
-          fname <- str_replace(fname, "/", "_")#Restoring species name to original string that will appear in graph title
-          Encoding(fname) <- 'UTF-8'
-          
-          
-          fjrlplot <- ggplot(data = index(m2,base = min(m2$time.id)), aes(x = time,y = imputed)) +
-            geom_line(linetype = paste(lt),
-                      colour = paste(col),
-                      linewidth = 2.8) +#central line #colour=rgb(155,187,89,max=255)
-            geom_line(aes(x = time,
-                          y = index(m2,base = min(m2$time.id))$imputed-1.96*index(m2,base = min(m2$time.id))$se_imp),
-                      linetype = "longdash",
-                      linewidth = 1.6,
-                      data = index(m2,base = min(m2$time.id))) +#interval line 1
-            geom_line(aes(x = time,
-                          y = index(m2,base = min(m2$time.id))$imputed+1.96*index(m2, base = min(m2$time.id))$se_imp),
-                      linetype = "longdash",
-                      linewidth = 1.6,
-                      data = index(m2,base = min(m2$time.id))) +#interval line 2
-            # + xlim(startyear, endyear) #x-axis sectioning
-            expand_limits(x = 2010)+
-            geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by=yAxisAdjusted[2])) +#Horizontal background lines #from=yAxisAdjusted[2]
-            scale_y_continuous(labels = gcomma,
-                               breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
-                               expand = c(0,0)) +#y-axis sectioning & comma labelling #from=yAxisAdjusted[2]
-            scale_x_continuous(breaks = seq(2010,2020, by = 5))+
-            labs(title = titles) +#Chart title text
-            theme(plot.title = element_text(hjust = 0.5,
-                                            size = 48, #Chart title size
-                                            margin = mrgn),
-                  panel.grid.major = element_blank(), #Distance between title and chart
-                  panel.grid.minor = element_blank(),
-                  panel.background = element_blank(), #Grid and background
-                  axis.text.x = element_text(colour = "black", size = 42,  #x-axis labels colour&size 
-                                             angle = 0),
-                  axis.text.y = element_text(colour = "black",
-                                             size = 42, #y-axis labels colour&size
-                                             angle = 0),
-                  axis.title.x = element_blank(),
-                  axis.title.y = element_blank(),
-                  plot.margin = margin(8, 20, 0, 0),
-                  axis.line = element_line(colour = "black")) #Axis colours
-          
-          ggsave(filename = glue("{path}{fname}.png"), plot = fjrlplot, width = 748, height = 868, units = "px", dpi = 72)
-          
-        }else{i+1
+      m2 <- df
+      if(typeof(m2) == "list"){
+        fname <- as.character({{ art }})
+        fname <- str_replace(fname, "/", "_") #replacing escape characters in species name
+        print(m2)
+        
+        yAxisAdjusted <- yAxisModifier(max(index(m2,base = min(m2$time.id))$imputed + 1.96*index(m2,base = min(m2$time.id))$se_imp))
+        
+        gcomma <- function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = FALSE) #Called later, enables commas instead of points for decimal indication
+        
+        
+        indco <- overall(m2)
+        indco <- as.vector(indco[[2]])
+        indco <- indco[8]
+        
+        #TODO This if else should be possible to do inside ggplot with lty and col by category
+        if (indco == "Uncertain") {
+          col <- sebms_trimpal[3]
+          lt <- "longdash"
+        } else if (indco == "Strong decrease (p<0.05)" | indco == "Strong decrease (p<0.01)" | indco == "Moderate decrease (p<0.05)" | indco == "Moderate decrease (p<0.01)") {
+          col <- sebms_trimpal[2]
+          lt <- "solid"
+        } else if (indco == "Stable") {
+          col <- sebms_trimpal[3]
+          lt <- "solid"
+        }  else {
+          col <- sebms_trimpal[1]
+          lt <- "solid"
         }
-      }, error=function(e){cat(paste(fname,":"))})}else{ ## End of tryyCatch
-        i+1 
+        
+        cd1 <- "as.theme(axis.text.y=element_text(size=42, #y-axis labels colour&size
+  angle=0),axis.text.x=element_text(size=42,  #x-axis labels colour&size
+  angle=0),plot.title = element_text(size=48, #Chart title size
+  margin=margin(0,0,30,0)),panel.grid.major = element_blank(), #Distance between title and chart
+  panel.grid.minor = element_blank(),panel.background = element_blank(), #Grid and background
+  axis.line = element_line)"
+        cd2 <- "as.theme(axis.text.y=element_text(size=42, #y-axis labels colour&size
+  angle=0),axis.text.x=element_text(size=42,  #x-axis labels colour&size
+  angle=0),plot.title = element_text(size=48, #Chart title size
+  margin=margin(0,0,30,0)),panel.grid.major = element_blank(), #Distance between title and chart
+  panel.grid.minor = element_blank(),panel.background = element_blank(), #Grid and background
+  axis.line = element_line)"
+        
+        mrgn1 <- margin(0,0,80,0)
+        mrgn2 <- margin(0,0,30,0)
+        
+        titles <- if((nchar(fname) < 18)) {
+          paste0(fname ,' ',"(", m2$nsite, " lokaler)")
+        }else{
+          paste0(fname ,' ',"\n(", m2$nsite, " lokaler)")}
+        
+        if(nchar(fname) < 18) {
+          mrgn <- mrgn1
+        }else{
+          mrgn <- mrgn2}
+        
+        fname <- str_replace(fname, "/", "_")#Restoring species name to original string that will appear in graph title
+        Encoding(fname) <- 'UTF-8'
+        
+        
+        ggplot(data = index(m2,base = min(m2$time.id)), aes(x = time,y = imputed)) +
+          geom_line(linetype = paste(lt),
+                    colour = paste(col),
+                    linewidth = 2.8) +#central line #colour=rgb(155,187,89,max=255)
+          geom_line(aes(x = time,
+                        y = index(m2,base = min(m2$time.id))$imputed-1.96*index(m2,base = min(m2$time.id))$se_imp),
+                    linetype = "longdash",
+                    linewidth = 1.6,
+                    data = index(m2,base = min(m2$time.id))) +#interval line 1
+          geom_line(aes(x = time,
+                        y = index(m2,base = min(m2$time.id))$imputed+1.96*index(m2, base = min(m2$time.id))$se_imp),
+                    linetype = "longdash",
+                    linewidth = 1.6,
+                    data = index(m2,base = min(m2$time.id))) +#interval line 2
+          # + xlim(startyear, endyear) #x-axis sectioning
+          expand_limits(x = 2010)+
+          geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by=yAxisAdjusted[2])) +#Horizontal background lines #from=yAxisAdjusted[2]
+          scale_y_continuous(labels = gcomma,
+                             breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
+                             expand = c(0,0)) +#y-axis sectioning & comma labelling #from=yAxisAdjusted[2]
+          scale_x_continuous(breaks = seq(2010,2020, by = 5))+
+          labs(title = titles) +#Chart title text
+          theme(plot.title = element_text(hjust = 0.5,
+                                          size = 48, #Chart title size
+                                          margin = mrgn),
+                panel.grid.major = element_blank(), #Distance between title and chart
+                panel.grid.minor = element_blank(),
+                panel.background = element_blank(), #Grid and background
+                axis.text.x = element_text(colour = "black", size = 42,  #x-axis labels colour&size 
+                                           angle = 0),
+                axis.text.y = element_text(colour = "black",
+                                           size = 42, #y-axis labels colour&size
+                                           angle = 0),
+                axis.title.x = element_blank(),
+                axis.title.y = element_blank(),
+                plot.margin = margin(8, 20, 0, 0),
+                axis.line = element_line(colour = "black")) #Axis colours
+        
+        
+        
       }
+    }
   }
+  
+  ggs <- vector("list", length = length(trimIndex))
+  
+  ggs <- map2(trimIndex, names(trimIndex), ~trimplots(.x, .y), .progress = "Making trimplots...")
+  
+  walk2(ggs, names(trimIndex), ~ggsave(plot = .x, filename = glue("{.y}.png"), width = 748, height = 868, units = "px", dpi = 72), .progress = "Saving trimplots...")
+  
+  
 }
 
 ################################################################################

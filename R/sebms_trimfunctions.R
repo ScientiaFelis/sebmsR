@@ -316,3 +316,85 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...) 
   
   
 }
+
+
+################################################################################
+### Create and save local TRIM plots with national TRIM reference
+
+get_trimComparedPlots<-function(imputedLocalList=NULL, trimmedImputedSwedishList=NULL, startyear=2010,endyear=2023,path=getwd()){
+  
+  if (is.null(imputedLocallist)) {
+    imputetLocallist <- get_imputetlist(origin = 'sverige', indicator_layout = FALSE, year= 2010:2023) 
+  }
+  
+  imputedLocalList <- fct_drop(imputedLocalList)
+  trimmedImputedSwedishList <- fct_drop(trimmedImputedSwedishList)
+  
+  for(i in 1:length(levels(as.factor(imputedLocalList$species)))){
+    
+    plotSpecies <-  levels(as.factor(imputedLocalList$species))[i]   
+    
+    swedish <- trimmedImputedSwedishList[trimmedImputedSwedishList$species == plotSpecies,]
+    local <- imputedLocalList[imputedLocalList$species == plotSpecies,]
+    
+    fname <- plotSpecies %>%
+      as.character() %>%
+      str_replace("/", "_") #replacing escape characters in species name
+    
+    
+    yAxisAdjusted <- yAxisModifier(max(c(swedish$imputed+1.96*swedish$se_imp,local$imputed+1.96*local$se_imp)))
+    
+    
+    gcomma <- function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = FALSE) #Called later, enables commas instead of points for decimal indication
+    
+    imputedCombined <- merge(swedish,local, by="time",all=TRUE)
+    imputedCombined <- imputedCombined[, -c(3,5,6,7,8,10,11)]
+    names(imputedCombined) <- c("time","species","imputed_sweden","imputed_local")
+    
+    
+    mrgn1 <- margin(0,0,80,0)
+    mrgn2 <- margin(0,0,30,0)
+    if_else(nchar(fname) < 18, mrgn = mrgn1, mrgn = mrgn2)
+    
+    names(imputedCombined) <- c("time","species","imputed_sweden","imputed_local")
+    
+    fname <- str_replace_all(fname, "/", "_")#Restoring species name to original string that will appear in graph title
+    
+    Encoding(fname) <- 'UTF-8'
+    
+    imputedCombined %>% 
+      ggplot(aes(x = time, y = imputed_sweden)) + 
+      geom_line(linetype = "longdash", linewidth = 1.6) + #central line #colour=rgb(155,187,89,max=255)
+      geom_line(aes(x = time, y = imputed_local), linetype = "solid", colour = sebms_palette[3], linewidth = 2.8, ) + #interval line 1
+      # + xlim(startyear, endyear) #x-axis sectioning
+      expand_limits(x = 2010) +
+      geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2])) + #Horizontal background lines #from=yAxisAdjusted[2]
+      scale_y_continuous(labels = gcomma,
+                         breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
+                         expand = c(0,0)) + #y-axis sectioning & comma labelling #from=yAxisAdjusted[2]
+      scale_x_continuous(breaks = seq(min(year), max(year), by = 5)) +
+      #enable axis titles #axis.title.x=element_blank()
+      labs(title = fname, x = NULL, y = NULL) + #Chart title text
+      theme(plot.margin = margin(8, 20, 0, 0),
+            plot.title = element_text(size = 48, #Chart title size
+                                      margin = mrgn,
+                                      hjust = 0.5),
+            axis.ticks.length = unit(0.5, "cm"),
+            axis.text.y = element_text(colour = "black",
+                                       size = 42, #y-axis labels colour&size
+                                       angle = 0),
+            axis.text.x = element_text(colour = "black",
+                                       size = 42,  #x-axis labels colour&size
+                                       angle = 0),
+            axis.line = element_line(colour = "black"),
+            panel.grid.major = element_blank(), #Distance between title and chart
+            panel.grid.minor = element_blank(),
+            panel.background = element_blank() #Grid and background
+      ) #Axis colours
+    
+    
+  } 
+  
+  ggsave(filename=glue("{fname} _comparison.png", sep=""), width=748, height=868)
+}
+

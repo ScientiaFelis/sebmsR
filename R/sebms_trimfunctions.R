@@ -472,7 +472,8 @@ get_trimComparedPlots <- function(Län = ".", Landskap = ".", Kommun = ".", Art 
       scale_x_continuous(breaks = seq(min(year), max(year), by = 5)) +
       #enable axis titles #axis.title.x=element_blank()
       labs(title = fname, x = NULL, y = NULL) + #Chart title text
-      theme(plot.margin = margin(8, 20, 0, 0),
+      theme(text = element_text(family = "Arial"),
+            plot.margin = margin(8, 20, 0, 0),
             plot.title = element_text(size = 48, #Chart title size
                                       margin = mrgn,
                                       hjust = 0.5),

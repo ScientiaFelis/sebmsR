@@ -493,6 +493,12 @@ get_trimComparedPlots <- function(Län = ".", Landskap = ".", Kommun = ".", Art 
     
   } 
   
-  ggsave(filename=glue("{fname} _comparison.png", sep=""), width=748, height=868)
+  ggs <- imputedLocalList %>% 
+    group_by(species) %>% 
+    nest() %>% 
+    ungroup() %>% 
+    mutate(plots = map2(data, species, ~plotcomp(.x, .y)))
+  walk2(ggs$plots, ggs$species, ~ggsave(plot = .x, filename = glue("{.y}_comparison.png"), width=748, height=868, dpi = 72, units = "px"))
+  
 }
 

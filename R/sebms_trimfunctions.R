@@ -149,6 +149,7 @@ get_trimIndex <- function(infile=NULL, year = 2010:lubridate::year(lubridate::to
 }
 
 
+
 #' Palette Used in ggplots for Trim Index
 #' 
 #' @return vector of color hex codes
@@ -286,7 +287,7 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...) 
                     linewidth = 1.6) + #interval line 2
           # + xlim(startyear, endyear) #x-axis sectioning
           expand_limits(x = min(year), y = c(0,yAxisAdjusted[1])) +
-         # geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2])) +#Horizontal background lines #from=yAxisAdjusted[2]
+          # geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2])) +#Horizontal background lines #from=yAxisAdjusted[2]
           scale_y_continuous(labels = gcomma,
                              breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
                              expand = c(0,0)) +#y-axis sectioning & comma labelling #from=yAxisAdjusted[2]
@@ -311,7 +312,7 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...) 
                 axis.ticks.length = unit(4, "mm"),
                 plot.margin = margin(8, 20, 0, 0),
                 axis.line = element_line(colour = "black") #Axis colours
-                ) 
+          ) 
       }
     }
   }
@@ -323,7 +324,7 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...) 
   ggs <- map2(trimIndex, spname, ~trimplots(.x, .y), .progress = "Making trimplots...")
   
   walk2(ggs, spname, ~ggsave(plot = .x, filename = glue("{.y}.png"), width = 748, height = 868, units = "px", dpi = 72), .progress = "Saving trimplots...")
-
+  
 }
 
 
@@ -354,8 +355,8 @@ get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap 
     if(!is.null(arglist$filterPattern)) { # If you have used filterPattern
       
       fp <- arglist$filterPattern
-      infile = get_trimInfile(year=year, filterPattern=fp)
-      trimIndex = get_trimIndex(infile=infile)
+      infiletrimIndex = get_trimInfile(year = year, filterPattern = fp) %>% 
+        get_trimIndex()
       
     }else { # If no filterPattern is used in ...
       

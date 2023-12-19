@@ -507,3 +507,59 @@ get_trimComparedPlots <- function(Län = ".", Landskap = ".", Kommun = ".", Art 
   
 }
 
+
+#' Indicator Species for Trim Index
+#'
+#' @return list of species uids for 'grassland', 'agricultural', 'forest', and
+#'   'common20' species
+#' @export
+indicatorlist <- list(grassland = c(67,19,26,117,40,50,70,8,119,55,110,101),
+                      agricultural = c(110,17,92,29,30,28,19,70,91,40,119,26,118,93),
+                      forest = c(19,71,120,46,105,109,118,38,95,115),
+                      common20 = c(118,119,38,30,92,17,91,71,117,28,29,70,105,19,90,77,46,73,89,115))
+
+
+
+#' Run Indicator Analysis
+#'
+#' @inheritParams get_imputedList
+#' @param infile list of imputed index from [get_imputedList()]
+#' @param indicators which indicators to get index from; default to 'ALL'
+#'
+#' @importFrom BRCindicators msi
+#' @import dplyr
+#' 
+#' @return
+#' @export
+get_indicatorAnalyses <- function(infile = NULL, origin='Sverige', indicators = 'ALL') {
+  
+  speid <- unlist(indicatorlist, use.names = F) %>% 
+    unique()
+  
+  if(is.null(infile)) {
+    indata <- get_imputedList(Art = c(speid), indicator_layout = TRUE) %>%
+      transmute(speuid,
+                species = as.factor(art),
+                year = as.double(year),
+                index = 100 * index,
+                se = 100 * se)
+  }else {
+    indata <- infile %>%
+      mutate(species = as.factor(species),
+             index = 100 * index,
+             se = 100 * se)
+  }
+  
+  for (k in names(indicatorlist)){
+    print(paste0("Working on the ",k," indicator"))
+    
+    dat <- indata %>% 
+      filter(speuid %in% indicatorlist[[k]]) %>% 
+      select(-speuid)
+    
+    msi_out <- msi(dat, plotbaseyear = 2010, SEbaseyear = 2010, index_smooth = 'INDEX', lastyears = 6, jobname = paste0(k,'.',origin))
+    
+    write.table(file = paste0(k,".csv"), sep = ",", x = msi_out$results[2:8], row.names = FALSE)
+  }
+  
+}

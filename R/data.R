@@ -650,22 +650,61 @@ sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()),  m
 #' @return a tibble with number of observed individuals per year and site.
 #' 
 #' @export
-sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art = 1:200, filterPattern = NULL, minmax = 22:32, source = c(54,55,56,63,64,66,67)) {
+sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filterPattern = NULL, minmax = 22:32, source = c(54,55,56,63,64,66,67)) {
   
   minmax <- glue("({paste0({minmax}, collapse = ',')})") 
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   source <- glue("({paste0({source}, collapse = ',')})")
   Art <- glue("({paste0({Art}, collapse = ',')})")
+  
+  Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement
+  Landskap <- paste0(str_to_lower(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
+  Kommun <- paste0(str_to_lower(Kommun),collapse = "|") # Make the list of Kommun to s regex statement
+  
+  county <- regID %>% 
+    filter(str_detect(reg_name, Län)) %>% # Filter out matching Län from a look up table
+    pull(reg_uid) %>% # pull out the id-numbers
+    paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
+  
+  region <- regID %>% 
+    filter(str_detect(reg_name, Landskap)) %>% 
+    pull(reg_uid) %>% 
+    paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
+  
+  municipality <- regID %>% 
+    filter(str_detect(reg_name, Kommun)) %>% 
+    pull(reg_uid) %>% 
+    paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
+  
+  
    if (!is.null(filterPattern)) {
     filterPattern <- glue("AND {filterPattern}")
    }else{
      filterPattern <- glue("--NOTHING")
    }
   
- q <-  glue("SELECT DISTINCT
+ q <-  glue("
+             WITH reg AS
+           (SELECT reg_uid AS reg_id, reg_name AS län
+             FROM reg_region
+             WHERE reg_uid IN ({county}) AND reg_group = 'C'),
+           lsk AS
+           (SELECT reg_uid AS landskaps_id, reg_name AS landskap
+             FROM reg_region
+             WHERE reg_uid IN ({region}) AND reg_group = 'P'),
+           mun AS
+           (SELECT reg_uid AS kommun_id, reg_name AS kommun
+             FROM reg_region
+             WHERE reg_uid IN ({municipality}) AND reg_group = 'M')
+           
+            SELECT DISTINCT
                 sit.sit_uid AS siteuid,
                 EXTRACT (year FROM vis_begintime::date) AS year,
-                SUM(obs.obs_count) AS total_number
+                SUM(obs.obs_count) AS total_number,
+                reg.län,
+                lsk.landskap,
+                mun.kommun
+          
              FROM obs_observation AS obs
                 INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
                 INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
@@ -673,7 +712,10 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
                 INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
                 INNER JOIN spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid
                 INNER JOIN rer_regionrelation AS rer ON sit.sit_reg_countyid = rer.rer_reg_childid
-                INNER JOIN reg_region AS reg on rer.rer_reg_parentid = reg.reg_uid
+                --INNER JOIN reg ON rer.rer_reg_parentid = reg.reg_id
+                INNER JOIN reg ON sit.sit_reg_countyid = reg.reg_id
+                INNER JOIN lsk ON sit.sit_reg_provinceid = lsk.landskaps_id
+                INNER JOIN mun ON sit.sit_reg_municipalityid = mun.kommun_id
                 INNER JOIN typ_type AS typ on vis.vis_typ_datasourceid = typ.typ_uid
              WHERE EXTRACT (week FROM vis_begintime::date) IN {minmax}
                 AND EXTRACT(YEAR FROM vis_begintime) IN {year}
@@ -681,7 +723,7 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
                 {filterPattern}  -- THIS ADDS A FILTER TO THE SQL FROM THE FUNCTION
                 AND spe.spe_uid IN {Art}
             GROUP BY
-                year, siteuid
+                year, siteuid, reg.reg_id, reg.län, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun
             ORDER BY
                 siteuid, year;")
        

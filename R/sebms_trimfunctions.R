@@ -389,12 +389,15 @@ get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap 
   if(indicator_layout == TRUE) { # If you want indicator layout
     
     imputedList <- imputedList %>% 
-      select(year = time, index = imputed, se = se_imputed)
+      select(species, year = time, index = imputed, se = se_imp)
     #names(imputedList) <- c('origin', 'year', 'index', 'se_imp', 'converged')
   }else { # If only list is wanted
     imputedList <- imputedList# %>% 
     #select(-spe_uid)
   }
+  imputedList <- sebms_trimSpecies(Art = Art) %>% 
+    select(speuid, art) %>% 
+    right_join(imputedList, by = c("art" = "species"))
   
   return(imputedList)
 }

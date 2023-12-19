@@ -523,6 +523,7 @@ ORDER BY
 #' @import tibble
 #' @importFrom glue glue
 #' @import dplyr
+#' @importFrom lubridate year today
 #' @importFrom DBI dbGetQuery
 #' 
 #' @return a tibble with species IDs, name, and min and max flight time week
@@ -595,6 +596,7 @@ sebms_trimSpecies <- function(year = 2010:lubridate::year(lubridate::today()), A
 #' @import tibble
 #' @importFrom glue glue
 #' @import dplyr
+#' @importFrom lubridate year today
 #' @importFrom DBI dbGetQuery
 #' @importFrom pool localCheckout
 #' 
@@ -645,6 +647,7 @@ sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()),  m
 #' @import tibble
 #' @importFrom glue glue
 #' @import dplyr
+#' @importFrom lubridate year today
 #' @importFrom DBI dbGetQuery
 #' 
 #' @return a tibble with number of observed individuals per year and site.
@@ -728,6 +731,81 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
                 siteuid, year;")
        
     sebms_pool <- sebms_assert_connection(quiet = T)
+  res <- dbGetQuery(sebms_pool, q) %>% 
+  as_tibble()
+  return(res)
+}
+
+
+
+#' Retrieve Sites for Trim Functions
+#'
+#' This function retrieve the sites used for the trim indices
+#'
+#' @inheritParams sebms_abundance_per_species_plot
+#' @param filterPattern a regex pattern to filter SQL query
+#' @param topList logical; whether the top list of species should be used
+#' 
+#' @import tibble
+#' @importFrom glue glue
+#' @import dplyr
+#' @importFrom lubridate year today
+#' @importFrom DBI dbGetQuery
+#' 
+#' @return a tibble with species IDs, name, and min and max flight time week
+#' @export
+sebms_trimSites <- function(year = 2010:lubridate::year(lubridate::today()), source = c(54,55,56,63,64,66,67,84)) {
+  
+  year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
+  source <- glue("({paste0({source}, collapse = ',')})")
+    Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement
+  Landskap <- paste0(str_to_lower(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
+  Kommun <- paste0(str_to_lower(Kommun),collapse = "|") # Make the list of Kommun to s regex statement
+  
+  county <- regID %>% 
+    filter(str_detect(reg_name, Län)) %>% # Filter out matching Län from a look up table
+    pull(reg_uid) %>% # pull out the id-numbers
+    paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
+  
+  region <- regID %>% 
+    filter(str_detect(reg_name, Landskap)) %>% 
+    pull(reg_uid) %>% 
+    paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
+  
+  municipality <- regID %>% 
+    filter(str_detect(reg_name, Kommun)) %>% 
+    pull(reg_uid) %>% 
+    paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
+  
+  
+    q <- glue("
+             WITH reg AS
+           (SELECT reg_uid AS reg_id, reg_name AS län
+             FROM reg_region
+             WHERE reg_uid IN ({county}) AND reg_group = 'C'),
+           lsk AS
+           (SELECT reg_uid AS landskaps_id, reg_name AS landskap
+             FROM reg_region
+             WHERE reg_uid IN ({region}) AND reg_group = 'P'),
+           mun AS
+           (SELECT reg_uid AS kommun_id, reg_name AS kommun
+             FROM reg_region
+             WHERE reg_uid IN ({municipality}) AND reg_group = 'M')
+           
+              
+              SELECT
+                sit.sit_uid AS site,
+                reg.reg_code AS region,
+                sit.sit_reg_countyid as countyid,
+                sit.sit_reg_provinceid as provinceid
+              FROM sit_site AS sit
+                INNER JOIN rer_regionrelation AS rer ON sit.sit_reg_countyid = rer.rer_reg_childid
+                INNER JOIN reg_region AS reg on rer.rer_reg_parentid = reg.reg_uid
+              WHERE
+                sit_typ_datasourceid IN {source}
+              ORDER BY site;")
+  
+  sebms_pool <- sebms_assert_connection(quiet = T)
   res <- dbGetQuery(sebms_pool, q) %>% 
   as_tibble()
   return(res)

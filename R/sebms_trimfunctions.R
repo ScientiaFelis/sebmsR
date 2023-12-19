@@ -429,10 +429,7 @@ get_trimComparedPlots <- function(Län = ".", Landskap = ".", Kommun = ".", Art 
   
   if (is.null(trimmedImputedSwedishList)) {
     
-    speuid <- sebms_trimSpecies(Art = Art) %>% 
-      select(speuid, art) %>% 
-      filter(art %in% imputedLocalList$species) %>% 
-      pull(speuid)
+    speuid <- imputedLocalList %>% pull(speuid)
     
     trimmedImputedSwedishList <- get_imputedList(origin = 'sverige', Art = c(speuid), indicator_layout = FALSE, year = year) 
   }

@@ -27,7 +27,7 @@
 #' @return a tibble with site, year, as well as the number of individuals
 #'   observed and the observation frequency for that year, species, and site.
 #' @export
-get_trimInfile <- function(year=2010:2023, Art = 1:200, filterPattern=NULL, topList=FALSE, topNumber=200, source = c(54,55,56,63,64,66,67)){
+get_trimInfile <- function(year=2010:2023, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filterPattern=NULL, topList=FALSE, topNumber=200, source = c(54,55,56,63,64,66,67)){
   
   trimSpecies <- sebms_trimSpecies(year = year, Art = Art, topList = topList, source = source) %>% 
     slice_head(n=topNumber)
@@ -38,7 +38,7 @@ get_trimInfile <- function(year=2010:2023, Art = 1:200, filterPattern=NULL, topL
     minw <- df %>% pull(min) # first posible week of observation
     maxw <- df %>% pull(max) # öast possible week of observation
     
-    obses <- sebms_trimobs(year = year, Art = speuid, filterPattern = filterPattern, minmax = minw:maxw, source = source) %>% 
+    obses <- sebms_trimobs(year = year, Art = speuid, Län = Län, Landskap = Landskap, Kommun = Kommun, filterPattern = filterPattern, minmax = minw:maxw, source = source) %>% 
       mutate(total_number = as.numeric(total_number))
     
     visits <- sebms_trimvisits(year = year, minmax = minw:maxw, source = source) %>% 

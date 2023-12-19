@@ -7,6 +7,9 @@
 get_trimInfile(
   year = 2010:2023,
   Art = 1:200,
+  Län = ".",
+  Landskap = ".",
+  Kommun = ".",
   filterPattern = NULL,
   topList = FALSE,
   topNumber = 200,
@@ -17,6 +20,13 @@ get_trimInfile(
 \item{year}{the year of interest}
 
 \item{Art}{the species of interest}
+
+\item{Län}{character or regular expression; which county you want the data
+from}
+
+\item{Landskap}{character or reg ex; which region you want the data from}
+
+\item{Kommun}{character or reg ex; which municipality you want the data from}
 
 \item{filterPattern}{a regex pattern to filter SQL query}
 

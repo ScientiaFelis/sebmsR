@@ -4,7 +4,12 @@
 \alias{get_trimIndex}
 \title{Calculate TRIM Index}
 \usage{
-get_trimIndex(infile = NULL, year = 2010:2023, Art = 1:200, ...)
+get_trimIndex(
+  infile = NULL,
+  year = 2010:lubridate::year(lubridate::today()),
+  Art = 1:200,
+  ...
+)
 }
 \arguments{
 \item{infile}{file with site, year, total observations and reverse frequency weight (1/#visits), or an object from [get_trimInfile()]}

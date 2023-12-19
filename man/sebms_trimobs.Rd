@@ -7,6 +7,9 @@
 sebms_trimobs(
   year = 2010:lubridate::year(lubridate::today()),
   Art = 1:200,
+  Län = ".",
+  Landskap = ".",
+  Kommun = ".",
   filterPattern = NULL,
   minmax = 22:32,
   source = c(54, 55, 56, 63, 64, 66, 67)

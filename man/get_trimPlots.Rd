@@ -4,13 +4,7 @@
 \alias{get_trimPlots}
 \title{Create and Save TRIM Plots}
 \usage{
-get_trimPlots(
-  trimIndex = NULL,
-  year = 2010:2023,
-  Art = 1:200,
-  path = getwd(),
-  ...
-)
+get_trimPlots(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...)
 }
 \arguments{
 \item{trimIndex}{optional; a trimIndex object from the [get_trimIndex()]}
@@ -19,8 +13,6 @@ get_trimPlots(
 NULL}
 
 \item{Art}{the species of interest, ignored if trimIndex is not NULL}
-
-\item{path}{the path to where to save figures}
 
 \item{...}{optional; other arguments passed on to [get_trimInfile()]}
 }

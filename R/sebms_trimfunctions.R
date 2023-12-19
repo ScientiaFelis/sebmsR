@@ -96,10 +96,12 @@ get_trimInfile <- function(year=2010:2023, Art = 1:200, Län = ".", Landskap = "
 #' 
 #' @importFrom rtrim trim
 #' @import dplyr
+#' @importFrom lubridate year today
 #' @importFrom stringr str_detect
+#' 
 #' @return a trim file with yearly changes of each species. 
 #' @export
-get_trimIndex <- function(infile=NULL, year = 2010:2023, Art = 1:200, ...) {
+get_trimIndex <- function(infile=NULL, year = 2010:lubridate::year(lubridate::today()), Art = 1:200, ...) {
   
   if(is.null(infile)) {
     arglist <- list(...)
@@ -139,7 +141,8 @@ get_trimIndex <- function(infile=NULL, year = 2010:2023, Art = 1:200, ...) {
     
     trimList <- map(infile$data, trimfun, .progress = "Run trimfunction...") %>% 
       suppressWarnings() %>% 
-      set_names(infile$art) #%>% 
+      # set_names(infile$speuid) %>% 
+      set_names(infile$art)
     
     return(trimList)}
   else {return(infile)}
@@ -283,13 +286,14 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...) 
                     linewidth = 1.6) +#interval line 2
           # + xlim(startyear, endyear) #x-axis sectioning
           expand_limits(x = 2010)+
-          geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by=yAxisAdjusted[2])) +#Horizontal background lines #from=yAxisAdjusted[2]
+          geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2])) +#Horizontal background lines #from=yAxisAdjusted[2]
           scale_y_continuous(labels = gcomma,
                              breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
                              expand = c(0,0)) +#y-axis sectioning & comma labelling #from=yAxisAdjusted[2]
           scale_x_continuous(breaks = seq(min(year),max(year), by = 5))+
           labs(title = titles) +#Chart title text
-          theme(plot.title = element_text(hjust = 0.5,
+          theme(text = element_text(family = "Arial"),
+                plot.title = element_text(hjust = 0.5,
                                           size = 48, #Chart title size
                                           margin = mrgn),
                 panel.grid.major = element_blank(), #Distance between title and chart
@@ -321,56 +325,146 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...) 
 }
 
 
-################################################################################
-### Create and save local TRIM plots with national TRIM reference
 
-get_trimComparedPlots<-function(imputedLocalList=NULL, trimmedImputedSwedishList=NULL, startyear=2010,endyear=2023,path=getwd()){
+### 
+
+#' Generate List of Imputed Values per Species
+#'
+#'
+#' @inheritParams get_trimInfile
+#' @param origin the origin of list species
+#' @param indicator_layout logical; whether the list should contain the 
+#' @param ... extra filter parameters passed to the [trimInfile()] function
+#' 
+#' @importFrom lubridate year today
+#' @importFrom dplyr bind_rows bind_cols select
+#' @importFrom stringr str_replace_all
+#' @importFrom rtrim index
+#' @importFrom purrr map2 list_rbind
+#'
+#' @return a data frame with trim indices per species
+#' @export
+get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", origin = 'sverige', indicator_layout = FALSE, year = 2010:lubridate::year(lubridate::today()), ...) {
   
-  if (is.null(imputedLocallist)) {
-    imputetLocallist <- get_imputetlist(origin = 'sverige', indicator_layout = FALSE, year= 2010:2023) 
+  if(is.null(trimIndex)) { # If there is no trimIndex
+    
+    arglist <- list(...)
+    if(!is.null(arglist$filterPattern)) { # If you have used filterPattern
+      
+      fp <- arglist$filterPattern
+      infile = get_trimInfile(year=year, filterPattern=fp)
+      trimIndex = get_trimIndex(infile=infile)
+      
+    }else { # If no filterPattern is used in ...
+      
+      trimIndex <- get_trimInfile(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
+        get_trimIndex(year = year)
+    }
+    
+  } # If there were a trimIndex file supplied, use that
+  
+  trimspelist <- function(df, art) {
+    
+    if(inherits(df, 'trim')) {
+      
+      bind_cols(#spe_uid = speuid,
+        species = as.character({{ art }}) %>% str_replace_all("/", "_"),
+        samplingorigin = as.character(origin),
+        index(df),
+        converged = df$converged)
+    }
   }
   
-  imputedLocalList <- fct_drop(imputedLocalList)
-  trimmedImputedSwedishList <- fct_drop(trimmedImputedSwedishList)
+  imputedList = vector("list", length = length(trimIndex))
   
-  for(i in 1:length(levels(as.factor(imputedLocalList$species)))){
+  spname <- names(trimIndex) %>% 
+    str_replace_all("/", "_")
+  
+  imputedList <- map2(trimIndex, spname, ~trimspelist(.x, .y)) %>% 
+    list_rbind() 
+  
+  if(indicator_layout == TRUE) { # If you want indicator layout
     
-    plotSpecies <-  levels(as.factor(imputedLocalList$species))[i]   
+    imputedList <- imputedList %>% 
+      select(year = time, index = imputed, se = se_imputed)
+    #names(imputedList) <- c('origin', 'year', 'index', 'se_imp', 'converged')
+  }else { # If only list is wanted
+    imputedList <- imputedList# %>% 
+    #select(-spe_uid)
+  }
+  
+  return(imputedList)
+}
+
+
+
+#' Create and Save Local TRIM Plots with National TRIM Reference
+#'
+#' @inheritParams get_trimInfile
+#' @param trimmedImputedSwedishList data frame of national wide data of species
+#'   trim values
+#'
+#' @importFrom lubridate year today
+#' @importFrom stringr str_replace_all
+#' @importFrom tidyr nest
+#' @importFrom purrr map2 walk2
+#' @import dplyr
+#' @import ggplot2
+#'
+#' @return figures saved as png comparing national and local trim indices
+#' @export
+get_trimComparedPlots <- function(Län = ".", Landskap = ".", Kommun = ".", Art = 1:200, trimmedImputedSwedishList=NULL, year = 2010:lubridate::year(lubridate::today())){
+  
+  #1 Run trim index on species with local data
+  #2 Of the local species not all may be possible to run
+  #3 For the remaining species that did run through thte local trim calc run those species on Swedish data for Sweden.
+  
+  imputedLocalList <- get_imputedList(origin = 'sverige', Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, indicator_layout = FALSE, year = year) 
+  
+  if (is.null(trimmedImputedSwedishList)) {
     
-    swedish <- trimmedImputedSwedishList[trimmedImputedSwedishList$species == plotSpecies,]
-    local <- imputedLocalList[imputedLocalList$species == plotSpecies,]
+    speuid <- sebms_trimSpecies(Art = Art) %>% 
+      select(speuid, art) %>% 
+      filter(art %in% imputedLocalList$species) %>% 
+      pull(speuid)
     
-    fname <- plotSpecies %>%
-      as.character() %>%
-      str_replace("/", "_") #replacing escape characters in species name
+    trimmedImputedSwedishList <- get_imputedList(origin = 'sverige', Art = c(speuid), indicator_layout = FALSE, year = year) 
+  }
+  
+  plotcomp <- function(df, art) {
+    
+    swedish <- trimmedImputedSwedishList %>% 
+      filter(species == {{ art }})
+    
+    local <- imputedLocalList %>% 
+      filter(species == {{ art }})
+    
+    fname <- as.character({{ art }}) %>%
+      str_replace_all("/", "_") #replacing escape characters in species name
     
     
     yAxisAdjusted <- yAxisModifier(max(c(swedish$imputed+1.96*swedish$se_imp,local$imputed+1.96*local$se_imp)))
     
-    
     gcomma <- function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = FALSE) #Called later, enables commas instead of points for decimal indication
     
-    imputedCombined <- merge(swedish,local, by="time",all=TRUE)
-    imputedCombined <- imputedCombined[, -c(3,5,6,7,8,10,11)]
-    names(imputedCombined) <- c("time","species","imputed_sweden","imputed_local")
+    imputedCombined <- swedish %>% 
+      full_join(local, by = c("species", "time")) %>%
+      transmute(time = time, species = species, imputed_sweden = imputed.x, imputed_local = imputed.y)
     
-    
-    mrgn1 <- margin(0,0,80,0)
-    mrgn2 <- margin(0,0,30,0)
-    if_else(nchar(fname) < 18, mrgn = mrgn1, mrgn = mrgn2)
-    
-    names(imputedCombined) <- c("time","species","imputed_sweden","imputed_local")
-    
-    fname <- str_replace_all(fname, "/", "_")#Restoring species name to original string that will appear in graph title
+    if(nchar(fname) < 18) {
+      mrgn <- margin(0,0,80,0, unit = "pt")
+    }else{
+      mrgn <- margin(0,0,30,0, unit = "pt")
+    }
     
     Encoding(fname) <- 'UTF-8'
     
     imputedCombined %>% 
-      ggplot(aes(x = time, y = imputed_sweden)) + 
-      geom_line(linetype = "longdash", linewidth = 1.6) + #central line #colour=rgb(155,187,89,max=255)
-      geom_line(aes(x = time, y = imputed_local), linetype = "solid", colour = sebms_palette[3], linewidth = 2.8, ) + #interval line 1
+      ggplot(aes(x = time)) + 
+      geom_line(aes(y = imputed_local), linetype = "solid", colour = sebms_trimpal[3], linewidth = 2.8) + #interval line 1
+      geom_line(aes(y = imputed_sweden), linetype = "longdash", linewidth = 1.6) + #central line #colour=rgb(155,187,89,max=255)
       # + xlim(startyear, endyear) #x-axis sectioning
-      expand_limits(x = 2010) +
+      expand_limits(x = min(year)) +
       geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2])) + #Horizontal background lines #from=yAxisAdjusted[2]
       scale_y_continuous(labels = gcomma,
                          breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),

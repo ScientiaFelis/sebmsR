@@ -307,22 +307,23 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...) 
                                            angle = 0),
                 axis.title.x = element_blank(),
                 axis.title.y = element_blank(),
+                axis.ticks = element_line(linewidth = 1, colour = "grey40"),
+                axis.ticks.length = unit(4, "mm"),
                 plot.margin = margin(8, 20, 0, 0),
-                axis.line = element_line(colour = "black")) #Axis colours
+                axis.line = element_line(colour = "black") #Axis colours
+                ) 
       }
     }
   }
   
   ggs <- vector("list", length = length(trimIndex))
   spname <- names(trimIndex) %>% 
-    str_replace_all("/", "_") %>% 
-    list()
+    str_replace_all("/", "_")
   
   ggs <- map2(trimIndex, spname, ~trimplots(.x, .y), .progress = "Making trimplots...")
   
   walk2(ggs, spname, ~ggsave(plot = .x, filename = glue("{.y}.png"), width = 748, height = 868, units = "px", dpi = 72), .progress = "Saving trimplots...")
-  
-  
+
 }
 
 
@@ -462,11 +463,11 @@ get_trimComparedPlots <- function(Län = ".", Landskap = ".", Kommun = ".", Art 
     
     imputedCombined %>% 
       ggplot(aes(x = time)) + 
-      geom_line(aes(y = imputed_local), linetype = "solid", colour = sebms_trimpal[3], linewidth = 2.8) + #interval line 1
+      geom_line(aes(y = imputed_local), linetype = "solid", colour = sebms_palette[2], linewidth = 2.8) + #interval line 1
       geom_line(aes(y = imputed_sweden), linetype = "longdash", linewidth = 1.6) + #central line #colour=rgb(155,187,89,max=255)
       # + xlim(startyear, endyear) #x-axis sectioning
-      expand_limits(x = min(year)) +
-      geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2])) + #Horizontal background lines #from=yAxisAdjusted[2]
+      expand_limits(x = min(year), y = c(0, yAxisAdjusted[1])) +
+      #geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2])) + #Horizontal background lines #from=yAxisAdjusted[2]
       scale_y_continuous(labels = gcomma,
                          breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
                          expand = c(0,0)) + #y-axis sectioning & comma labelling #from=yAxisAdjusted[2]

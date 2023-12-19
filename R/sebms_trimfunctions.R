@@ -11,6 +11,7 @@
 #' 
 #' Create a tibble with species ID and name together with the total number of observations of each species and the frequency (1 / #visits)
 #'
+#' @inheritParams sebms_abundance_per_species_plot
 #' @param year the year of interest
 #' @param Art the species of interest
 #' @param filterPattern a regex pattern to filter SQL query
@@ -146,6 +147,7 @@ get_trimIndex <- function(infile=NULL, year = 2010:2023, Art = 1:200, ...) {
 
 
 #' Palette Used in ggplots for Trim Index
+#' 
 #' @return vector of color hex codes
 #' @export
 sebms_trimpal <- c("#FFB000", "#648FFF", "#DC267F")
@@ -189,6 +191,7 @@ yAxisModifier <- function(x) {
 #' @importFrom stringr str_replace
 #' @importFrom glue glue
 #' @importFrom rtrim index overall
+#' @importFrom purrr map2 walk2
 #' 
 #' @return figures in png format of the species trends with confidence interval
 #' @export

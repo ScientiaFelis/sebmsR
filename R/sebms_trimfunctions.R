@@ -264,7 +264,7 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...) 
                             TRUE ~ paste0(fname ,' ',"\n(", m2$nsite, " lokaler)"))
         
         if(nchar(fname) < 18) {
-          mrgn  <- margin(0,0,80,0)
+          mrgn <- margin(0,0,80,0)
         }else {
           mrgn <- margin(0,0,30,0)
         }
@@ -275,28 +275,29 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...) 
           ggplot(aes(x = time,y = imputed)) +
           geom_line(linetype = paste(lt),
                     colour = paste(col),
-                    linewidth = 2.8) +#central line #colour=rgb(155,187,89,max=255)
+                    linewidth = 2.8) + #central line #colour=rgb(155,187,89,max=255)
           geom_line(aes(x = time,
-                        y = imputed-1.96*se_imp),
+                        y = imputed - 1.96*se_imp),
                     linetype = "longdash",
-                    linewidth = 1.6) +#interval line 1
+                    linewidth = 1.6) + #interval line 1
           geom_line(aes(x = time,
-                        y = imputed+1.96*se_imp),
+                        y = imputed + 1.96*se_imp),
                     linetype = "longdash",
-                    linewidth = 1.6) +#interval line 2
+                    linewidth = 1.6) + #interval line 2
           # + xlim(startyear, endyear) #x-axis sectioning
-          expand_limits(x = 2010)+
-          geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2])) +#Horizontal background lines #from=yAxisAdjusted[2]
+          expand_limits(x = min(year), y = c(0,yAxisAdjusted[1])) +
+         # geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2])) +#Horizontal background lines #from=yAxisAdjusted[2]
           scale_y_continuous(labels = gcomma,
                              breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
                              expand = c(0,0)) +#y-axis sectioning & comma labelling #from=yAxisAdjusted[2]
           scale_x_continuous(breaks = seq(min(year),max(year), by = 5))+
           labs(title = titles) +#Chart title text
           theme(text = element_text(family = "Arial"),
-                plot.title = element_text(hjust = 0.5,
+                plot.title = element_text(hjust = 0.5, # Centered
                                           size = 48, #Chart title size
-                                          margin = mrgn),
-                panel.grid.major = element_blank(), #Distance between title and chart
+                                          margin = mrgn), #Distance between title and chart
+                panel.grid.major.y = element_line(linewidth = 1, colour = "grey40"),
+                panel.grid.major.x = element_blank(),
                 panel.grid.minor = element_blank(),
                 panel.background = element_blank(), #Grid and background
                 axis.text.x = element_text(colour = "black", size = 42,  #x-axis labels colour&size 
@@ -413,7 +414,7 @@ get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap 
 #'
 #' @return figures saved as png comparing national and local trim indices
 #' @export
-get_trimComparedPlots <- function(Län = ".", Landskap = ".", Kommun = ".", Art = 1:200, trimmedImputedSwedishList=NULL, year = 2010:lubridate::year(lubridate::today())){
+get_trimComparedPlots <- function(Län = ".", Landskap = ".", Kommun = ".", Art = 1:200, trimmedImputedSwedishList=NULL, year = 2010:lubridate::year(lubridate::today())) {
   
   #1 Run trim index on species with local data
   #2 Of the local species not all may be possible to run
@@ -475,20 +476,22 @@ get_trimComparedPlots <- function(Län = ".", Landskap = ".", Kommun = ".", Art 
       theme(text = element_text(family = "Arial"),
             plot.margin = margin(8, 20, 0, 0),
             plot.title = element_text(size = 48, #Chart title size
-                                      margin = mrgn,
+                                      margin = mrgn,#Distance between title and chart
                                       hjust = 0.5),
-            axis.ticks.length = unit(0.5, "cm"),
-            axis.text.y = element_text(colour = "black",
-                                       size = 42, #y-axis labels colour&size
-                                       angle = 0),
-            axis.text.x = element_text(colour = "black",
-                                       size = 42,  #x-axis labels colour&size
-                                       angle = 0),
-            axis.line = element_line(colour = "black"),
-            panel.grid.major = element_blank(), #Distance between title and chart
+            panel.background = element_blank(), #Grid and background
+            panel.grid.major.x = element_blank(),
+            panel.grid.major.y = element_line(linewidth = 1, colour = "grey40"),
             panel.grid.minor = element_blank(),
-            panel.background = element_blank() #Grid and background
-      ) #Axis colours
+            axis.ticks = element_line(linewidth = 1, colour = "grey40"),
+            axis.ticks.length = unit(0.5, "cm"),
+            axis.text.y = element_text(colour = "black", #y-axis labels colour&size
+                                       size = 42,
+                                       angle = 0),
+            axis.text.x = element_text(colour = "black", #x-axis labels colour & size
+                                       size = 42,
+                                       angle = 0),
+            axis.line = element_line(colour = "black") #Axis colours
+      )
     
     
   } 

@@ -4,14 +4,32 @@
 \alias{get_indicatorAnalyses}
 \title{Run Indicator Analysis}
 \usage{
-get_indicatorAnalyses(infile = NULL, origin = "Sverige", indicators = "ALL")
+get_indicatorAnalyses(
+  infile = NULL,
+  baseyear = 2010,
+  Län = ".",
+  Landskap = ".",
+  Kommun = ".",
+  indicators = NULL,
+  indicatorname = NULL
+)
 }
 \arguments{
-\item{infile}{list of imputed index from [get_imputedList()]}
+\item{infile}{list of imputed index from [get_imputedList(indicator_layout =
+TRUE)]}
 
-\item{origin}{the origin of list species}
+\item{Län}{character or regular expression; which county you want the data
+from}
 
-\item{indicators}{which indicators to get index from; default to 'ALL'}
+\item{Landskap}{character or reg ex; which region you want the data from}
+
+\item{Kommun}{character or reg ex; which municipality you want the data from}
+
+\item{indicators}{optional; you can add a concatenated list of indicator
+species uids for a new indicator}
+
+\item{indicatorname}{the name of the new indicator. If indicators is given
+but without setting name the indicator will be named 'NewInd'}
 }
 \description{
 Run Indicator Analysis

@@ -10,7 +10,6 @@ get_imputedList(
   Län = ".",
   Landskap = ".",
   Kommun = ".",
-  origin = "sverige",
   indicator_layout = FALSE,
   year = 2010:lubridate::year(lubridate::today()),
   ...
@@ -26,13 +25,13 @@ from}
 
 \item{Kommun}{character or reg ex; which municipality you want the data from}
 
-\item{origin}{the origin of list species}
-
 \item{indicator_layout}{logical; whether the list should contain the}
 
 \item{year}{the year of interest}
 
 \item{...}{extra filter parameters passed to the [trimInfile()] function}
+
+\item{origin}{the origin of list species}
 }
 \value{
 a data frame with trim indices per species

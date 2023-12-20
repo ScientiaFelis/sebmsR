@@ -530,16 +530,40 @@ indicatorlist <- list(grassland = c(67,19,26,117,40,50,70,8,119,55,110,101),
 #' Run Indicator Analysis
 #'
 #' @inheritParams get_imputedList
-#' @param infile list of imputed index from [get_imputedList()]
-#' @param indicators which indicators to get index from; default to 'ALL'
+#' @param infile list of imputed index from [get_imputedList(indicator_layout =
+#'   TRUE)]
+#' @param indicators optional; you can add a concatenated list of indicator
+#'   species uids for a new indicator
+#' @param indicatorname the name of the new indicator. If indicators is given
+#'   but without setting name the indicator will be named 'NewInd'
 #'
 #' @importFrom BRCindicators msi
 #' @import dplyr
-#' 
+#' @importFrom glue glue
+#' @importFrom readr write_csv2
+#' @importFrom purrr set_names
+#'
 #' @return
 #' @export
 get_indicatorAnalyses <- function(infile = NULL, baseyear = 2010, Län = ".", Landskap = ".", Kommun = ".", indicators = NULL, indicatorname = NULL) {
   
+  if(!is.null(indicators)) { # If a new indicator is added
+    # If no new name is added
+    if(is.null(indicatorname)) {
+      indicatorname <- "NewInd"
+    }
+    # Add the new indicator as a list item to 'indicatorlist'
+    indicatorlist <- list(indicators) %>%
+      set_names(indicatorname) %>% 
+      append(indicatorlist)
+    
+    # indicatorlist <- map(list(indicators), ~list(.x)) %>% 
+    #   set_names(indicatorname) %>% 
+    #   list_flatten() %>% 
+    #   c(indicatorlist) %>% 
+    #   list_flatten()
+  }
+
   speid <- unlist(indicatorlist, use.names = F) %>% 
     unique()
   

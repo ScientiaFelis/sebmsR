@@ -347,7 +347,7 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...) 
 #'
 #' @return a data frame with trim indices per species
 #' @export
-get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", origin = 'sverige', indicator_layout = FALSE, year = 2010:lubridate::year(lubridate::today()), ...) {
+get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", indicator_layout = FALSE, year = 2010:lubridate::year(lubridate::today()), ...) {
   
   if(is.null(trimIndex)) { # If there is no trimIndex
     
@@ -370,9 +370,14 @@ get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap 
     
     if(inherits(df, 'trim')) {
       
+      if (all(Län == ".",Landskap == ".",Kommun == ".")) {
+        origin = "Sweden"
+      }else {
+      origin <- glue("{Län}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-")
+      }
       bind_cols(#spe_uid = speuid,
         species = as.character({{ art }}) %>% str_replace_all("/", "_"),
-        samplingorigin = as.character(origin),
+        origin = as.character(origin),
         index(df),
         converged = df$converged)
     }
@@ -389,12 +394,14 @@ get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap 
   if(indicator_layout == TRUE) { # If you want indicator layout
     
     imputedList <- imputedList %>% 
-      select(species, year = time, index = imputed, se = se_imp)
+      select(origin, species, year = time, index = imputed, se = se_imp)
     #names(imputedList) <- c('origin', 'year', 'index', 'se_imp', 'converged')
   }else { # If only list is wanted
     imputedList <- imputedList# %>% 
     #select(-spe_uid)
   }
+  
+  # Add speuid to list
   imputedList <- sebms_trimSpecies(Art = Art) %>% 
     select(speuid, art) %>% 
     right_join(imputedList, by = c("art" = "species"))
@@ -531,14 +538,15 @@ indicatorlist <- list(grassland = c(67,19,26,117,40,50,70,8,119,55,110,101),
 #' 
 #' @return
 #' @export
-get_indicatorAnalyses <- function(infile = NULL, origin='Sverige', indicators = 'ALL') {
+get_indicatorAnalyses <- function(infile = NULL, baseyear = 2010, Län = ".", Landskap = ".", Kommun = ".", indicators = NULL, indicatorname = NULL) {
   
   speid <- unlist(indicatorlist, use.names = F) %>% 
     unique()
   
   if(is.null(infile)) {
-    indata <- get_imputedList(Art = c(speid), indicator_layout = TRUE) %>%
-      transmute(speuid,
+    indata <- get_imputedList(Art = c(speid), indicator_layout = TRUE, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
+      transmute(origin,
+                speuid,
                 species = as.factor(art),
                 year = as.double(year),
                 index = 100 * index,

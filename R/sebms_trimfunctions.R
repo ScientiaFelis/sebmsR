@@ -536,14 +536,16 @@ indicatorlist <- list(grassland = c(67,19,26,117,40,50,70,8,119,55,110,101),
 #'   species uids for a new indicator
 #' @param indicatorname the name of the new indicator. If indicators is given
 #'   but without setting name the indicator will be named 'NewInd'
+#' @param lastyear number of years to do a trend comparison with
 #'
 #' @importFrom BRCindicators msi
 #' @import dplyr
 #' @importFrom glue glue
 #' @importFrom readr write_csv2
-#' @importFrom purrr set_names
+#' @importFrom purrr set_names walk2
 #'
-#' @return
+#' @return two csv files for each indicator groups. One with indicator index and
+#'   changes and one with trend data.
 #' @export
 get_indicatorAnalyses <- function(infile = NULL, baseyear = 2010, lastyear = 7, Län = ".", Landskap = ".", Kommun = ".", indicators = NULL, indicatorname = NULL) {
   

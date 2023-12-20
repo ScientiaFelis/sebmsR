@@ -7,6 +7,7 @@
 get_indicatorAnalyses(
   infile = NULL,
   baseyear = 2010,
+  lastyear = 7,
   Län = ".",
   Landskap = ".",
   Kommun = ".",
@@ -17,6 +18,8 @@ get_indicatorAnalyses(
 \arguments{
 \item{infile}{list of imputed index from [get_imputedList(indicator_layout =
 TRUE)]}
+
+\item{lastyear}{number of years to do a trend comparison with}
 
 \item{Län}{character or regular expression; which county you want the data
 from}
@@ -30,6 +33,10 @@ species uids for a new indicator}
 
 \item{indicatorname}{the name of the new indicator. If indicators is given
 but without setting name the indicator will be named 'NewInd'}
+}
+\value{
+two csv files for each indicator groups. One with indicator index and
+  changes and one with trend data.
 }
 \description{
 Run Indicator Analysis

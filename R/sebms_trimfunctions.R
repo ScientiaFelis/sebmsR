@@ -582,16 +582,17 @@ get_indicatorAnalyses <- function(infile = NULL, baseyear = 2010, Län = ".", La
              se = 100 * se)
   }
   
+  
   for (k in names(indicatorlist)){
     print(paste0("Working on the ",k," indicator"))
     
     dat <- indata %>% 
       filter(speuid %in% indicatorlist[[k]]) %>% 
-      select(-speuid)
+      select(-origin, -speuid)
     
-    msi_out <- msi(dat, plotbaseyear = 2010, SEbaseyear = 2010, index_smooth = 'INDEX', lastyears = 6, jobname = paste0(k,'.',origin))
+    msi_out <- msi(dat, plotbaseyear = baseyear, SEbaseyear = baseyear, index_smooth = 'INDEX', lastyears = 10, jobname = paste0(k,'.',origin))
     
-    write.table(file = paste0(k,".csv"), sep = ",", x = msi_out$results[2:8], row.names = FALSE)
+    write_csv2(file = glue("{k}_indicator_in_{indata %>% pull(origin) %>% unique()}.csv"), x = msi_out$results)
   }
   
 }

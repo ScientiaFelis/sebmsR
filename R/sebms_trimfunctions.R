@@ -373,7 +373,7 @@ get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap 
       if (all(Län == ".",Landskap == ".",Kommun == ".")) {
         origin = "Sweden"
       }else {
-      origin <- glue("{Län}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-")
+        origin <- glue("{Län}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-")
       }
       bind_cols(#spe_uid = speuid,
         species = as.character({{ art }}) %>% str_replace_all("/", "_"),
@@ -545,7 +545,7 @@ indicatorlist <- list(grassland = c(67,19,26,117,40,50,70,8,119,55,110,101),
 #'
 #' @return
 #' @export
-get_indicatorAnalyses <- function(infile = NULL, baseyear = 2010, Län = ".", Landskap = ".", Kommun = ".", indicators = NULL, indicatorname = NULL) {
+get_indicatorAnalyses <- function(infile = NULL, baseyear = 2010, lastyear = 7, Län = ".", Landskap = ".", Kommun = ".", indicators = NULL, indicatorname = NULL) {
   
   if(!is.null(indicators)) { # If a new indicator is added
     # If no new name is added
@@ -563,7 +563,7 @@ get_indicatorAnalyses <- function(infile = NULL, baseyear = 2010, Län = ".", La
     #   c(indicatorlist) %>% 
     #   list_flatten()
   }
-
+  
   speid <- unlist(indicatorlist, use.names = F) %>% 
     unique()
   
@@ -583,16 +583,22 @@ get_indicatorAnalyses <- function(infile = NULL, baseyear = 2010, Län = ".", La
   }
   
   
-  for (k in names(indicatorlist)){
-    print(paste0("Working on the ",k," indicator"))
+  
+  indicalc <- function(spi, indn) {
     
     dat <- indata %>% 
-      filter(speuid %in% indicatorlist[[k]]) %>% 
+      filter(speuid %in% spi) %>% 
       select(-origin, -speuid)
     
-    msi_out <- msi(dat, plotbaseyear = baseyear, SEbaseyear = baseyear, index_smooth = 'INDEX', lastyears = 10, jobname = paste0(k,'.',origin))
+    origin <- indata %>% distinct(origin) %>% pull()
     
-    write_csv2(file = glue("{k}_indicator_in_{indata %>% pull(origin) %>% unique()}.csv"), x = msi_out$results)
+    msi_out <- msi(dat, plotbaseyear = baseyear, SEbaseyear = baseyear, index_smooth = 'INDEX', lastyears = lastyear, jobname = glue("{indn}:{origin}"),)
+    
+    write_csv2(file = glue("{indn}_indicator_in_{origin}.csv"), x = msi_out$results[1:8])
+    write_csv2(file = glue("{indn}_trends_in_{origin}.csv"), x = msi_out$trends)
   }
   
+  walk2(indicatorlist, names(indicatorlist), ~indicalc(.x, .y), .progress = "Calculating Indicator Index...")
+  
+  #walk2(indata, indicatorlist, ~indicalc(.x, .y))
 }

@@ -545,7 +545,7 @@ indicatorlist <- list(grassland = c(67,19,26,117,40,50,70,8,119,55,110,101),
 #' @return two csv files for each indicator groups. One with indicator index and
 #'   changes and one with trend data.
 #' @export
-get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7, Län = ".", Landskap = ".", Kommun = ".", indicators = NULL, indicatorname = NULL) {
+get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7, Län = ".", Landskap = ".", Kommun = ".", write = TRUE, print = FALSE, indicators = NULL, indicatorname = NULL) {
   
   if(!is.null(indicators)) { # If a new indicator is added
     # If no new name is added
@@ -594,11 +594,19 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7
     
     msi_out <- msi(dat, plotbaseyear = min(years), SEbaseyear = min(years), index_smooth = 'INDEX', lastyears = lastyear, jobname = glue("{indn}:{origin}"),)
     
-    write_csv2(file = glue("{indn}_indicator_in_{origin}.csv"), x = msi_out$results[1:8])
-    write_csv2(file = glue("{indn}_trends_in_{origin}.csv"), x = msi_out$trends)
+    if (write) {
+      
+      write_csv2(file = glue("{indn}_indicator_in_{origin}.csv"), x = msi_out$results[1:8])
+      write_csv2(file = glue("{indn}_trends_in_{origin}.csv"), x = msi_out$trends)
+    }
+    return(msi_out)
   }
   
-  walk2(indicatorlist, names(indicatorlist), ~indicalc(.x, .y), .progress = "Calculating Indicator Index...")
+  grindicators <- map2(indicatorlist, names(indicatorlist), ~indicalc(.x, .y), .progress = "Calculating Indicator Index...") %>% 
+    set_names(names(indicatorlist))
   
+  if (print) {
+    return(grindicators)
+  }
   #walk2(indata, indicatorlist, ~indicalc(.x, .y))
 }

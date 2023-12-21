@@ -547,7 +547,7 @@ indicatorlist <- list(grassland = c(67,19,26,117,40,50,70,8,119,55,110,101),
 #' @return two csv files for each indicator groups. One with indicator index and
 #'   changes and one with trend data.
 #' @export
-get_indicatorAnalyses <- function(infile = NULL, baseyear = 2010, lastyear = 7, Län = ".", Landskap = ".", Kommun = ".", indicators = NULL, indicatorname = NULL) {
+get_indicatorAnalyses <- function(infile = NULL, year = 2010:2023, lastyear = 7, Län = ".", Landskap = ".", Kommun = ".", indicators = NULL, indicatorname = NULL) {
   
   if(!is.null(indicators)) { # If a new indicator is added
     # If no new name is added
@@ -570,7 +570,7 @@ get_indicatorAnalyses <- function(infile = NULL, baseyear = 2010, lastyear = 7, 
     unique()
   
   if(is.null(infile)) {
-    indata <- get_imputedList(Art = c(speid), indicator_layout = TRUE, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
+    indata <- get_imputedList(Art = c(speid), year = year, indicator_layout = TRUE, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
       transmute(origin,
                 speuid,
                 species = as.factor(art),
@@ -594,7 +594,7 @@ get_indicatorAnalyses <- function(infile = NULL, baseyear = 2010, lastyear = 7, 
     
     origin <- indata %>% distinct(origin) %>% pull()
     
-    msi_out <- msi(dat, plotbaseyear = baseyear, SEbaseyear = baseyear, index_smooth = 'INDEX', lastyears = lastyear, jobname = glue("{indn}:{origin}"),)
+    msi_out <- msi(dat, plotbaseyear = min(year), SEbaseyear = min(year), index_smooth = 'INDEX', lastyears = lastyear, jobname = glue("{indn}:{origin}"),)
     
     write_csv2(file = glue("{indn}_indicator_in_{origin}.csv"), x = msi_out$results[1:8])
     write_csv2(file = glue("{indn}_trends_in_{origin}.csv"), x = msi_out$trends)

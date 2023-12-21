@@ -12,7 +12,7 @@
 #' Create a tibble with species ID and name together with the total number of observations of each species and the frequency (1 / #visits)
 #'
 #' @inheritParams sebms_abundance_per_species_plot
-#' @param year the year of interest
+#' @param years the year span of interest, set as 'firstyear:lastyear'.
 #' @param Art the species of interest
 #' @param filterPattern a regex pattern to filter SQL query
 #' @param topList logical; whether the top list of species should be used
@@ -27,9 +27,9 @@
 #' @return a tibble with site, year, as well as the number of individuals
 #'   observed and the observation frequency for that year, species, and site.
 #' @export
-get_trimInfile <- function(year=2010:2023, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filterPattern=NULL, topList=FALSE, topNumber=200, source = c(54,55,56,63,64,66,67)){
+get_trimInfile <- function(years=2010:2023, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filterPattern=NULL, topList=FALSE, topNumber=200, source = c(54,55,56,63,64,66,67)){
   
-  trimSpecies <- sebms_trimSpecies(year = year, Art = Art, topList = topList, source = source) %>% 
+  trimSpecies <- sebms_trimSpecies(year = years, Art = Art, topList = topList, source = source) %>% 
     slice_head(n=topNumber)
   
   spein <- function(df = data, speuid) {
@@ -38,17 +38,17 @@ get_trimInfile <- function(year=2010:2023, Art = 1:200, Län = ".", Landskap = "
     minw <- df %>% pull(min) # first posible week of observation
     maxw <- df %>% pull(max) # öast possible week of observation
     
-    obses <- sebms_trimobs(year = year, Art = speuid, Län = Län, Landskap = Landskap, Kommun = Kommun, filterPattern = filterPattern, minmax = minw:maxw, source = source) %>% 
+    obses <- sebms_trimobs(year = years, Art = speuid, Län = Län, Landskap = Landskap, Kommun = Kommun, filterPattern = filterPattern, minmax = minw:maxw, source = source) %>% 
       mutate(total_number = as.numeric(total_number))
     
-    visits <- sebms_trimvisits(year = year, minmax = minw:maxw, source = source) %>% 
+    visits <- sebms_trimvisits(year = years, minmax = minw:maxw, source = source) %>% 
       mutate(visit = as.numeric(visit))
     
     if(nrow(obses) > 0) { #Precondition to skip species with zero observations
       
       ## TRIM infile generation (If species have been seen any year in 'year' all site with a visit get 'total_number' of 0. Non-visited sites any year gets a NA)
       obsTidy <- obses %>%
-        complete(siteuid, year = seq(min(year), max(year), by = 1), fill = list(total_number = 0)) %>%
+        complete(siteuid, year = seq(min(years), max(years), by = 1), fill = list(total_number = 0)) %>%
         left_join(visits, by = c("siteuid", "year")) %>% 
         mutate(total_number = if_else(is.na(visit), NA, total_number),
                visit = if_else(is.na(visit), 1, visit),
@@ -101,20 +101,20 @@ get_trimInfile <- function(year=2010:2023, Art = 1:200, Län = ".", Landskap = "
 #' 
 #' @return a trim file with yearly changes of each species. 
 #' @export
-get_trimIndex <- function(infile=NULL, year = 2010:lubridate::year(lubridate::today()), Art = 1:200, ...) {
+get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::today()), Art = 1:200, ...) {
   
   if(is.null(infile)) {
     arglist <- list(...)
     
     if(!is.null(arglist$filterPattern)) {
       fp <- arglist$filterPattern
-      infile <- get_trimInfile(filterPattern = fp, year = year, Art = Art) %>% 
+      infile <- get_trimInfile(filterPattern = fp, years = years, Art = Art) %>% 
         select(siteuid, year, total_number, freq) %>% 
         group_by(speuid) %>% 
         nest() %>% 
         ungroup()
     }else{
-      infile <- get_trimInfile(year = year, Art = Art)
+      infile <- get_trimInfile(years = years, Art = Art)
       if (nrow(infile) > 0) {
         infile <- infile %>% 
           select(site = siteuid, speuid, art, year, total_number, freq) %>% 
@@ -185,8 +185,9 @@ yAxisModifier <- function(x) {
 
 #' Create and Save TRIM Plots
 #'
+#' @inheritParams get_trimInfile
 #' @param trimIndex optional; a trimIndex object from the [get_trimIndex()]
-#' @param year the years to calculate trimindex on, ignored if trimIndex is not
+#' @param years the years to calculate trim index on, ignored if trimIndex is not
 #'   NULL
 #' @param Art the species of interest, ignored if trimIndex is not NULL
 #' @param ... optional; other arguments passed on to [get_trimInfile()]
@@ -199,7 +200,7 @@ yAxisModifier <- function(x) {
 #' 
 #' @return figures in png format of the species trends with confidence interval
 #' @export
-get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...) {
+get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, ...) {
   
   # This creates a trimIndex file if none is provided
   if(is.null(trimIndex)) {
@@ -210,11 +211,11 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...) 
       
       fp <- arglist$filterPattern
       
-      trimIndex <- get_trimInfile(year = year, Art = Art, filterPattern = fp) %>% 
+      trimIndex <- get_trimInfile(years = years, Art = Art, filterPattern = fp) %>% 
         get_trimIndex()
       
     }else{ # If you want to use the defaults
-      trimIndex <- get_trimIndex(year = year, Art = Art)
+      trimIndex <- get_trimIndex(years = years, Art = Art)
     }
   }  
   
@@ -286,12 +287,12 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...) 
                     linetype = "longdash",
                     linewidth = 1.6) + #interval line 2
           # + xlim(startyear, endyear) #x-axis sectioning
-          expand_limits(x = min(year), y = c(0,yAxisAdjusted[1])) +
+          expand_limits(x = min(years), y = c(0,yAxisAdjusted[1])) +
           # geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2])) +#Horizontal background lines #from=yAxisAdjusted[2]
           scale_y_continuous(labels = gcomma,
                              breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
                              expand = c(0,0)) +#y-axis sectioning & comma labelling #from=yAxisAdjusted[2]
-          scale_x_continuous(breaks = seq(min(year),max(year), by = 5))+
+          scale_x_continuous(breaks = seq(min(years),max(years), by = 5))+
           labs(title = titles) +#Chart title text
           theme(text = element_text(family = "Arial"),
                 plot.title = element_text(hjust = 0.5, # Centered
@@ -328,9 +329,6 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...) 
 }
 
 
-
-### 
-
 #' Generate List of Imputed Values per Species
 #'
 #'
@@ -347,7 +345,7 @@ get_trimPlots <- function(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...) 
 #'
 #' @return a data frame with trim indices per species
 #' @export
-get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", indicator_layout = FALSE, year = 2010:lubridate::year(lubridate::today()), ...) {
+get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", indicator_layout = FALSE, years = 2010:lubridate::year(lubridate::today()), ...) {
   
   if(is.null(trimIndex)) { # If there is no trimIndex
     
@@ -355,13 +353,13 @@ get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap 
     if(!is.null(arglist$filterPattern)) { # If you have used filterPattern
       
       fp <- arglist$filterPattern
-      infiletrimIndex = get_trimInfile(year = year, filterPattern = fp) %>% 
+      infiletrimIndex = get_trimInfile(years = years, filterPattern = fp) %>% 
         get_trimIndex()
       
     }else { # If no filterPattern is used in ...
       
-      trimIndex <- get_trimInfile(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
-        get_trimIndex(year = year)
+      trimIndex <- get_trimInfile(years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
+        get_trimIndex(years = years)
     }
     
   } # If there were a trimIndex file supplied, use that
@@ -426,19 +424,19 @@ get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap 
 #'
 #' @return figures saved as png comparing national and local trim indices
 #' @export
-get_trimComparedPlots <- function(Län = ".", Landskap = ".", Kommun = ".", Art = 1:200, trimmedImputedSwedishList=NULL, year = 2010:lubridate::year(lubridate::today())) {
+get_trimComparedPlots <- function(Län = ".", Landskap = ".", Kommun = ".", Art = 1:200, trimmedImputedSwedishList=NULL, years = 2010:lubridate::year(lubridate::today())) {
   
   #1 Run trim index on species with local data
   #2 Of the local species not all may be possible to run
   #3 For the remaining species that did run through thte local trim calc run those species on Swedish data for Sweden.
   
-  imputedLocalList <- get_imputedList(origin = 'sverige', Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, indicator_layout = FALSE, year = year) 
+  imputedLocalList <- get_imputedList(origin = 'sverige', Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, indicator_layout = FALSE, years = years) 
   
   if (is.null(trimmedImputedSwedishList)) {
     
     speuid <- imputedLocalList %>% pull(speuid)
     
-    trimmedImputedSwedishList <- get_imputedList(origin = 'sverige', Art = c(speuid), indicator_layout = FALSE, year = year) 
+    trimmedImputedSwedishList <- get_imputedList(origin = 'sverige', Art = c(speuid), indicator_layout = FALSE, years = years) 
   }
   
   plotcomp <- function(df, art) {
@@ -479,7 +477,7 @@ get_trimComparedPlots <- function(Län = ".", Landskap = ".", Kommun = ".", Art 
       scale_y_continuous(labels = gcomma,
                          breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
                          expand = c(0,0)) + #y-axis sectioning & comma labelling #from=yAxisAdjusted[2]
-      scale_x_continuous(breaks = seq(min(year), max(year), by = 5)) +
+      scale_x_continuous(breaks = seq(min(years), max(years), by = 5)) +
       #enable axis titles #axis.title.x=element_blank()
       labs(title = fname, x = NULL, y = NULL) + #Chart title text
       theme(text = element_text(family = "Arial"),
@@ -547,7 +545,7 @@ indicatorlist <- list(grassland = c(67,19,26,117,40,50,70,8,119,55,110,101),
 #' @return two csv files for each indicator groups. One with indicator index and
 #'   changes and one with trend data.
 #' @export
-get_indicatorAnalyses <- function(infile = NULL, year = 2010:2023, lastyear = 7, Län = ".", Landskap = ".", Kommun = ".", indicators = NULL, indicatorname = NULL) {
+get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7, Län = ".", Landskap = ".", Kommun = ".", indicators = NULL, indicatorname = NULL) {
   
   if(!is.null(indicators)) { # If a new indicator is added
     # If no new name is added
@@ -570,7 +568,7 @@ get_indicatorAnalyses <- function(infile = NULL, year = 2010:2023, lastyear = 7,
     unique()
   
   if(is.null(infile)) {
-    indata <- get_imputedList(Art = c(speid), year = year, indicator_layout = TRUE, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
+    indata <- get_imputedList(Art = c(speid), years = years, indicator_layout = TRUE, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
       transmute(origin,
                 speuid,
                 species = as.factor(art),
@@ -594,7 +592,7 @@ get_indicatorAnalyses <- function(infile = NULL, year = 2010:2023, lastyear = 7,
     
     origin <- indata %>% distinct(origin) %>% pull()
     
-    msi_out <- msi(dat, plotbaseyear = min(year), SEbaseyear = min(year), index_smooth = 'INDEX', lastyears = lastyear, jobname = glue("{indn}:{origin}"),)
+    msi_out <- msi(dat, plotbaseyear = min(years), SEbaseyear = min(years), index_smooth = 'INDEX', lastyears = lastyear, jobname = glue("{indn}:{origin}"),)
     
     write_csv2(file = glue("{indn}_indicator_in_{origin}.csv"), x = msi_out$results[1:8])
     write_csv2(file = glue("{indn}_trends_in_{origin}.csv"), x = msi_out$trends)

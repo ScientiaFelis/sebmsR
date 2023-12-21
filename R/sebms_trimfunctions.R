@@ -610,3 +610,110 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7
   }
   #walk2(indata, indicatorlist, ~indicalc(.x, .y))
 }
+
+
+
+###
+
+get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubridate::today())) {
+  
+  if (is.null(msi_out)) {
+    msi_out <- get_indicatorAnalyses(years = years, write = FALSE, print = TRUE)
+  }
+  
+   trimplots <- function(df, indicator) {
+   
+     # if(inherits(df, 'trim')) {
+      
+      
+     # if(inherits(df, "list")){
+        
+        fname <- as.character({{ indicator }}) %>% 
+          str_replace_all("/", "_") #replacing escape characters in species name
+        #print(m2)
+        
+        yAxisAdjusted <- yAxisModifier(max(df$index + 1.96*df$se))
+        
+        gcomma <- function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = FALSE) #Called later, enables commas instead of points for decimal indication
+        
+        
+        indco <- overall(m2)
+        indco <- as.vector(indco[[2]])
+        indco <- indco[8]
+        
+        #TODO This if else should be possible to do inside ggplot with lty and col by category
+        if (indco == "Uncertain") {
+          col <- sebms_trimpal[3]
+          lt <- "longdash"
+        } else if (indco == "Strong decrease (p<0.05)" | indco == "Strong decrease (p<0.01)" | indco == "Moderate decrease (p<0.05)" | indco == "Moderate decrease (p<0.01)") {
+          col <- sebms_trimpal[2]
+          lt <- "solid"
+        } else if (indco == "Stable") {
+          col <- sebms_trimpal[3]
+          lt <- "solid"
+        }  else {
+          col <- sebms_trimpal[1]
+          lt <- "solid"
+        }
+        
+        # mrgn1 <- margin(0,0,80,0)
+        # mrgn2 <- margin(0,0,30,0)
+        # 
+        titles <- case_when(nchar(fname) < 18  ~ paste0(fname ,' ',"(", m2$nsite, " lokaler)"),
+                            str_detect(fname, "_") ~ glue("{str_replace_all(fname, '_', '\n')} \n({m2$nsite} lokaler)"),
+                            TRUE ~ paste0(fname ,' ',"\n(", m2$nsite, " lokaler)"))
+        
+        if(nchar(fname) < 18) {
+          mrgn <- margin(0,0,80,0)
+        }else {
+          mrgn <- margin(0,0,30,0)
+        }
+        
+        Encoding(fname) <- 'UTF-8'
+        
+        Index %>% 
+          ggplot(aes(x = year,y = MSI)) +
+          geom_line(linetype = paste(lt),
+                    colour = paste(col),
+                    linewidth = 2.8) + #central line #colour=rgb(155,187,89,max=255)
+          geom_line(aes(y = lowe_CL_MSI),
+                    linetype = "longdash",
+                    linewidth = 1.6) + #interval line 1
+          geom_line(aes(y = upper_CL_MSI),
+                    linetype = "longdash",
+                    linewidth = 1.6) + #interval line 2
+          # + xlim(startyear, endyear) #x-axis sectioning
+          expand_limits(x = min(years), y = c(0,yAxisAdjusted[1])) +
+          # geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2])) +#Horizontal background lines #from=yAxisAdjusted[2]
+          scale_y_continuous(labels = gcomma,
+                             breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
+                             expand = c(0,0)) +#y-axis sectioning & comma labelling #from=yAxisAdjusted[2]
+          scale_x_continuous(breaks = seq(min(years),max(years), by = 5))+
+          labs(title = titles) +#Chart title text
+          theme(text = element_text(family = "Arial"),
+                plot.title = element_text(hjust = 0.5, # Centered
+                                          size = 48, #Chart title size
+                                          margin = mrgn), #Distance between title and chart
+                panel.grid.major.y = element_line(linewidth = 1, colour = "grey40"),
+                panel.grid.major.x = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.background = element_blank(), #Grid and background
+                axis.text.x = element_text(colour = "black", size = 42,  #x-axis labels colour&size 
+                                           angle = 0),
+                axis.text.y = element_text(colour = "black",
+                                           size = 42, #y-axis labels colour&size
+                                           angle = 0),
+                axis.title.x = element_blank(),
+                axis.title.y = element_blank(),
+                axis.ticks = element_line(linewidth = 1, colour = "grey40"),
+                axis.ticks.length = unit(4, "mm"),
+                plot.margin = margin(8, 20, 0, 0),
+                axis.line = element_line(colour = "black") #Axis colours
+          ) 
+      }
+    #}
+ # }
+  
+  map2(msi_out, names(indicatorlist), ~trimplots(.x, .y))
+  
+}

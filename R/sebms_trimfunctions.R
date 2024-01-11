@@ -131,13 +131,12 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
       ungroup()
   }
   
+  # Make trim with set arguments into function
+  trimfun <- function(df){
+    rtrim::trim(total_number ~ site + year, data = df, weights = "freq",  model = 2, serialcor = TRUE,overdisp = TRUE,changepoints = "all",autodelete = TRUE, max_iter = 1000)
+  }
+  
   if(length(infile) != 0){
-    
-    #    dl.li <- vector(mode = 'list', length = length(infile))
-    #names(dl.li) <- gsub("\ Spec.*","",names(infile)) #names(infile)
-    trimfun <- function(df){
-      rtrim::trim(total_number ~ site + year, data = df, weights = "freq",  model = 2, serialcor = TRUE,overdisp = TRUE,changepoints = "all",autodelete = TRUE, max_iter = 1000)
-    }
     
     trimList <- map(infile$data, trimfun, .progress = "Run trimfunction...") %>% 
       suppressWarnings() %>% 

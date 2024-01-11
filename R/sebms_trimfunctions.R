@@ -343,7 +343,7 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, ...)
 #'
 #' @return a data frame with trim indices per species
 #' @export
-get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", indicator_layout = FALSE, years = 2010:lubridate::year(lubridate::today()), ...) {
+get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", indicator_layout = FALSE, ...) {
   
   if(is.null(trimIndex)) { # If there is no trimIndex
     
@@ -387,20 +387,21 @@ get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap 
   imputedList <- map2(trimIndex, spname, ~trimspelist(.x, .y)) %>% 
     list_rbind() 
   
-  if(indicator_layout == TRUE) { # If you want indicator layout
+  if(indicator_layout) { # If you want indicator layout
     
     imputedList <- imputedList %>% 
-      select(origin, species, year = time, index = imputed, se = se_imp)
+      select(origin, art, year = time, index = imputed, se = se_imp)
     #names(imputedList) <- c('origin', 'year', 'index', 'se_imp', 'converged')
   }else { # If only list is wanted
-    imputedList <- imputedList# %>% 
-    #select(-spe_uid)
+    imputedList <- imputedList %>% 
+      #select(-spe_uid)
+      select(origin, art, year = time, index = imputed, se = se_imp, converged)
   }
   
   # Add speuid to list
   imputedList <- sebms_trimSpecies(Art = Art) %>% 
     select(speuid, art) %>% 
-    right_join(imputedList, by = c("art" = "species"))
+    right_join(imputedList, by = c("art"))
   
   return(imputedList)
 }
@@ -422,40 +423,40 @@ get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap 
 #'
 #' @return figures saved as png comparing national and local trim indices
 #' @export
-get_trimComparedPlots <- function(Län = ".", Landskap = ".", Kommun = ".", Art = 1:200, trimmedImputedSwedishList=NULL, years = 2010:lubridate::year(lubridate::today())) {
+get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", trimmedImputedSwedishList=NULL) {
   
   #1 Run trim index on species with local data
   #2 Of the local species not all may be possible to run
   #3 For the remaining species that did run through thte local trim calc run those species on Swedish data for Sweden.
   
-  imputedLocalList <- get_imputedList(origin = 'sverige', Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, indicator_layout = FALSE, years = years) 
+  imputedLocalList <- get_imputedList(years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, indicator_layout = TRUE) 
   
   if (is.null(trimmedImputedSwedishList)) {
     
     speuid <- imputedLocalList %>% pull(speuid)
     
-    trimmedImputedSwedishList <- get_imputedList(origin = 'sverige', Art = c(speuid), indicator_layout = FALSE, years = years) 
+    trimmedImputedSwedishList <- get_imputedList(years = years, Art = c(speuid), indicator_layout = TRUE) 
   }
   
-  plotcomp <- function(df, art) {
+  plotcomp <- function(df, species) {
     
     swedish <- trimmedImputedSwedishList %>% 
-      filter(species == {{ art }})
+      filter(art == {{ species }})
     
     local <- imputedLocalList %>% 
-      filter(species == {{ art }})
+      filter(art == {{ species }})
     
-    fname <- as.character({{ art }}) %>%
+    fname <- as.character({{ species }}) %>%
       str_replace_all("/", "_") #replacing escape characters in species name
     
     
-    yAxisAdjusted <- yAxisModifier(max(c(swedish$imputed+1.96*swedish$se_imp,local$imputed+1.96*local$se_imp)))
+    yAxisAdjusted <- yAxisModifier(max(c(swedish$index+1.96*swedish$se,local$index+1.96*local$se)))
     
     gcomma <- function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = FALSE) #Called later, enables commas instead of points for decimal indication
     
     imputedCombined <- swedish %>% 
-      full_join(local, by = c("species", "time")) %>%
-      transmute(time = time, species = species, imputed_sweden = imputed.x, imputed_local = imputed.y)
+      full_join(local, by = c("art", "year")) %>%
+      transmute(year = year, species = art, imputed_sweden = index.x, imputed_local = index.y)
     
     if(nchar(fname) < 18) {
       mrgn <- margin(0,0,80,0, unit = "pt")
@@ -466,11 +467,11 @@ get_trimComparedPlots <- function(Län = ".", Landskap = ".", Kommun = ".", Art 
     Encoding(fname) <- 'UTF-8'
     
     imputedCombined %>% 
-      ggplot(aes(x = time)) + 
+      ggplot(aes(x = year)) + 
       geom_line(aes(y = imputed_local), linetype = "solid", colour = sebms_palette[2], linewidth = 2.8) + #interval line 1
       geom_line(aes(y = imputed_sweden), linetype = "longdash", linewidth = 1.6) + #central line #colour=rgb(155,187,89,max=255)
       # + xlim(startyear, endyear) #x-axis sectioning
-      expand_limits(x = min(year), y = c(0, yAxisAdjusted[1])) +
+      expand_limits(x = min(years), y = c(0, yAxisAdjusted[1])) +
       #geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2])) + #Horizontal background lines #from=yAxisAdjusted[2]
       scale_y_continuous(labels = gcomma,
                          breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
@@ -502,11 +503,11 @@ get_trimComparedPlots <- function(Län = ".", Landskap = ".", Kommun = ".", Art 
   } 
   
   ggs <- imputedLocalList %>% 
-    group_by(species) %>% 
+    group_by(art) %>% 
     nest() %>% 
     ungroup() %>% 
-    mutate(plots = map2(data, species, ~plotcomp(.x, .y)))
-  walk2(ggs$plots, ggs$species, ~ggsave(plot = .x, filename = glue("{.y}_comparison.png"), width=748, height=868, dpi = 72, units = "px"))
+    mutate(plots = map2(data, art, ~plotcomp(.x, .y)))
+  walk2(ggs$plots, ggs$art, ~ggsave(plot = .x, filename = glue("{.y}_comparison.png"), width=748, height=868, dpi = 72, units = "px"))
   
 }
 
@@ -577,7 +578,7 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7
                 se = 100 * se)
   }else {
     indata <- infile %>%
-      mutate(species = as.factor(species),
+      mutate(species = as.factor(art),
              index = 100 * index,
              se = 100 * se)
   }

@@ -5,7 +5,7 @@
 \title{Create an Object with Species Number per Year and Site with Visit Frequency}
 \usage{
 get_trimInfile(
-  year = 2010:2023,
+  years = 2010:2023,
   Art = 1:200,
   Län = ".",
   Landskap = ".",
@@ -17,7 +17,7 @@ get_trimInfile(
 )
 }
 \arguments{
-\item{year}{the year of interest}
+\item{years}{the year span of interest, set as 'firstyear:lastyear'.}
 
 \item{Art}{the species of interest}
 

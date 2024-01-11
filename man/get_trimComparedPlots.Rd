@@ -5,15 +5,19 @@
 \title{Create and Save Local TRIM Plots with National TRIM Reference}
 \usage{
 get_trimComparedPlots(
+  years = 2010:lubridate::year(lubridate::today()),
+  Art = 1:200,
   Län = ".",
   Landskap = ".",
   Kommun = ".",
-  Art = 1:200,
-  trimmedImputedSwedishList = NULL,
-  year = 2010:lubridate::year(lubridate::today())
+  trimmedImputedSwedishList = NULL
 )
 }
 \arguments{
+\item{years}{the year span of interest, set as 'firstyear:lastyear'.}
+
+\item{Art}{the species of interest}
+
 \item{Län}{character or regular expression; which county you want the data
 from}
 
@@ -21,12 +25,8 @@ from}
 
 \item{Kommun}{character or reg ex; which municipality you want the data from}
 
-\item{Art}{the species of interest}
-
 \item{trimmedImputedSwedishList}{data frame of national wide data of species
 trim values}
-
-\item{year}{the year of interest}
 }
 \value{
 figures saved as png comparing national and local trim indices

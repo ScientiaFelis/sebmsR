@@ -3,6 +3,7 @@
 export(editcred)
 export(get_imputedList)
 export(get_indicatorAnalyses)
+export(get_indicatorPlots)
 export(get_nearby)
 export(get_nearby_SunHour)
 export(get_trimComparedPlots)

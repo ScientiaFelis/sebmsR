@@ -4,13 +4,12 @@
 \alias{get_trimPlots}
 \title{Create and Save TRIM Plots}
 \usage{
-get_trimPlots(trimIndex = NULL, year = 2010:2023, Art = 1:200, ...)
+get_trimPlots(trimIndex = NULL, years = 2010:2023, Art = 1:200, ...)
 }
 \arguments{
 \item{trimIndex}{optional; a trimIndex object from the [get_trimIndex()]}
 
-\item{year}{the years to calculate trimindex on, ignored if trimIndex is not
-NULL}
+\item{years}{the years to calculate trim index on, ignored if a trimIndex file is given}
 
 \item{Art}{the species of interest, ignored if trimIndex is not NULL}
 

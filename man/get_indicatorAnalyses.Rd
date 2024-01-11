@@ -6,11 +6,13 @@
 \usage{
 get_indicatorAnalyses(
   infile = NULL,
-  baseyear = 2010,
+  years = 2010:2023,
   lastyear = 7,
   Län = ".",
   Landskap = ".",
   Kommun = ".",
+  write = TRUE,
+  print = FALSE,
   indicators = NULL,
   indicatorname = NULL
 )
@@ -18,6 +20,8 @@ get_indicatorAnalyses(
 \arguments{
 \item{infile}{list of imputed index from [get_imputedList(indicator_layout =
 TRUE)]}
+
+\item{years}{the year span of interest, set as 'firstyear:lastyear'.}
 
 \item{lastyear}{number of years to do a trend comparison with}
 
@@ -27,6 +31,10 @@ from}
 \item{Landskap}{character or reg ex; which region you want the data from}
 
 \item{Kommun}{character or reg ex; which municipality you want the data from}
+
+\item{write}{logical; if you want to write result to csv files, default TRUE.}
+
+\item{print}{logical; if you want to print result to output, default FALSE}
 
 \item{indicators}{optional; you can add a concatenated list of indicator
 species uids for a new indicator}

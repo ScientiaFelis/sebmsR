@@ -6,7 +6,7 @@
 \usage{
 get_trimIndex(
   infile = NULL,
-  year = 2010:lubridate::year(lubridate::today()),
+  years = 2010:lubridate::year(lubridate::today()),
   Art = 1:200,
   ...
 )
@@ -14,7 +14,7 @@ get_trimIndex(
 \arguments{
 \item{infile}{file with site, year, total observations and reverse frequency weight (1/#visits), or an object from [get_trimInfile()]}
 
-\item{year}{the year of interest}
+\item{years}{the year span of interest, set as 'firstyear:lastyear'.}
 
 \item{Art}{the species of interest}
 

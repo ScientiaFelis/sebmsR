@@ -6,16 +6,20 @@
 \usage{
 get_imputedList(
   trimIndex = NULL,
+  years = 2010:lubridate::year(lubridate::today()),
   Art = 1:200,
   Län = ".",
   Landskap = ".",
   Kommun = ".",
   indicator_layout = FALSE,
-  year = 2010:lubridate::year(lubridate::today()),
   ...
 )
 }
 \arguments{
+\item{trimIndex}{a trim index object from [get_trimindex()]}
+
+\item{years}{the year span of interest, set as 'firstyear:lastyear'.}
+
 \item{Art}{the species of interest}
 
 \item{Län}{character or regular expression; which county you want the data
@@ -26,8 +30,6 @@ from}
 \item{Kommun}{character or reg ex; which municipality you want the data from}
 
 \item{indicator_layout}{logical; whether the list should contain the}
-
-\item{year}{the year of interest}
 
 \item{...}{extra filter parameters passed to the [trimInfile()] function}
 

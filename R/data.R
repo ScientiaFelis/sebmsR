@@ -754,7 +754,7 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
 #' 
 #' @return a tibble with species IDs, name, and min and max flight time week
 #' @export
-sebms_trimSites <- function(year = 2010:lubridate::year(lubridate::today()), source = c(54,55,56,63,64,66,67,84)) {
+sebms_trimSites <- function(year = 2010:lubridate::year(lubridate::today()), Landskap = ".", Län = ".", Kommun = ".", source = c(54,55,56,63,64,66,67,84)) {
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   source <- glue("({paste0({source}, collapse = ',')})")

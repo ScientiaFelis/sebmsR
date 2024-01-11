@@ -106,14 +106,14 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
   if(is.null(infile)) {
     arglist <- list(...)
     
-    if(!is.null(arglist$filterPattern)) {
+    if(!is.null(arglist$filterPattern)) { #If a filterpattern have been given
       fp <- arglist$filterPattern
       infile <- get_trimInfile(filterPattern = fp, years = years, Art = Art) %>% 
         select(siteuid, year, total_number, freq) %>% 
         group_by(speuid) %>% 
         nest() %>% 
         ungroup()
-    }else{
+    }else{ # If there is no filterpattern
       infile <- get_trimInfile(years = years, Art = Art)
       if (nrow(infile) > 0) {
         infile <- infile %>% 
@@ -123,7 +123,7 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
           ungroup()
       }
     }
-  }else {
+  }else { # If there is a 'infile' given
     infile <- infile %>% 
       select(site = siteuid, speuid, art, year, total_number, freq) %>% 
       group_by(speuid, art) %>% 
@@ -185,10 +185,8 @@ yAxisModifier <- function(x) {
 
 #' Create and Save TRIM Plots
 #'
-#' @inheritParams get_trimInfile
 #' @param trimIndex optional; a trimIndex object from the [get_trimIndex()]
-#' @param years the years to calculate trim index on, ignored if trimIndex is not
-#'   NULL
+#' @param years the years to calculate trim index on, ignored if a trimIndex file is given
 #' @param Art the species of interest, ignored if trimIndex is not NULL
 #' @param ... optional; other arguments passed on to [get_trimInfile()]
 #'
@@ -333,6 +331,7 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, ...)
 #'
 #'
 #' @inheritParams get_trimInfile
+#' @param trimIndex a trim index object from [get_trimindex()]
 #' @param origin the origin of list species
 #' @param indicator_layout logical; whether the list should contain the 
 #' @param ... extra filter parameters passed to the [trimInfile()] function
@@ -369,12 +368,12 @@ get_imputedList <- function(trimIndex = NULL, Art = 1:200, Län = ".", Landskap 
     if(inherits(df, 'trim')) {
       
       if (all(Län == ".",Landskap == ".",Kommun == ".")) {
-        origin = "Sweden"
+        origin = "Sweden" # If no region was selected use Sweden
       }else {
-        origin <- glue("{Län}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-")
+        origin <- glue("{Län}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
       }
       bind_cols(#spe_uid = speuid,
-        species = as.character({{ art }}) %>% str_replace_all("/", "_"),
+        art = as.character({{ art }}) %>% str_replace_all("/", "_"),
         origin = as.character(origin),
         index(df),
         converged = df$converged)
@@ -530,6 +529,8 @@ indicatorlist <- list(grassland = c(67,19,26,117,40,50,70,8,119,55,110,101),
 #' @inheritParams get_imputedList
 #' @param infile list of imputed index from [get_imputedList(indicator_layout =
 #'   TRUE)]
+#' @param write logical; if you want to write result to csv files, default TRUE.
+#' @param print logical; if you want to print result to output, default FALSE
 #' @param indicators optional; you can add a concatenated list of indicator
 #'   species uids for a new indicator
 #' @param indicatorname the name of the new indicator. If indicators is given
@@ -564,7 +565,7 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7
     #   list_flatten()
   }
   
-  speid <- unlist(indicatorlist, use.names = F) %>% 
+  speid <- unlist(indicatorlist, use.names = F) %>%  # 'indicatorlist' laddas in av paketet
     unique()
   
   if(is.null(infile)) {

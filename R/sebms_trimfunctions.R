@@ -550,7 +550,9 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7
   
   if(!is.null(indicators)) { # If a new indicator is added
     # If no new name is added
+    cat("Making new indicator from your species...")
     if(is.null(indicatorname)) {
+      cat("Setting name to new indicator to 'NewInd'")
       indicatorname <- "NewInd"
     }
     # Add the new indicator as a list item to 'indicatorlist'

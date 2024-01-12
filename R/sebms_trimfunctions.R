@@ -157,7 +157,7 @@ sebms_trimpal <- c("#FFB000", "#648FFF", "#DC267F")
 
 
 
-#' Modify y axis Max Value
+#' Modify y axis Max Value for Trim Plots
 #' 
 #' Sets the max value and steps on y-axis
 #'
@@ -603,6 +603,29 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7
 }
 
 
+#' Modify y axis Max Value for Indicator Plots
+#' 
+#' Sets the max value and steps on y-axis
+#'
+#' @param x the max of the trim values 
+#'
+#' @return a max value, a step value and ??
+#' @noRd
+yIndicatorAxisMod <- function(x) {
+  case_when(x < 5 ~ c(4, .5, 8),
+            x <10 ~ c(10, 2, 5),
+            x <15 ~ c(15, 3, 5),
+            x <20 ~ c(20, 5, 4),
+            x <25 ~ c(25, 5, 5),
+            x <30 ~ c(30, 5, 6),
+            x <40 ~ c(40, 10, 4),
+            x <50 ~ c(50, 10, 5),
+            x <100 ~ c(100, 20, 5),
+            x <150 ~ c(160, 20,5),
+            x <250 ~ c(250, 50, 5),
+            TRUE ~c(500, 100, 5))
+}
+
 
 #' Create and Save Indicator Trend Plots
 #'
@@ -627,27 +650,17 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
   
   trimplots <- function(df, indicator) {
     
-    # if(inherits(df, 'trim')) {
-    
-    
-    # if(inherits(df, "list")){
-    #m2 <- df
     #Index <- index(m2,base = min(m2$time.id)) # Calculates the Index value
     
     fname <- as.character({{ indicator }}) %>% 
       str_replace_all("/", "_") #replacing escape characters in species name
-    #print(m2)
     
-    yAxisAdjusted <- yAxisModifier(max(df$results$MSI + 1.96*df$results$sd_MSI))
+    yAxisAdjusted <- yIndicatorAxisMod(max(df$results$MSI + 1.96*df$results$sd_MSI))
     
     gcomma <- function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = FALSE) #Called later, enables commas instead of points for decimal indication
     
-    #FIXME: Why does this not see it is a trim class?
     indco <- df$trends$significance[1] %>% as.character()
-    # indco <- as.vector(indco[[2]])
-    # indco <- indco[8]
     
-    #TODO This if else should be possible to do inside ggplot with lty and col by category
     if (indco == "uncertain") {
       col <- sebms_trimpal[3]
       lt <- "longdash"

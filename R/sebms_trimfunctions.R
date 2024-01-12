@@ -512,18 +512,6 @@ get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today(
 }
 
 
-#' Indicator Species for Trim Index
-#'
-#' @return list of species uids for 'grassland', 'agricultural', 'forest', and
-#'   'common20' species
-#' @export
-indicatorlist <- list(grassland = c(67,19,26,117,40,50,70,8,119,55,110,101),
-                      agricultural = c(110,17,92,29,30,28,19,70,91,40,119,26,118,93),
-                      forest = c(19,71,120,46,105,109,118,38,95,115),
-                      common20 = c(118,119,38,30,92,17,91,71,117,28,29,70,105,19,90,77,46,73,89,115))
-
-
-
 #' Run Indicator Analysis
 #'
 #' @inheritParams get_imputedList

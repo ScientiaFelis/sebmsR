@@ -675,6 +675,7 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
       lt <- "solid"
     }
     
+      col <- "#9BBB59"
 
     # titles <- case_when(nchar(fname) < 18  ~ glue("fname ({df$nsite} lokaler)"),
     #                     str_detect(fname, "_") ~ glue("{str_replace_all(fname, '_', '\n')} \n({df$nsite} lokaler)"),
@@ -689,47 +690,57 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
     }
     
     Encoding(fname) <- 'UTF-8'
-    
+    maxlim <- max(df$results$year)
     #Index %>% 
     df$results %>% 
     #msi_out[[1]]$results%>% 
-      ggplot(aes(x = year,y = MSI)) +
-      geom_line(linetype = paste(lt),
+      ggplot(aes(x = year)) +
+      #geom_vline(xintercept = min(years), colour = "grey50") +
+      geom_line(aes(y = Trend), linetype = paste(lt),
                 colour = paste(col),
                 linewidth = 2.8) + #central line #colour=rgb(155,187,89,max=255)
-      geom_line(aes(y = lower_CL_MSI),
-                linetype = "longdash",
+      geom_line(aes(y = lower_CL_trend),
+                linetype = "dashed",
                 linewidth = 1.6) + #interval line 1
-      geom_line(aes(y = upper_CL_MSI),
-                linetype = "longdash",
+      geom_line(aes(y = upper_CL_trend),
+                linetype = "dashed",
                 linewidth = 1.6) + #interval line 2
-      # + xlim(startyear, endyear) #x-axis sectioning
+      geom_pointrange(aes(y = MSI, ymin = lower_CL_MSI, ymax = upper_CL_MSI), colour = "grey47", size = 2.5, linewidth = 1.1) + # Trend points and 95% conf. interval
+      geom_segment(aes(x = year,
+                       xend = year,
+                       y = -2, yend = 0), colour = "grey50", linewidth = 1) +
       expand_limits(x = min(years), y = c(0,yAxisAdjusted[1])) +
-      # geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2])) +#Horizontal background lines #from=yAxisAdjusted[2]
+      coord_cartesian(clip = "off") + # Make sure the points can be drawn beyond the smallest and largest x value on panel
       scale_y_continuous(labels = gcomma,
                          breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
                          expand = c(0,0)) +#y-axis sectioning & comma labelling #from=yAxisAdjusted[2]
-      scale_x_continuous(breaks = seq(min(years),max(years), by = 5))+
+      scale_x_continuous(breaks = seq(min(years),max(years), by = 2), expand = c(0,0), limits = c(NA, maxlim+0.13)) +
       labs(title = titles) + #Chart title text
       theme(text = element_text(family = "Arial"),
             plot.title = element_text(hjust = 0.5, # Centered
-                                      size = 48, #Chart title size
+                                      size = 44, #Chart title size
                                       margin = mrgn), #Distance between title and chart
-            panel.grid.major.y = element_line(linewidth = 1, colour = "grey40"),
+            panel.grid.major.y = element_line(linewidth = 1, colour = "grey50"),
             panel.grid.major.x = element_blank(),
             panel.grid.minor = element_blank(),
             panel.background = element_blank(), #Grid and background
-            axis.text.x = element_text(colour = "black", size = 42,  #x-axis labels colour&size 
-                                       angle = 0),
+            axis.text.x = element_text(colour = "black",
+                                       size = 28,  #x-axis labels colour&size 
+                                       angle = 0,
+                                       margin = margin(t = 20)),
             axis.text.y = element_text(colour = "black",
-                                       size = 42, #y-axis labels colour&size
-                                       angle = 0),
+                                       size = 28, #y-axis labels colour&size
+                                       angle = 0,
+                                       margin = margin(r = 20)),
             axis.title.x = element_blank(),
             axis.title.y = element_blank(),
-            axis.ticks = element_line(linewidth = 1, colour = "grey40"),
-            axis.ticks.length = unit(4, "mm"),
+            axis.ticks.y =  element_line(linewidth = 1, colour = "grey40"),
+            axis.ticks.length.y = unit(4, "mm"),
+            axis.ticks.x = element_blank(),
             plot.margin = margin(8, 20, 0, 0),
-            axis.line = element_line(colour = "black") #Axis colours
+            #axis.line = element_blank() #Axis colours
+            axis.line.y = element_line(colour = "grey50"),
+            axis.line.x = element_blank()#Axis colours
       ) 
   }
   #}

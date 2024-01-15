@@ -2,13 +2,15 @@
 % Please edit documentation in R/server_connections.R
 \name{sebms_assert_connection}
 \alias{sebms_assert_connection}
-\title{Connection pool used for db connections}
+\title{Connection pool Used for DB Connections}
 \usage{
 sebms_assert_connection(pool, quiet = FALSE)
 }
 \arguments{
 \item{pool}{the connection pool}
+
+\item{quiet}{logical; if FALSE (default) it will suppress error messages}
 }
 \description{
-Connection pool used for db connections
+Connection pool Used for DB Connections
 }

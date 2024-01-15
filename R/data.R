@@ -41,8 +41,6 @@ editcred <- function(homepath = "~/") {
     }
   }
   
-  
-  
 }
 
 

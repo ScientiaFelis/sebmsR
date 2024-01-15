@@ -43,16 +43,20 @@ editcred <- function(homepath = "~/") {
 
 }
 
-
+#' Create a Connection pool from Config File
+#' 
+#' 
 #' @importFrom RPostgres Postgres
 #' @importFrom pool dbPool
 #' @importFrom rstudioapi askForPassword
 #' @importFrom config get
 #' @importFrom rappdirs app_dir
+#' 
+#' @return return a pool for a [dbPool()] connection
+#' 
+#' @noRd
 sebms_connect <- function() {
-  #  sebms_pool <<- sebms_connect()
-  #t <- try(config <- config::get("sebms", file = cfgfile))
-  #if (inherits(t, "try-error")) alternativeFunction()
+  
   cfgfile <- file.path(rappdirs::app_dir("sebms")$config(), "config.yml")
   cfgfile <- normalizePath(cfgfile)
   
@@ -97,12 +101,11 @@ sebms_connect <- function() {
   return(pool)
 }
 
-#' Connection pool used for db connections
+#' Connection pool Used for DB Connections
 #' 
 #' @param pool the connection pool
+#' @param quiet logical; if FALSE (default) it will suppress error messages
 #' @noMd
-#sebms_pool <<- sebms_connect()
-
 sebms_assert_connection <- function(pool, quiet = FALSE) {
   if (!missing(pool)) return(pool)
   if (is.null(sebms_pool)) {

@@ -1,6 +1,6 @@
 Package: sebmsR
 Title: Swedish Butterfly Monitoring Programme Tools
-Version: 1.8.0
+Version: 1.9.0
 Authors@R: c(
     person(given="Markus", family="Skyttner",
       email="markus.skyttner@nrm.se",
@@ -17,9 +17,9 @@ Description: Provides tools for working with data from, and provide
     figures to, the Swedish Butterfly Monitoring scheme.
 License: AGPL (>= 3)
 URL: https://github.com/scientiafelis/sebmsr
-BugReports: https://github.com/ScientiaFelis/sebmsR/issues
+BugReports: https://github.com/scientiaFelis/sebmsR/issues
 Depends: 
-    R (>= 4.0.0)
+    R (>= 4.2.0)
 Imports: 
     config,
     DBI,

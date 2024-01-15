@@ -6,6 +6,19 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 1.9.0
+
+This version comes with a new set of functions that calculates and plot index values for butterfly species and species groups. There are also some new sql query functions that retrieve the needed data for the trim indices.
+
+* new function `get_trimInfile()`; prepare a file of butterfly data to use for index calculation through time.
+* new function `get_timIndex()`; calculates a trim index of butterfly populations through time based on observed monitoring data.
+* new function `get_trimPlots()`; produce a figure with the Index of given butterflies with 1 set at the first year.
+* new function `get_imputedList()`; calculates imputed values for the trim index
+* new function `get_trimComparedPlots()`; create figures with the trim index for given species and a comparison to the trim index based on a given region. This can be a Municipality, County or Region (Landskap).
+* new function `get_indicatorAnalyses()`; calculates the general trim index for a group od indicator species over time. It sets the first year as 100. Default indicators are *'20 most common'*, *'Grassland species'*, *'Forest species'*, and *'Agricultural species'*.
+* new function `get_indicatorPlots()`; creates ficgures for the indicator indices.
+
+
 # v 1.8.0
 
 This version comes with new function `sebms_distribution map()` and `sebms_sites_map()` and new data request function `sebms_occurances_distribution()`.

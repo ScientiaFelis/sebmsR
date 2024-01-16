@@ -2,8 +2,10 @@
 ### 
 ### Author: LP
 ### Date: 25 October 2017
-### Modified 2018-11-21
-### 
+### Modified: 2018-11-21
+###
+### Rewritten: Georg A
+### Date: January 2024
 ###
 
 
@@ -331,7 +333,6 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, ...)
 #'
 #' @inheritParams get_trimInfile
 #' @param trimIndex a trim index object from [get_trimindex()]
-#' @param origin the origin of list species
 #' @param indicator_layout logical; whether the list should contain the 
 #' @param ... extra filter parameters passed to the [trimInfile()] function
 #' 

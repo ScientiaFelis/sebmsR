@@ -340,13 +340,13 @@ sebms_naturum_climate <- function() {
 #' @importFrom DBI dbGetQuery
 #'
 #' @returns a tibble with species ids and names, filtered for trimmed species
-#'   names, the site ids and names, site type, max number of individuals observed for each siote,
+#'   names, the site ids and names, site type, max number of individuals observed for each site,
 #'   the date, county, region, and municipality, and the rank of site 
 #' @export
 sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", source = c(54,55,56,63,64,66,67,84)) {
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
-  Art <- glue("({paste0({Art}, collapse = ',')})")
+ # Art <- glue("({paste0({Art}, collapse = ',')})")
   source <- glue("({paste0({source}, collapse = ',')})")
   
   Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement
@@ -514,7 +514,7 @@ ORDER BY
 #' This function retrieve min and max flight week for each species. used for the
 #' trim indices
 #'
-#' @inheritParams sebms_abundance_per_species_plot
+#' @inheritParams sebms_species_abundance_plot 
 #' @param filterPattern a regex pattern to filter SQL query
 #' @param topList logical; whether the top list of species should be used
 #' 
@@ -639,7 +639,7 @@ sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()),  m
 #'
 #' Retrieve data with observations of individuals per year.
 #'
-#' @inheritParams sebms_trimSpecies
+#' @inheritParams sebms_species_abundance_plot 
 #' @param minmax the first and last week of interest
 #' 
 #' @import tibble
@@ -741,8 +741,6 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
 #' This function retrieve the sites used for the trim indices
 #'
 #' @inheritParams sebms_abundance_per_species_plot
-#' @param filterPattern a regex pattern to filter SQL query
-#' @param topList logical; whether the top list of species should be used
 #' 
 #' @import tibble
 #' @importFrom glue glue

@@ -289,7 +289,7 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
       ggplot(data = df) +
         geom_sf(aes(colour = {{ sunvar }}), size = 0.01, show.legend = legends) +
         scale_colour_gradientn(colours = suncols(5), # Use the 5 colours of suncols, blue to red.
-                               limits = switch(months, "1" = jan, "2"=feb, "3"=mar, "4"=apr, "5"=maj, "6"=jun, "7"=jul, "8"=aug, "9"=sep, "10"=okt, "11"=nov, "12"=dec), # Te switch take the month and return the corresponding limits from above. # These limits are set from a bit above and below the min and max values of sunhours
+                               limits = switch(months, "1" = jan, "2"=feb, "3"=mar, "4"=apr, "5"=maj, "6"=jun, "7"=jul, "8"=aug, "9"=sep, "10"=okt, "11"=nov, "12"=dec), # The 'switch()' take the month and return the corresponding limits from above. These limits are set from a bit above and below the min and max values of sunhours
                                oob = scales::squish # This makes all values under min lim to blue, and all above max lim to red.
         ) +
         coord_sf(expand = F) +
@@ -302,7 +302,7 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
         )
     }
     
-  }else { # Figures per year
+  }else { # Figures per year instead
     sunHplot <- function(df) {  
       ggplot(data = df) +
         geom_sf(aes(colour = {{ sunvar }}), size = 0.01, show.legend = legends) +
@@ -454,7 +454,7 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
   
   cat("\n Making plots.....\n")
   
-  if (per_month) {
+  if (per_month) { # Make figure per month
     ggs <- dff %>% 
       group_by(month) %>% 
       nest() %>% 
@@ -465,7 +465,7 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     map2(ggs$plots, ggs$month,  ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("SunhourDiff_{year}-{.y}")))
     
     return(ggs$plots)
-  }else {
+  }else { # Make figures per year
     
     ggs <- dff %>% 
       group_by(Year) %>% 
@@ -511,14 +511,14 @@ sebms_minmax_sunhour <- function(df, year = 2017:2022, months = 4:9, sunvar = to
         mutate(max = max({{ sunvar }}),
                min = min({{ sunvar }})) %>% 
         ungroup() %>% 
-        filter({{ sunvar }} == max | {{ sunvar }} == min)
+        filter({{ sunvar }} == max | {{ sunvar }} == min) # Filter to keep only max and min of sunhours
     }else { # Set min-max sun hour per year
       df <- df %>% 
         group_by(Year) %>% 
         mutate(max = max({{ sunvar }}),
                min = min({{ sunvar }})) %>% 
         ungroup() %>% 
-        filter({{ sunvar }} == max | {{ sunvar }} == min)
+        filter({{ sunvar }} == max | {{ sunvar }} == min) # Filter to keep only max and min of sunhours
     }
 
   minmaxsun <- df %>%
@@ -528,6 +528,7 @@ sebms_minmax_sunhour <- function(df, year = 2017:2022, months = 4:9, sunvar = to
     relocate(MaxMin, .after = last_col()) %>% 
     relocate(lon, lat, .before = name)
   
+  # Arrange data frame based on whether it is per month or year
   if (per_month) {
     minmaxsun <- minmaxsun %>% 
       arrange(Year, month, desc(MaxMin))

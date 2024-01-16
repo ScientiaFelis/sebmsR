@@ -96,18 +96,18 @@ get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, populat
   )
   
   
-  if(inherits(df, "sf")) {
+  if(inherits(df, "sf")) { # If 'df' is a sf object 
     df1 <- df %>% 
-      st_coordinates() %>% 
+      st_coordinates() %>% # Take only XY coordinate 
       as_tibble() %>%
       rename(lat = Y, lon = X)
-    if (per_month) {
+    if (per_month) { # For per month data frame
       df <- df1 %>% 
-        bind_cols(df %>% 
+        bind_cols(df %>% # Bind in variables to coordinates
                     st_drop_geometry() %>% 
                     select(Year, month, {{ sunvar }})
         )
-    }else {
+    }else { # for per year data frame
     df <- df1 %>% 
       bind_cols(df %>% 
                   st_drop_geometry() %>% 
@@ -121,7 +121,7 @@ get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, populat
     group_by(ID) %>%
     nest() %>%
     ungroup() %>%
-    mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, pupulation_limit = population_limit), .progress = "Finding nearest location")) %>% 
+    mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, pupulation_limit = population_limit), .progress = "Finding nearest location")) %>% # Find nearest per row
     unnest(loc) %>%
     unnest(data) %>% 
     select(-ID)

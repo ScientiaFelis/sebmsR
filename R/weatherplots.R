@@ -112,7 +112,7 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
     select(-name)
   
   
-    if(year == lubridate::year(lubridate::today())) {
+    if(year == lubridate::year(lubridate::today())) { # If this year chosen add in the latest months from other database
       
       all_precip_latest <- stations %>% 
         pull(id) %>% 
@@ -139,8 +139,8 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
         mutate(month = str_to_lower(month))
       
       all_precip <- all_precip %>% 
-        bind_rows(all_precip_latest) %>% 
-        distinct()
+        bind_rows(all_precip_latest) %>% # Add latest month
+        distinct() # Remove potential doublets
       
   }
   
@@ -205,9 +205,7 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
     ungroup() %>% 
     select(-name)
   
-  #FIXME To retrieve data from last three month, go to:
-  # https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",x,"/period/latest-month/data.csv
-    if(year == lubridate::year(lubridate::today())) {
+    if(year == lubridate::year(lubridate::today())) { # If this year chosen add in the latest months from other database
       
      all_temp_latest <- stations %>% 
         pull(id) %>% 
@@ -235,9 +233,9 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
         mutate(month = str_to_lower(month))
      
      all_temp <- all_temp %>% 
-       bind_rows(all_temp_latest) %>% 
-       distinct()
-  }
+       bind_rows(all_temp_latest) %>% # add the latest month
+       distinct() # Remove potential doublets 
+    }
   
   
   temp <- filt_temp  %>%

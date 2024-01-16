@@ -6,6 +6,12 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 1.9.1
+
+This version have mostly internal fixes.
+Fixes some issues with missing parameters and also add documentation for all functions in the package help.
+It also come with new names of the function files and some functions have moved to other function files.
+
 # v 1.9.0
 
 This version comes with a new set of functions that calculates and plot index values for butterfly species and species groups. There are also some new sql query functions that retrieve the needed data for the trim indices.

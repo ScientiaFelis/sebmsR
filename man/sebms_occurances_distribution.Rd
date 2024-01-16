@@ -28,7 +28,7 @@ defaults to `54,55,56,63,64,66,67,84`}
 }
 \value{
 a tibble with species ids and names, filtered for trimmed species
-  names, the site ids and names, site type, max number of individuals observed for each siote,
+  names, the site ids and names, site type, max number of individuals observed for each site,
   the date, county, region, and municipality, and the rank of site
 }
 \description{

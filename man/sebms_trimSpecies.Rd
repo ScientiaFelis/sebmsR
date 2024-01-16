@@ -15,6 +15,8 @@ sebms_trimSpecies(
 \arguments{
 \item{year}{year or years to use for plot}
 
+\item{Art}{integer; the species id of interest}
+
 \item{filterPattern}{a regex pattern to filter SQL query}
 
 \item{topList}{logical; whether the top list of species should be used}

@@ -24,10 +24,6 @@ from}
 
 \item{source}{the database sources as id numbers,
 defaults to `54,55,56,63,64,66,67,84`}
-
-\item{filterPattern}{a regex pattern to filter SQL query}
-
-\item{topList}{logical; whether the top list of species should be used}
 }
 \value{
 a tibble with species IDs, name, and min and max flight time week

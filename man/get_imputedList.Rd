@@ -32,8 +32,6 @@ from}
 \item{indicator_layout}{logical; whether the list should contain the}
 
 \item{...}{extra filter parameters passed to the [trimInfile()] function}
-
-\item{origin}{the origin of list species}
 }
 \value{
 a data frame with trim indices per species

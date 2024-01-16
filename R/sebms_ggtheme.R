@@ -100,3 +100,96 @@ theme_sebms_species <- function(title_sz = 18,
   
   return(theme_sb)
 }
+
+
+#' Palette Used in ggplots for Weather Plots
+#' 
+#' This is also used in some of the trim plots.
+#' 
+#' @return vector of color hex codes
+#' @export
+sebms_palette <- c("#BE4B48", "#9BBB59") #"#C0504D", 
+
+
+#' Palette Used in ggplots for Trim Index
+#' 
+#' @return vector of color hex codes
+#' @export
+sebms_trimpal <- c("#FFB000", "#648FFF", "#DC267F")
+
+
+
+#' Modify y axis Max Value for Trim Plots
+#' 
+#' Sets the max value and steps on y-axis
+#'
+#' @param x the max of the trim values 
+#'
+#' @return a max value, a step value and ??
+#' @noRd
+yAxisModifier <- function(x) {
+  case_when(x < 5 ~ c(4,.5, 8),
+            x <10 ~ c(10,2, 5),
+            x <15 ~ c(15,3, 5),
+            x <20 ~ c(20, 5, 4),
+            x <25 ~ c(25, 5, 5),
+            x <30 ~ c(30, 5, 6),
+            x <40 ~ c(40,10, 4),
+            x <50 ~ c(50,10, 5),
+            x <100 ~ c(100,20, 5),
+            x <250 ~ c(250,50, 5),
+            TRUE ~c(500,100, 5))
+}
+
+
+
+#' Modify y axis Max Value for Indicator Plots
+#' 
+#' Sets the max value and steps on y-axis
+#'
+#' @param x the max of the trim values 
+#'
+#' @return a max value, a step value and ??
+#' @noRd
+yIndicatorAxisMod <- function(x) {
+  case_when(x < 5 ~ c(4, .5, 8),
+            x <10 ~ c(10, 2, 5),
+            x <15 ~ c(15, 3, 5),
+            x <20 ~ c(20, 5, 4),
+            x <25 ~ c(25, 5, 5),
+            x <30 ~ c(30, 5, 6),
+            x <40 ~ c(40, 10, 4),
+            x <50 ~ c(50, 10, 5),
+            x <100 ~ c(100, 20, 5),
+            x <150 ~ c(160, 20,5),
+            x <250 ~ c(250, 50, 5),
+            TRUE ~c(500, 100, 5))
+}
+
+
+
+
+#' Save Plots as png Files with Given File Name and Name Extension
+#'
+#' Saves a ggplot object as a PNG file, resizing using pixel dimensions and a
+#' text scaling factor. I also adds given file name and file name extension,
+#' such as a weather variable.
+#'
+#' @param plot a ggplot object
+#' @param filename the path to the output file
+#' @param width pixel width
+#' @param height pixel height
+#' @param text.factor text scaling factor (default is 3)
+#' @param weathervar which weather variable it should put in the name; 'Temp' or
+#'   'Precip'
+#' @importFrom ggplot2 ggsave
+#' @importFrom glue glue
+#' @export
+sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.722, text.factor = 3, weathervar = "Temp") 
+{
+  dpi <- text.factor * 100
+  width.calc <- width #/ dpi
+  height.calc <- height # / dpi
+  ggsave(filename = glue("{filename}_{weathervar}.png"), plot = plot,
+         device = "png", dpi = dpi, width = width.calc, height = height.calc, units = 'cm')
+}

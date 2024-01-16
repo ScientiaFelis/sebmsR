@@ -251,10 +251,6 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
 }
 
 
-#' Palette Used in ggplots
-#' @return vector of color hex codes
-#' @export
-sebms_palette <- c("#BE4B48", "#9BBB59") #"#C0504D", 
 
 
 #' Make a ggplot from Precipitation Data
@@ -334,31 +330,6 @@ sebms_tempplot <- function(temp, colours = sebms_palette){
   
 }
 
-
-#' Save Plots as png Files with Given File Name and Name Extension
-#'
-#' Saves a ggplot object as a PNG file, resizing using pixel dimensions and a
-#' text scaling factor. I also adds given file name and file name extension,
-#' such as a weather variable.
-#'
-#' @param plot a ggplot object
-#' @param filename the path to the output file
-#' @param width pixel width
-#' @param height pixel height
-#' @param text.factor text scaling factor (default is 3)
-#' @param weathervar which weather variable it should put in the name; 'Temp' or
-#'   'Precip'
-#' @importFrom ggplot2 ggsave
-#' @importFrom glue glue
-#' @export
-sebms_ggsave <- function(plot, filename, width = 12.67, height = 9.722, text.factor = 3, weathervar = "Temp") 
-{
-  dpi <- text.factor * 100
-  width.calc <- width #/ dpi
-  height.calc <- height # / dpi
-  ggsave(filename = glue("{filename}_{weathervar}.png"), plot = plot,
-         device = "png", dpi = dpi, width = width.calc, height = height.calc, units = 'cm')
-}
 
 #' Creates png Figures of Temperature and Precipitation for each Site
 #'

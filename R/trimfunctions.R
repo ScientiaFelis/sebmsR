@@ -151,36 +151,6 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
 
 
 
-#' Palette Used in ggplots for Trim Index
-#' 
-#' @return vector of color hex codes
-#' @export
-sebms_trimpal <- c("#FFB000", "#648FFF", "#DC267F")
-
-
-
-#' Modify y axis Max Value for Trim Plots
-#' 
-#' Sets the max value and steps on y-axis
-#'
-#' @param x the max of the trim values 
-#'
-#' @return a max value, a step value and ??
-#' @noRd
-yAxisModifier <- function(x) {
-  case_when(x < 5 ~ c(4,.5, 8),
-            x <10 ~ c(10,2, 5),
-            x <15 ~ c(15,3, 5),
-            x <20 ~ c(20, 5, 4),
-            x <25 ~ c(25, 5, 5),
-            x <30 ~ c(30, 5, 6),
-            x <40 ~ c(40,10, 4),
-            x <50 ~ c(50,10, 5),
-            x <100 ~ c(100,20, 5),
-            x <250 ~ c(250,50, 5),
-            TRUE ~c(500,100, 5))
-}
-
 ####
 ### 
 
@@ -604,28 +574,6 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7
 }
 
 
-#' Modify y axis Max Value for Indicator Plots
-#' 
-#' Sets the max value and steps on y-axis
-#'
-#' @param x the max of the trim values 
-#'
-#' @return a max value, a step value and ??
-#' @noRd
-yIndicatorAxisMod <- function(x) {
-  case_when(x < 5 ~ c(4, .5, 8),
-            x <10 ~ c(10, 2, 5),
-            x <15 ~ c(15, 3, 5),
-            x <20 ~ c(20, 5, 4),
-            x <25 ~ c(25, 5, 5),
-            x <30 ~ c(30, 5, 6),
-            x <40 ~ c(40, 10, 4),
-            x <50 ~ c(50, 10, 5),
-            x <100 ~ c(100, 20, 5),
-            x <150 ~ c(160, 20,5),
-            x <250 ~ c(250, 50, 5),
-            TRUE ~c(500, 100, 5))
-}
 
 
 #' Create and Save Indicator Trend Plots

@@ -21,6 +21,7 @@ BugReports: https://github.com/scientiaFelis/sebmsR/issues
 Depends: 
     R (>= 4.2.0)
 Imports: 
+    BRCindicators,
     config,
     DBI,
     plyr,
@@ -37,11 +38,14 @@ Imports:
     pool,
     purrr,
     rappdirs,
+    readr,
     RPostgres,
     rstudioapi,
+    rtrim,
     scales,
     sf,
     stringr,
+    terra,
     tibble,
     tidyr
 Suggests: 

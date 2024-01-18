@@ -99,6 +99,8 @@ get_trimInfile <- function(years=2010:2023, Art = 1:200, Län = ".", Landskap = 
 #' 
 #' @importFrom rtrim trim
 #' @import dplyr
+#' @importFrom tidyr nest
+#' @importFrom purrr map possibly set_names
 #' @importFrom lubridate year today
 #' @importFrom stringr str_detect
 #' 
@@ -134,14 +136,14 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
       ungroup()
   }
   
-  # Make trim with set arguments into function
+  # Make trim with set arguments into function to make it cleaner by the map() function below
   trimfun <- function(df){
-    rtrim::trim(total_number ~ site + year, data = df, weights = "freq",  model = 2, serialcor = TRUE,overdisp = TRUE,changepoints = "all",autodelete = TRUE, max_iter = 1000)
+    rtrim::trim(total_number ~ site + year, data = df, weights = "freq",  model = 2, serialcor = TRUE,overdisp = TRUE, changepoints = "all",autodelete = TRUE, max_iter = 1000)
   }
   
   if(length(infile) != 0){
     
-    trimList <- map(infile$data, trimfun, .progress = "Run trimfunction...") %>% 
+    trimList <- map(infile$data, possibly(trimfun), .progress = "Run trimfunction...") %>% 
       suppressWarnings() %>% 
       # set_names(infile$speuid) %>% 
       set_names(infile$art)

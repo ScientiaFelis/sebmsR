@@ -660,7 +660,7 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
       geom_line(aes(y = upper_CL_trend),
                 linetype = "dashed",
                 linewidth = 1.6) + #interval line 2
-      geom_pointrange(aes(y = MSI, ymin = lower_CL_MSI, ymax = upper_CL_MSI), colour = "grey47", size = 2.5, linewidth = 1.1) + # Trend points and 95% conf. interval
+      geom_pointrange(aes(y = MSI, ymin = lower_CL_MSI, ymax = upper_CL_MSI), colour = "grey50", size = 2.5, linewidth = 1.1) + # Trend points and 95% conf. interval
       geom_segment(aes(x = year,
                        xend = year,
                        y = -2, yend = 0), colour = "grey50", linewidth = 1) +

@@ -79,7 +79,7 @@ get_trimInfile <- function(years=2010:2023, Art = 1:200, Län = ".", Landskap = 
     return(obsTidy)
   }
   
-  trimSpecies %>% 
+  Infile <- trimSpecies %>% 
     group_by(speuid, art) %>% 
     nest() %>% 
     ungroup() %>% 
@@ -87,6 +87,7 @@ get_trimInfile <- function(years=2010:2023, Art = 1:200, Län = ".", Landskap = 
     select(-data) %>% 
     unnest(obslist)
   
+  return(Infile)
 }
 
 

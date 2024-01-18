@@ -102,6 +102,12 @@ theme_sebms_species <- function(title_sz = 18,
 }
 
 
+#' Colour Palette for Sunhours
+#' 
+#' @noRd
+suncols <- colorRampPalette(colors = c(rgb(43,131,186,maxColorValue = 255), rgb(171,221,164, maxColorValue = 255), rgb(255,255,191, maxColorValue = 255), rgb(253,174,97, maxColorValue = 255) , rgb(215,25,28,maxColorValue = 255)))
+
+
 #' Palette Used in ggplots for Weather Plots
 #' 
 #' This is also used in some of the trim plots.

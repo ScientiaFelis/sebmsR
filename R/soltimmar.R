@@ -202,10 +202,6 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
   return(sunlist) # Also return the data frame to consol
 }
 
-#' Colour Palette for Sunhours
-#' 
-#' @noRd
-suncols <- colorRampPalette(colors = c(rgb(43,131,186,maxColorValue = 255), rgb(171,221,164, maxColorValue = 255), rgb(255,255,191, maxColorValue = 255), rgb(253,174,97, maxColorValue = 255) , rgb(215,25,28,maxColorValue = 255)))
 
 
 #' Create a Mean Sun Hour Value over a Five Year Period

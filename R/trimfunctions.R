@@ -37,13 +37,13 @@ get_trimInfile <- function(years=2010:2023, Art = 1:200, Län = ".", Landskap = 
   spein <- function(df = data, speuid) {
     
     #print(paste("Working on species with ID",speuid))
-    minw <- df %>% pull(min) # first posible week of observation
-    maxw <- df %>% pull(max) # öast possible week of observation
+    minW <- df %>% pull(min) # first posible week of observation
+    maxW <- df %>% pull(max) # last possible week of observation
     
-    obses <- sebms_trimobs(year = years, Art = speuid, Län = Län, Landskap = Landskap, Kommun = Kommun, filterPattern = filterPattern, minmax = minw:maxw, source = source) %>% 
+    obses <- sebms_trimobs(year = years, Art = speuid, Län = Län, Landskap = Landskap, Kommun = Kommun, filterPattern = filterPattern, minmax = minW:maxW, source = source) %>% 
       mutate(total_number = as.numeric(total_number))
     
-    visits <- sebms_trimvisits(year = years, minmax = minw:maxw, source = source) %>% 
+    visits <- sebms_trimvisits(year = years, minmax = minW:maxW, source = source) %>% 
       mutate(visit = as.numeric(visit))
     
     if(nrow(obses) > 0) { #Precondition to skip species with zero observations
@@ -59,18 +59,18 @@ get_trimInfile <- function(years=2010:2023, Art = 1:200, Län = ".", Landskap = 
         select(-visit)
       
       ## Lars code that works now
-      # obsTidy <- obses %>%
+      # obsTidyLP <- obses %>%
       #   complete(siteuid,
-      #            year = seq(min(year), max(year), by = 1),
+      #            year = seq(min(years), max(years), by = 1),
       #            fill = list(total_number = 99999)) %>%
       #   left_join(visits, by = c("siteuid", "year")) %>%
       #   mutate(total_number = ifelse(is.na(visit), NA, total_number)) %>%
       #   mutate(visit = ifelse(is.na(visit), 1, visit)) %>%
       #   mutate(total_number = ifelse(total_number == 99999, 0, total_number)) %>%
-      #   mutate (freq = 1 / besok) %>%
-      #   select(-besok) %>%
+      #   mutate(freq = 1 / visit) %>%
+      #   select(-visit) %>%
       #   mutate(total_number = as.numeric(total_number)) %>%
-      #   filter(year %in% year) #This is in order to avoid a wrong number of sites by counting sites monitored after the year of the report
+      #   filter(year %in% years) #This is in order to avoid a wrong number of sites by counting sites monitored after the year of the report
       
     }else{
       print(paste("Species with ID ",speuid," skipped, no observations!"))
@@ -526,10 +526,10 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7
     #   list_flatten()
   }
   
-  speid <- unlist(indicatorlist, use.names = F) %>%  # 'indicatorlist' laddas in av paketet
+  speid <- unlist(indicatorlist, use.names = F) %>%  # 'indicatorlist' is loaded by package
     unique()
   
-  if(is.null(infile)) {
+  if(is.null(infile)) { # If no infile is given
     indata <- get_imputedList(Art = c(speid), years = years, indicator_layout = TRUE, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
       transmute(origin,
                 speuid,
@@ -537,11 +537,14 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7
                 year = as.double(year),
                 index = 100 * index,
                 se = 100 * se)
-  }else {
+  }else { # If you have a imputed index file
     indata <- infile %>%
-      mutate(species = as.factor(art),
-             index = 100 * index,
-             se = 100 * se)
+      transmute(origin,
+                speuid,
+                species = as.factor(art),
+                year = as.double(year),
+                index = 100 * index,
+                se = 100 * se)
   }
   
   
@@ -624,8 +627,8 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
       lt <- "solid"
     }
     
-      col <- "#9BBB59"
-
+    col <- "#9BBB59"
+    
     # titles <- case_when(nchar(fname) < 18  ~ glue("fname ({df$nsite} lokaler)"),
     #                     str_detect(fname, "_") ~ glue("{str_replace_all(fname, '_', '\n')} \n({df$nsite} lokaler)"),
     #                     TRUE ~ glue("fname \n ({df$nsite} lokaler)"))
@@ -642,7 +645,7 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
     maxlim <- max(df$results$year)
     #Index %>% 
     df$results %>% 
-    #msi_out[[1]]$results%>% 
+      #msi_out[[1]]$results%>% 
       ggplot(aes(x = year)) +
       #geom_vline(xintercept = min(years), colour = "grey50") +
       geom_line(aes(y = Trend), linetype = paste(lt),

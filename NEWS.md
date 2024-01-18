@@ -6,6 +6,14 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 1.9.2
+
+In this version there are minor fixes.
+
+* set a connection pool at package load as otherwise functions created a connection each and made to many clients for the server.
+* fix an issue with `get_trimIndex()` that through an error if there where to little data for some species. Now function is run within `possibly()` instead so all species with enough data for `trim()` runs.
+* minor commenting in code and added imports.
+
 # v 1.9.1
 
 This version have mostly internal fixes.

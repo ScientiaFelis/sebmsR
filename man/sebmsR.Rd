@@ -2,6 +2,7 @@
 % Please edit documentation in R/sebmsR.R
 \docType{package}
 \name{sebmsR}
+\alias{-package}
 \alias{sebmsR}
 \title{sebmsR - Make Figures for the SEBMS Project}
 \description{

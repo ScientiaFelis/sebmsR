@@ -353,7 +353,7 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
     }
   }
   
-  imputedList = vector("list", length = length(trimIndex))
+ # imputedList = vector("list", length = length(trimIndex))
   
   spname <- names(trimIndex) %>% 
     str_replace_all("/", "_")

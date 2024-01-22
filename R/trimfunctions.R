@@ -353,7 +353,7 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
     }
   }
   
- # imputedList = vector("list", length = length(trimIndex))
+  # imputedList = vector("list", length = length(trimIndex))
   
   spname <- names(trimIndex) %>% 
     str_replace_all("/", "_")
@@ -701,10 +701,10 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
   #}
   # }
   ggs <- vector("list", length = length(msi_out))
-  spname <- names(msi_out) %>% 
-    str_replace_all("/", "_")
-  
+  spname <- names(msi_out)
   ggs <- map2(msi_out, spname, ~trimplots(.x, .y))
+  
+  #ggs <- imap(msi_out, trimplots) # The imap(df) is the same as map2(df, names(df)) above. It take the msi_out as first argument and the names(msi_out) as second and feed that into the function
   
   if(write) {
     walk2(ggs, spname, ~ggsave(plot = .x, filename = glue("{.y}-Indicatorplot.png"), width = 748, height = 868, units = "px", dpi = 72), .progress = "Saving trimplots...")

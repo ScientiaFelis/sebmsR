@@ -59,7 +59,7 @@ sunHdata <- function(year, months, day, per_day = FALSE) {
 #'   function this is TRUE
 #'
 #' @import dplyr
-#' @importFrom sf st_as_sf st_set_crs st_intersection
+#' @importFrom sf st_as_sf st_set_crs st_intersection st_join
 #' @importFrom purrr map map2 set_names possibly pmap_dfr
 #' @importFrom lubridate year today
 #' @importFrom glue glue
@@ -162,7 +162,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
       st_as_sf(coords = c("lon", "lat")) %>%
       st_set_crs(4326) %>%
       st_intersection(SE) %>% # Filter out points for Sweden
-      bind_cols(meansunH_M %>% st_drop_geometry() %>% filter(month %in% months) %>% select(-month)) %>% # Bind in the mean sun hours per month
+      st_join(meansunH_M %>% filter(month %in% months) %>% select(-month)) %>% # Bind in the mean sun hours per month
       group_by(Year, month) %>% 
       mutate(sundiff = total_sunH - mean_sunH) %>% # Calculate difference of sunhours to mean
       ungroup() 
@@ -187,7 +187,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
       st_as_sf(coords = c("lon", "lat")) %>%
       st_set_crs(4326) %>%
       st_intersection(SE) %>% # Filter out points in Sweden
-      bind_cols(meansunH %>% st_drop_geometry()) %>% # bind in the mean sun hours per month
+      st_join(meansunH) %>% # bind in the mean sun hours per month
       mutate(sundiff = total_sunH - mean_sunH) # Calculate difference of sunhours to mean
   }
   

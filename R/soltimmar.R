@@ -248,7 +248,7 @@ sebms_sunmean_data <- function(year = 2018:2022, months = 4:9, per_month = FALSE
 #' @importFrom lubridate year today
 #' @import ggplot2
 #' @importFrom tidyr nest
-#' @importFrom purrr map map2
+#' @importFrom purrr map map2 walk2
 #' @importFrom glue glue
 #' @importFrom scales squish
 #'
@@ -257,12 +257,38 @@ sebms_sunmean_data <- function(year = 2018:2022, months = 4:9, per_month = FALSE
 #' @export
 sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df, sunvar = total_sunH, months = 4:9, per_month = FALSE, per_day = FALSE, legends = FALSE) {
   
+  if (missing(df) && length(months) < 6 && per_month == FALSE) {
+    warning("THIS FIGURE WILL LOOK VERY BLUE (LOW NR HOURS) AS IT IS OPTIMIZED FOR THE SUM OF SUNHOURS OVER 6 SUMMER MONTH\n  USE 'per_month = TRUE' TO GET VALUES PER MONTH\n  OR SET 'months=4:9'")
+    
+    return(cat("--------------------------------------------------------------\n"))
+  }
+  if (missing(df) && length(months) > 6 && per_month == FALSE) {
+    warning("THIS FIGURE WILL LOOK VERY RED (HIGH NR HOURS) AS IT IS OPTIMIZED FOR THE SUM OF SUNHOURS OVER 6 SUMMER MONTH\n  USE 'per_month = TRUE' TO GET VALUES PER MONTH\n  OR SET 'months=4:9'")
+    
+    return(cat("--------------------------------------------------------------\n"))
+  }
+  
   if(missing(df)) {
     message("Please be pacient...")
     message("THIS CAN TAKE A MINUTE OR FIVE\n\n")
     message("Downloading sunhour data from SMHI........\n")
     df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day, to_env = TRUE)
+    
+    lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()
+    
+    if(length(lmon) < length(months)) {
+      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n'per_day = TUE' MIGHT BE A WORK AROUND BUT TAKE LONG TIME.")
+      months <- as.integer(lmon)
+    }
+  }else {
+    lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()
+    months <- as.integer(lmon)
+    message(glue("DATA FRAME CONTAINS DATA FROM {length(months)} MONTHS!\n\n IF THAT DOES NOT SEEMS RIGHT 'per_day = TUE' MIGHT BE A WORK AROUND BUT TAKE LONG TIME."))
+    
+    
+    
   }
+  
   
   if (per_month) { # Figures per month
     #FIXME: check actual min and max for each month for years 2017:2022
@@ -320,13 +346,6 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
   cat("\nMaking plots........\n")
   if (per_month) { # make a figure per month
     
-    lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()
-    
-    if(length(lmon) < length(months)) {
-      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n'per_day = TUE' MIGHT BE A WORK AROUND BUT TAKE LONG TIME.")
-      months <- as.integer(lmon)
-    }
-    
     ggs <- df %>% 
       group_by(month) %>% 
       nest() %>% 
@@ -338,12 +357,6 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     return(ggs$plots) 
     
   }else { # make a figure per year
-    
-    if (length(months) < 6 && per_month == FALSE) {
-      message("THIS FIGURE IF OPTIMIZED FOR THE SUM OF SUNHOURS OVER 6 SUMMER MONTH\n")
-      message("IT MIGHT LOOK VERY BLUE (LOW NR HOURS) OR RED (HIGH NR HOURS) IF FEWER OR MORE MONTH IS USED\n\n")
-      message("USE 'per_month = TRUE' TO GET VALUES PER MONTH")
-    }
     
     ggs <- df %>% 
       group_by(Year) %>% 

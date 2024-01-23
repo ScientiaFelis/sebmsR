@@ -9,12 +9,11 @@ app.
 
 ## Under construction
 
-The package is currently under re-development and some functions do not
-work well, e.g. the Shiny app. The functions related to weather data,
-e.g. `sebms_weather_png()`, `sebms_sunhours_data()`,
-`sebms_sunhour_plot ()`, and `sebms_sundiff_plot()`, as well as the
-functions that create species abundance plots work well and produce pngs
-ready to use in reports.
+The package is currently under re-development and a few functions do not
+work well, e.g. the Shiny app. The functions related to weather data, as
+well as the functions that create species abundance plots and the index
+plot and indicator plot functions work well and produce pngs ready to
+use in reports.
 
 ## Installing from github
 
@@ -32,6 +31,66 @@ install_github("scientiafelis/sebmsr")
 # A specific versioned release can be installed like this:
 install_github("scientiafelis/sebmsr@1.5.0")
 ```
+
+## Dependencies
+
+This package depends on a number of packages some of which is not found
+on CRAN. For instance BRCindicators have to be installed from GitHub.
+
+``` r
+
+library(devtools)
+install_github(repo = 'biologicalrecordscentre/BRCindicators')
+```
+
+#### List of all packages
+
+- BRCindicators,
+- config,
+- DBI,
+- plyr,
+- dplyr,
+- forcats,
+- geonames,
+- ggnewscale,
+- ggplot2 (\>= 3.4.0),
+- glue,
+- httr,
+- jsonlite,
+- lubridate,
+- polite,
+- pool,
+- purrr,
+- rappdirs,
+- readr,
+- RPostgres,
+- rstudioapi,
+- rtrim,
+- scales,
+- sf,
+- stringr,
+- terra,
+- tibble,
+- tidyr
+
+**Suggested packages**
+
+- cowplot,
+- DT,
+- ggthemes,
+- grid,
+- knitr,
+- leaflet,
+- magick,
+- raster,
+- rasterVis,
+- RColorBrewer,
+- rmarkdown,
+- shiny,
+- shinydashboard,
+- shinyjs,
+- sp,
+- testthat
 
 ## Quick start
 
@@ -148,6 +207,17 @@ individual species with numbers per week.
 many species sites have and the number distribution of these, compared
 between site type. Also the mean number of species per site type.
 
+To get the figures for species index and indicator index run:
+
+`get_trimPlot()` to get indices for each given species during the time
+period given. `get_indicatorPlots()` to get indicator indices for the
+default groups *20 most common*, *Frassland*, *Forest*, and
+*Agricultural* species. Alsu during the time period given.
+
+To compare a regional index for a species with the national Sweden index
+use `get_trimComparedPlots()` and set *Län*, *Landskap*, or *Kommun* to
+the desired region.
+
 ## Font Issues in Windows
 
 There seems to be a problem on some Windows machines with fonts not
@@ -177,9 +247,10 @@ then do the Ctrl+Shift+{D,T,E} steps and then use git to commit and push
 the changes.
 
 To change functions that retrieve data from the db, please make changes
-primarily in the `R/data.R` file.
-
-The plotting uses ggplot2 functions in `R/plot.R`.
+primarily in the `R/SQLqueries.R` file. Functions related to weather
+figures are found in `R/weatherplots.R` and `R/soltimmar.R` Plotting
+species uses functions in `R/speciesplots.R`. The trim functions are
+found in `R/trimfunctions.R`
 
 Vignettes need to be updated and developed. These are located in
 `vignettes/sebms-intro.Rmd`.

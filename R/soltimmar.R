@@ -274,23 +274,16 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     message("Downloading sunhour data from SMHI........\n")
     df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day, to_env = TRUE)
     
-    lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()
-    
-    if(length(lmon) < length(months)) {
-      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n'per_day = TUE' MIGHT BE A WORK AROUND BUT TAKE LONG TIME.")
-      months <- as.integer(lmon)
-    }
-  }else {
+  } else if(!missing(df) && per_month) {
     lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()
     months <- as.integer(lmon)
     message(glue("DATA FRAME CONTAINS DATA FROM {length(months)} MONTHS!\n\n IF THAT DOES NOT SEEMS RIGHT 'per_day = TUE' MIGHT BE A WORK AROUND BUT TAKE LONG TIME."))
-    
-    
     
   }
   
   
   if (per_month) { # Figures per month
+    
     #FIXME: check actual min and max for each month for years 2017:2022
     ## This makes limits specific for each month
     jan = c(60, 200) 
@@ -345,6 +338,13 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
   
   cat("\nMaking plots........\n")
   if (per_month) { # make a figure per month
+    
+    lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()
+    
+    if(length(lmon) < length(months)) {
+      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n'per_day = TUE' MIGHT BE A WORK AROUND BUT TAKE LONG TIME.")
+      months <- as.integer(lmon)
+    }
     
     ggs <- df %>% 
       group_by(month) %>% 

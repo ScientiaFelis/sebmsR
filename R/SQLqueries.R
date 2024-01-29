@@ -346,7 +346,7 @@ sebms_naturum_climate <- function() {
 sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", source = c(54,55,56,63,64,66,67,84)) {
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
- # Art <- glue("({paste0({Art}, collapse = ',')})")
+  # Art <- glue("({paste0({Art}, collapse = ',')})")
   source <- glue("({paste0({source}, collapse = ',')})")
   
   Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement
@@ -579,7 +579,7 @@ sebms_trimSpecies <- function(year = 2010:lubridate::year(lubridate::today()), A
   
   sebms_pool <- sebms_assert_connection(quiet = T)
   res <- dbGetQuery(sebms_pool, q) %>% 
-  as_tibble()
+    as_tibble()
   return(res)
 }
 
@@ -601,13 +601,13 @@ sebms_trimSpecies <- function(year = 2010:lubridate::year(lubridate::today()), A
 #' @return a tibble with visits per year and site.
 #' 
 #' @export
-sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()),  minmax = 22:32, source = c(54,55,56,63,64,66,67)) {
+sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()),  minmax = 22:32, source = c(54,55,56,63,64,66,67,84)) {
   
   minmax <- glue("({paste0({minmax}, collapse = ',')})") 
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   source <- glue("({paste0({source}, collapse = ',')})")
   
- q <-  glue("SELECT
+  q <-  glue("SELECT
                 sit.sit_uid AS siteuid,
                 EXTRACT (year FROM vis_begintime::date) AS year,
                 COUNT(DISTINCT vis_begintime) AS visit
@@ -625,13 +625,13 @@ sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()),  m
                 year, siteuid
             ORDER BY
                 siteuid, year;")
-       
-    sebms_pool <- sebms_assert_connection(quiet = T)
-   # con <- pool::localCheckout(sebms_pool)
+  
+  sebms_pool <- sebms_assert_connection(quiet = T)
+  # con <- pool::localCheckout(sebms_pool)
   res <- dbGetQuery(sebms_pool, q) %>% 
-  as_tibble()
+    as_tibble()
   return(res)
-
+  
 }
 
 
@@ -651,7 +651,7 @@ sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()),  m
 #' @return a tibble with number of observed individuals per year and site.
 #' 
 #' @export
-sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filterPattern = NULL, minmax = 22:32, source = c(54,55,56,63,64,66,67)) {
+sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filterPattern = NULL, minmax = 22:32, source = c(54,55,56,63,64,66,67,84)) {
   
   minmax <- glue("({paste0({minmax}, collapse = ',')})") 
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
@@ -678,13 +678,13 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
     paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
   
   
-   if (!is.null(filterPattern)) {
+  if (is.null(filterPattern)) {
+    filterPattern <- glue("--NOTHING")
+  }else{
     filterPattern <- glue("AND {filterPattern}")
-   }else{
-     filterPattern <- glue("--NOTHING")
-   }
+  }
   
- q <-  glue("
+  q <-  glue("
              WITH reg AS
            (SELECT reg_uid AS reg_id, reg_name AS län
              FROM reg_region
@@ -727,10 +727,10 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
                 year, siteuid, reg.reg_id, reg.län, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun
             ORDER BY
                 siteuid, year;")
-       
-    sebms_pool <- sebms_assert_connection(quiet = T)
+  
+  sebms_pool <- sebms_assert_connection(quiet = T)
   res <- dbGetQuery(sebms_pool, q) %>% 
-  as_tibble()
+    as_tibble()
   return(res)
 }
 
@@ -754,7 +754,7 @@ sebms_trimSites <- function(year = 2010:lubridate::year(lubridate::today()), Lan
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   source <- glue("({paste0({source}, collapse = ',')})")
-    Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement
+  Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement
   Landskap <- paste0(str_to_lower(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
   Kommun <- paste0(str_to_lower(Kommun),collapse = "|") # Make the list of Kommun to s regex statement
   
@@ -774,7 +774,7 @@ sebms_trimSites <- function(year = 2010:lubridate::year(lubridate::today()), Lan
     paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
   
   
-    q <- glue("
+  q <- glue("
              WITH reg AS
            (SELECT reg_uid AS reg_id, reg_name AS län
              FROM reg_region
@@ -803,6 +803,6 @@ sebms_trimSites <- function(year = 2010:lubridate::year(lubridate::today()), Lan
   
   sebms_pool <- sebms_assert_connection(quiet = T)
   res <- dbGetQuery(sebms_pool, q) %>% 
-  as_tibble()
+    as_tibble()
   return(res)
 }

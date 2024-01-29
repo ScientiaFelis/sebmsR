@@ -29,7 +29,7 @@
 #' @return a tibble with site, year, as well as the number of individuals
 #'   observed and the observation frequency for that year, species, and site.
 #' @export
-get_trimInfile <- function(years=2010:2023, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filterPattern=NULL, topList=FALSE, topNumber=200, source = c(54,55,56,63,64,66,67)){
+get_trimInfile <- function(years=2010:2023, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filterPattern=NULL, topList=FALSE, topNumber=200, source = c(54,55,56,63,64,66,67,84)){
   
   trimSpecies <- sebms_trimSpecies(year = years, Art = Art, topList = topList, source = source) %>% 
     slice_head(n=topNumber)
@@ -141,15 +141,17 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
     rtrim::trim(total_number ~ site + year, data = df, weights = "freq",  model = 2, serialcor = TRUE,overdisp = TRUE, changepoints = "all",autodelete = TRUE, max_iter = 1000)
   }
   
-  if(length(infile) != 0){
+  if(length(infile) != 0) {
     
     trimList <- map(infile$data, possibly(trimfun), .progress = "Run trimfunction...") %>% 
       suppressWarnings() %>% 
       # set_names(infile$speuid) %>% 
       set_names(infile$art)
     
-    return(trimList)}
-  else {return(infile)}
+    return(trimList)
+  }else { # If infile is of zero length
+    return(infile)
+  }
 }
 
 

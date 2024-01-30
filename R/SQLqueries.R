@@ -331,7 +331,8 @@ sebms_naturum_climate <- function() {
 #' SWEREF. This is used for the [sebms_distribution_map()]
 #'
 #'
-#' @inheritParams sebms_abundance_per_species_plot
+#' @inheritParams sebms_abundance_per_species_plot 
+#' @param Art integer; the species uids of interest
 #'
 #' @import tibble
 #' @importFrom glue glue
@@ -639,7 +640,8 @@ sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()),  m
 #'
 #' Retrieve data with observations of individuals per year.
 #'
-#' @inheritParams sebms_species_abundance_plot 
+#' @inheritParams sebms_trimSpecies
+#' @param Region character or reg ex; which bioregion you want the data from
 #' @param minmax the first and last week of interest
 #' 
 #' @import tibble
@@ -740,7 +742,7 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
 #'
 #' This function retrieve the sites used for the trim indices
 #'
-#' @inheritParams sebms_abundance_per_species_plot
+#' @inheritParams sebms_trimobs
 #' 
 #' @import tibble
 #' @importFrom glue glue

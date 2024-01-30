@@ -390,6 +390,65 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
 
 
 
+#' Generate Trend Index for Each Species
+#'
+#' Generate a file with the trend for each species and the significans of model.
+#' Also show the number of sites where species existed.
+#'
+#' @inheritParams get_imputedList
+#'
+#' @return trendindex per species with the number of sites used
+#' @export
+get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", indicator_layout = FALSE, write = FALSE, ...) {
+  
+  if(is.null(trimIndex)) { # If there is no trimIndex
+    
+    trimIndex <- get_trimInfile(years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
+      get_trimIndex(years = years)
+    
+  } # If there were a trimIndex file supplied, use that
+  
+  trimspelist <- function(df, art) {
+    
+    if(inherits(df, 'trim')) {
+      
+      if (all(Län == ".",Landskap == ".",Kommun == ".")) {
+        origin = "Sweden" # If no region was selected use Sweden
+      }else {
+        origin <- glue("{Län}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
+      }
+      
+      bind_cols(#spe_uid = speuid,
+        art = as.character({{ art }}) %>% str_replace_all("/", "_"),
+        origin = as.character(origin),
+        overall(df)$slope,
+        nsite = df$nsite
+      )
+    }
+  }
+  
+  spname <- names(trimIndex) %>% 
+    str_replace_all("/", "_")
+  
+  trendList <- map2(trimIndex, spname, ~trimspelist(.x, .y)) %>% 
+    list_rbind()
+  
+  # Add speuid to list and select variables
+  trendList <- sebms_trimSpecies(Art = Art) %>% 
+    select(speuid, art) %>% 
+    right_join(trendList, by = c("art")) %>% 
+    select(origin, speuid, art, nsite, add, mul, p, meaning)
+  
+  
+  if (write) {
+    Year <- glue("{min(years)}-{max(years)}")
+    #write_csv2(imputedList, glue("Index_{Year}.csv"))
+    write_csv2(trendList, glue("Trendindex_{Year}.csv"))
+  }
+  return(trendList)
+}
+
+
 #' Create and Save Local TRIM Plots with National TRIM Reference
 #'
 #' @inheritParams get_trimInfile

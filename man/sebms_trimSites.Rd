@@ -7,6 +7,7 @@
 sebms_trimSites(
   year = 2010:lubridate::year(lubridate::today()),
   Landskap = ".",
+  Region = ".",
   Län = ".",
   Kommun = ".",
   source = c(54, 55, 56, 63, 64, 66, 67, 84)

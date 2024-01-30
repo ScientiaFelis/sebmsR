@@ -16,6 +16,8 @@ sebms_occurances_distribution(
 \arguments{
 \item{year}{year or years to use for plot}
 
+\item{Art}{integer; the species uids of interest}
+
 \item{Län}{character or regular expression; which county you want the data
 from}
 

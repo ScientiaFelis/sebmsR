@@ -8,11 +8,12 @@ sebms_trimobs(
   year = 2010:lubridate::year(lubridate::today()),
   Art = 1:200,
   Län = ".",
+  Region = ".",
   Landskap = ".",
   Kommun = ".",
   filterPattern = NULL,
   minmax = 22:32,
-  source = c(54, 55, 56, 63, 64, 66, 67)
+  source = c(54, 55, 56, 63, 64, 66, 67, 84)
 )
 }
 \arguments{
@@ -20,12 +21,7 @@ sebms_trimobs(
 
 \item{Art}{integer; the species id of interest}
 
-\item{Län}{character or regular expression; which county you want the data
-from}
-
-\item{Landskap}{character or reg ex; which region you want the data from}
-
-\item{Kommun}{character or reg ex; which municipality you want the data from}
+\item{filterPattern}{a regex pattern to filter SQL query}
 
 \item{minmax}{the first and last week of interest}
 

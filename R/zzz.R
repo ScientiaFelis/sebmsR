@@ -33,6 +33,7 @@ Use runShinyApp('poc') to run the Shiny proof-of-concept app"
      message("Please enable db connections for full functionality")
      message("edit settings with 'editcred()'")
    }
+#   pool::poolReturn(pool::poolCheckout(sebms_pool))
 }
 
 .onDetach <- function(libpath) {

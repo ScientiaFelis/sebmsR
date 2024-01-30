@@ -309,6 +309,7 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, ...)
 #' @inheritParams get_trimInfile
 #' @param trimIndex a trim index object from [get_trimindex()]
 #' @param indicator_layout logical; whether the list should contain the 
+#' @param write logical; if index should be written to csv
 #' @param ... extra filter parameters passed to the [trimInfile()] function
 #' 
 #' @importFrom lubridate year today
@@ -319,7 +320,7 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, ...)
 #'
 #' @return a data frame with trim indices per species
 #' @export
-get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", indicator_layout = FALSE, ...) {
+get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", indicator_layout = FALSE, write = FALSE, ...) {
   
   if(is.null(trimIndex)) { # If there is no trimIndex
     
@@ -351,7 +352,8 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
         art = as.character({{ art }}) %>% str_replace_all("/", "_"),
         origin = as.character(origin),
         index(df),
-        converged = df$converged)
+        converged = df$converged
+      )
     }
   }
   
@@ -379,7 +381,11 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
     select(speuid, art) %>% 
     right_join(imputedList, by = c("art"))
   
-  return(imputedList)
+  if (write) {
+    Year <- glue("{min(years)}-{max(years)}")
+    write_csv2(imputedList, glue("Index_{Year}.csv"))
+  }
+  return(imputedList) # Called Index.csv in LP code
 }
 
 

@@ -6,6 +6,13 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 1.9.3
+
+This version fixes some small issues and improve code and code commenting.
+
+* Fix a bug that caused a error if using more than one year to make `sebms_sunhour_data()`
+* Change warning messages
+
 # v 1.9.2
 
 In this version there are minor fixes.

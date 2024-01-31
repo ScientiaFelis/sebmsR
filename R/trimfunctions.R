@@ -664,15 +664,13 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7
 #' @return trend plots with confidence interval for the indicator groups, saved
 #'   as png files.
 #' @export
-get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubridate::today()), write = TRUE, print = FALSE) {
+get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubridate::today()), Län = ".", Landskap = ".", Kommun = ".", write = TRUE, print = FALSE) {
   
   if (is.null(msi_out)) {
-    msi_out <- get_indicatorAnalyses(years = years, write = FALSE, print = TRUE)
+    msi_out <- get_indicatorAnalyses(years = years, Län = Län, Landskap = Landskap, Kommun = Kommun, write = FALSE, print = TRUE)
   }
   
   trimplots <- function(df, indicator) {
-    
-    #Index <- index(m2,base = min(m2$time.id)) # Calculates the Index value
     
     fname <- as.character({{ indicator }}) %>% 
       str_replace_all("/", "_") #replacing escape characters in species name
@@ -715,7 +713,6 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
     maxlim <- max(df$results$year)
     #Index %>% 
     df$results %>% 
-      #msi_out[[1]]$results%>% 
       ggplot(aes(x = year)) +
       #geom_vline(xintercept = min(years), colour = "grey50") +
       geom_line(aes(y = Trend), linetype = paste(lt),

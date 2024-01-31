@@ -21,6 +21,8 @@ sebms_trimobs(
 
 \item{Art}{integer; the species id of interest}
 
+\item{Region}{character or reg ex; which bioregion you want the data from}
+
 \item{filterPattern}{a regex pattern to filter SQL query}
 
 \item{minmax}{the first and last week of interest}

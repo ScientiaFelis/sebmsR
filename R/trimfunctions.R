@@ -398,7 +398,14 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
 #' @inheritParams get_imputedList
 #' @param indicators logical; if TRUE use the indicators as species selection,
 #'   this override `Art`
-#'
+#' @import dplyr
+#' @importFrom lubridate year today
+#' @importFrom glue glue
+#' @importFrom stringr str_remove_all str_replace_all
+#' @importFrom readr write_csv2
+#' @importFrom rtrim overall
+#' @importFrom purrr map list_rbind
+#' 
 #' @return trendindex per species with the number of sites used
 #' @export
 get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", indicators = TRUE, write = FALSE, ...) {

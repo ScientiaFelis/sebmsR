@@ -16,6 +16,13 @@ get_indicatorPlots(
 
 \item{years}{the year span of interest, set as 'firstyear:lastyear'.}
 
+\item{Län}{character or regular expression; which county you want the data
+from}
+
+\item{Landskap}{character or reg ex; which region you want the data from}
+
+\item{Kommun}{character or reg ex; which municipality you want the data from}
+
 \item{write}{logical; if you want to write result to csv files, default TRUE.}
 
 \item{print}{logical; if you want to print result to output, default FALSE}

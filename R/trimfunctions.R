@@ -328,12 +328,12 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
     if(!is.null(arglist$filterPattern)) { # If you have used filterPattern
       
       fp <- arglist$filterPattern
-      infiletrimIndex = get_trimInfile(years = years, filterPattern = fp) %>% 
+      infiletrimIndex = get_trimInfile(years = years, filterPattern = fp) %>%
         get_trimIndex()
       
     }else { # If no filterPattern is used in ...
       
-      trimIndex <- get_trimInfile(years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
+      trimIndex <- get_trimInfile(years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
         get_trimIndex(years = years)
     }
     
@@ -396,16 +396,27 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
 #' Also show the number of sites where species existed.
 #'
 #' @inheritParams get_imputedList
+#' @param indicators logical; if TRUE use the indicators as species selection,
+#'   this override `Art`
 #'
 #' @return trendindex per species with the number of sites used
 #' @export
-get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", indicator_layout = FALSE, write = FALSE, ...) {
+get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", indicators = TRUE, write = FALSE, ...) {
   
   if(is.null(trimIndex)) { # If there is no trimIndex
     
-    trimIndex <- get_trimInfile(years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
-      get_trimIndex(years = years)
-    
+    if (indicators) { # if indicator species should be used
+      speid <- unlist(indicatorlist, use.names = F) %>%  # 'indicatorlist' is loaded by package
+        unique()
+      
+      trimIndex <- get_trimInfile(years = years, Art = speid, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
+        get_trimIndex(years = years)
+      
+    }else { # if your own selection of species should be used
+      trimIndex <- get_trimInfile(years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
+        get_trimIndex(years = years)
+      
+    }
   } # If there were a trimIndex file supplied, use that
   
   trimspelist <- function(df, art) {
@@ -427,18 +438,31 @@ get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrid
     }
   }
   
-  spname <- names(trimIndex) %>% 
+  spname <- names(trimIndex) %>%
     str_replace_all("/", "_")
   
   trendList <- map2(trimIndex, spname, ~trimspelist(.x, .y)) %>% 
     list_rbind()
   
+  
+  
   # Add speuid to list and select variables
-  trendList <- sebms_trimSpecies(Art = Art) %>% 
-    select(speuid, art) %>% 
-    right_join(trendList, by = c("art")) %>% 
+  trendList <- sebms_trimSpecies(Art = Art) %>%
+    select(speuid, art) %>%
+    right_join(trendList, by = c("art")) %>%
     select(origin, speuid, art, nsite, add, mul, p, meaning)
   
+  
+  if (indicators) { # If indicators are choses add max, min, mean  etc of site nr
+    sitecalc <- function(indic){
+      trendList %>%
+        filter(speuid %in% indic) %>%
+        mutate(maxsite = max(nsite), minsite = min(nsite), meansite = mean(nsite), mediansite = median(nsite), sdsite = sd(nsite)) 
+    }
+    
+    trendList <- map(indicatorlist, sitecalc) %>%
+      bind_rows(.id = "Indicator")
+  }  
   
   if (write) {
     Year <- glue("{min(years)}-{max(years)}")
@@ -476,15 +500,15 @@ get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today(
     
     speuid <- imputedLocalList %>% pull(speuid)
     
-    trimmedImputedSwedishList <- get_imputedList(years = years, Art = c(speuid), indicator_layout = TRUE) 
+    trimmedImputedSwedishList <- get_imputedList(years = years, Art = c(speuid), indicator_layout = TRUE)
   }
   
   plotcomp <- function(df, species) {
     
-    swedish <- trimmedImputedSwedishList %>% 
+    swedish <- trimmedImputedSwedishList %>%
       filter(art == {{ species }})
     
-    local <- imputedLocalList %>% 
+    local <- imputedLocalList %>%
       filter(art == {{ species }})
     
     fname <- as.character({{ species }}) %>%
@@ -543,10 +567,10 @@ get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today(
     
   } 
   
-  ggs <- imputedLocalList %>% 
-    group_by(art) %>% 
-    nest() %>% 
-    ungroup() %>% 
+  ggs <- imputedLocalList %>%
+    group_by(art) %>%
+    nest() %>%
+    ungroup() %>%
     mutate(plots = map2(data, art, ~plotcomp(.x, .y)))
   walk2(ggs$plots, ggs$art, ~ggsave(plot = .x, filename = glue("{.y}_comparison.png"), width=748, height=868, dpi = 72, units = "px"))
   
@@ -586,7 +610,7 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7
     }
     # Add the new indicator as a list item to 'indicatorlist'
     indicatorlist <- list(indicators) %>%
-      set_names(indicatorname) %>% 
+      set_names(indicatorname) %>%
       append(indicatorlist)
     
     # indicatorlist <- map(list(indicators), ~list(.x)) %>% 
@@ -621,8 +645,8 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7
   
   indicalc <- function(spi, indn) {
     
-    dat <- indata %>% 
-      filter(speuid %in% spi) %>% 
+    dat <- indata %>%
+      filter(speuid %in% spi) %>%
       select(-origin, -speuid)
     
     origin <- indata %>% distinct(origin) %>% pull()
@@ -637,7 +661,7 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7
     return(msi_out)
   }
   
-  grindicators <- map2(indicatorlist, names(indicatorlist), ~indicalc(.x, .y), .progress = "Calculating Indicator Index...") %>% 
+  grindicators <- map2(indicatorlist, names(indicatorlist), ~indicalc(.x, .y), .progress = "Calculating Indicator Index...") %>%
     set_names(names(indicatorlist))
   
   if (print) {
@@ -672,7 +696,7 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
   
   trimplots <- function(df, indicator) {
     
-    fname <- as.character({{ indicator }}) %>% 
+    fname <- as.character({{ indicator }}) %>%
       str_replace_all("/", "_") #replacing escape characters in species name
     
     yAxisAdjusted <- yIndicatorAxisMod(max(df$results$MSI + 1.96*df$results$sd_MSI))
@@ -712,7 +736,7 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
     Encoding(fname) <- 'UTF-8'
     maxlim <- max(df$results$year)
     #Index %>% 
-    df$results %>% 
+    df$results %>%
       ggplot(aes(x = year)) +
       #geom_vline(xintercept = min(years), colour = "grey50") +
       geom_line(aes(y = Trend), linetype = paste(lt),

@@ -73,7 +73,7 @@ get_trimInfile <- function(years=2010:2023, Art = 1:200, Län = ".", Landskap = 
       #   filter(year %in% years) #This is in order to avoid a wrong number of sites by counting sites monitored after the year of the report
       
     }else{
-      print(paste("Species with ID ",speuid," skipped, no observations!"))
+      message(paste("Species with ID ",speuid," skipped, no observations!"))
     }
     
     return(obsTidy)
@@ -601,12 +601,12 @@ get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today(
 #' @import dplyr
 #' @importFrom glue glue
 #' @importFrom readr write_csv2
-#' @importFrom purrr set_names walk2
+#' @importFrom purrr set_names walk2 map2 possibly
 #'
 #' @return two csv files for each indicator groups. One with indicator index and
 #'   changes and one with trend data.
 #' @export
-get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7, Län = ".", Landskap = ".", Kommun = ".", write = TRUE, print = FALSE, indicators = NULL, indicatorname = NULL) {
+get_indicatorAnalyses <- function(infile = NULL, years = 2010:lubridate::year(lubridate::today()), lastyear = 7, Län = ".", Landskap = ".", Kommun = ".", write = TRUE, print = FALSE, indicators = NULL, indicatorname = NULL) {
   
   if(!is.null(indicators)) { # If a new indicator is added
     # If no new name is added
@@ -685,6 +685,12 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:2023, lastyear = 7
 #'
 #' @inheritParams get_indicatorAnalyses
 #' @param msi_out output from [get_indicatorAnalyses()]
+#' 
+#' @import ggplot2
+#' @importFrom stringr str_replace
+#' @importFrom glue glue
+#' @importFrom rtrim index overall
+#' @importFrom purrr map2 walk2
 #' 
 #' @usage get_indicatorPlots(
 #'    msi_out = NULL,

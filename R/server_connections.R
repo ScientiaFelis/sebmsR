@@ -6,23 +6,31 @@
 #' @param homepath the path to the home directory
 #' 
 #' @importFrom utils file.edit
+#' @importFrom stringr str_detect
 #' @return open the .Renviron file to add PostgreSQL credentials
 #' @export
 #'
 editcred <- function(homepath = "~/") {
-  cat("Add SQL database credentials to .Renviron file\n\n")
+  message("\n\nThese SQL database credentials should be present in .Renviron file\n")
   cat("DBUSER = 'username'\n")
   cat("DBPASS = 'passw'\n")
-  cat("DBNAME = 'database name'")
+  cat("DBNAME = 'database name'\n")
   cat("DBPORT = 'database port'")
   
   Renv.file <- paste0(homepath, ".Renviron")
   
   if (file.exists(Renv.file)) {
     
-    write("\n\nDBUSER = 'username'\nDBPASS = 'passw'\nDBNAME = 'database name'\nDBPORT = 'database port'", file = Renv.file, append = TRUE)
-   file.edit(Renv.file)
-   
+    creexist <- readLines("~/.Renviron") %>% paste0(collapse = "\n") %>% str_detect("DBUSER")  
+    
+    if (creexist) {
+      file.edit(Renv.file)
+      
+    }else {
+      write("\n\nDBUSER = 'username'\nDBPASS = 'passw'\nDBNAME = 'database name'\nDBPORT = 'database port'", file = Renv.file, append = TRUE)
+      file.edit(Renv.file)
+    }
+    
   }else {
     cat("THERE IS NO .Renviron FILE IN THE GIVEN DIRECTORY\n")
     
@@ -40,7 +48,7 @@ editcred <- function(homepath = "~/") {
   }
   
   
-
+  
 }
 
 #' Create a Connection pool from Config File

@@ -308,10 +308,11 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, ...)
 #'
 #' @inheritParams get_trimInfile
 #' @param trimIndex a trim index object from [get_trimindex()]
-#' @param indicator_layout logical; whether the list should contain the 
+#' @param indicator_layout logical; whether to use the indicator species and add
+#'   nr of sites statistics. If TRUE this overrides `Art`
 #' @param write logical; if index should be written to csv
 #' @param ... extra filter parameters passed to the [trimInfile()] function
-#' 
+#'
 #' @importFrom lubridate year today
 #' @importFrom dplyr bind_rows bind_cols select
 #' @importFrom stringr str_replace_all
@@ -321,6 +322,13 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, ...)
 #' @return a data frame with trim indices per species
 #' @export
 get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", indicator_layout = FALSE, write = FALSE, ...) {
+  
+  if (indicator_layout) {
+    speid <- unlist(indicatorlist, use.names = F) %>%  # 'indicatorlist' is loaded by package
+      unique()
+  }else {
+    speid <- Art
+  }
   
   if(is.null(trimIndex)) { # If there is no trimIndex
     
@@ -333,7 +341,7 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
       
     }else { # If no filterPattern is used in ...
       
-      trimIndex <- get_trimInfile(years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
+      trimIndex <- get_trimInfile(years = years, Art = speid, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
         get_trimIndex(years = years)
     }
     
@@ -348,16 +356,17 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
       }else {
         origin <- glue("{Län}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
       }
+      
       bind_cols(#spe_uid = speuid,
         art = as.character({{ art }}) %>% str_replace_all("/", "_"),
         origin = as.character(origin),
         index(df),
+        nsite = df$nsite,
         converged = df$converged
       )
     }
   }
   
-  # imputedList = vector("list", length = length(trimIndex))
   
   spname <- names(trimIndex) %>% 
     str_replace_all("/", "_")
@@ -365,21 +374,29 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
   imputedList <- map2(trimIndex, spname, ~trimspelist(.x, .y)) %>% 
     list_rbind() 
   
+  # Add speuid to list
+  trendList <- sebms_trimSpecies(Art = speid) %>%
+    select(speuid, art) %>%
+    right_join(imputedList, by = c("art"))
+  
   if(indicator_layout) { # If you want indicator layout
     
-    imputedList <- imputedList %>% 
-      select(origin, art, year = time, index = imputed, se = se_imp)
-    #names(imputedList) <- c('origin', 'year', 'index', 'se_imp', 'converged')
-  }else { # If only list is wanted
-    imputedList <- imputedList %>% 
-      #select(-spe_uid)
+    sitecalc <- function(indic){
+      trendList %>%
+        filter(speuid %in% indic) %>%
+        mutate(maxsite = round(max(nsite)), minsite = round(min(nsite)), meansite = round(mean(nsite)), mediansite = round(median(nsite)), sdsite = round(sd(nsite))) 
+    }
+    
+    imputedList <- map(indicatorlist, sitecalc) %>%
+      bind_rows(.id = "indicator") %>%
+      select(indicator, origin, speuid, art, year = time, index = imputed, se = se_imp, nsite, maxsite, minsite, meansite, mediansite, sdsite)
+    
+  }else { # If NO indicator layout is wanted
+    imputedList <- trendList %>% 
       select(origin, art, year = time, index = imputed, se = se_imp, converged)
   }
   
-  # Add speuid to list
-  imputedList <- sebms_trimSpecies(Art = Art) %>% 
-    select(speuid, art) %>% 
-    right_join(imputedList, by = c("art"))
+  
   
   if (write) {
     Year <- glue("{min(years)}-{max(years)}")
@@ -459,17 +476,6 @@ get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrid
     right_join(trendList, by = c("art")) %>%
     select(origin, speuid, art, nsite, add, mul, p, meaning)
   
-  
-  if (indicators) { # If indicators are choses add max, min, mean  etc of site nr
-    sitecalc <- function(indic){
-      trendList %>%
-        filter(speuid %in% indic) %>%
-        mutate(maxsite = max(nsite), minsite = min(nsite), meansite = mean(nsite), mediansite = median(nsite), sdsite = sd(nsite)) 
-    }
-    
-    trendList <- map(indicatorlist, sitecalc) %>%
-      bind_rows(.id = "Indicator")
-  }  
   
   if (write) {
     Year <- glue("{min(years)}-{max(years)}")
@@ -631,22 +637,23 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:lubridate::year(lu
     unique()
   
   if(is.null(infile)) { # If no infile is given
-    indata <- get_imputedList(Art = c(speid), years = years, indicator_layout = TRUE, Län = Län, Landskap = Landskap, Kommun = Kommun) %>%
-      transmute(origin,
-                speuid,
-                species = as.factor(art),
-                year = as.double(year),
-                index = 100 * index,
-                se = 100 * se)
-  }else { # If you have a imputed index file
-    indata <- infile %>%
-      transmute(origin,
-                speuid,
-                species = as.factor(art),
-                year = as.double(year),
-                index = 100 * index,
-                se = 100 * se)
+    infile <- get_imputedList(Art = c(speid), years = years, indicator_layout = TRUE, Län = Län, Landskap = Landskap, Kommun = Kommun) 
   }
+
+  indata <- infile %>%
+    transmute(indicator,
+              origin,
+              speuid,
+              species = as.factor(art),
+              year = as.double(year),
+              index = 100 * index,
+              se = 100 * se,
+              nsite,
+              maxsite,
+              minsite,
+              meansite,
+              mediansite,
+              sdsite)
   
   
   
@@ -654,21 +661,29 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:lubridate::year(lu
     
     dat <- indata %>%
       filter(speuid %in% spi) %>%
-      select(-origin, -speuid)
+      distinct(species, year, index, se)
     
     origin <- indata %>% distinct(origin) %>% pull()
     
-    msi_out <- msi(dat, plotbaseyear = min(years), SEbaseyear = min(years), index_smooth = 'INDEX', lastyears = lastyear, jobname = glue("{indn}:{origin}"),)
+    msi_out <- msi(dat, plotbaseyear = min(years), SEbaseyear = min(years), index_smooth = 'INDEX', lastyears = lastyear, jobname = glue("{indn}:{origin}"))
     
-    if (write) {
+    result <- msi_out$results[1:8] %>% 
+      left_join(indata %>% filter(indicator %in% indn) %>% select(year,
+                                  maxsite,
+                                  minsite,
+                                  meansite,
+                                  mediansite,
+                                  sdsite) %>% distinct(), by = c("year"))
       
-      write_csv2(file = glue("{indn}_indicator_in_{origin}.csv"), x = msi_out$results[1:8])
-      write_csv2(file = glue("{indn}_trends_in_{origin}.csv"), x = msi_out$trends)
-    }
+      if (write) {
+        
+        write_csv2(file = glue("{indn}_indicator_in_{origin}.csv"), x = result)
+        write_csv2(file = glue("{indn}_trends_in_{origin}.csv"), x = msi_out$trends)
+      }
     return(msi_out)
   }
   
-  grindicators <- map2(indicatorlist, names(indicatorlist), ~indicalc(.x, .y), .progress = "Calculating Indicator Index...") %>%
+  grindicators <- map2(indicatorlist, names(indicatorlist), possibly(~indicalc(.x, .y)), .progress = "Calculating Indicator Index...") %>%
     set_names(names(indicatorlist))
   
   if (print) {

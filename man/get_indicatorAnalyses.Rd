@@ -6,7 +6,7 @@
 \usage{
 get_indicatorAnalyses(
   infile = NULL,
-  years = 2010:2023,
+  years = 2010:lubridate::year(lubridate::today()),
   lastyear = 7,
   Län = ".",
   Landskap = ".",

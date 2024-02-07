@@ -30,7 +30,8 @@ from}
 
 \item{Kommun}{character or reg ex; which municipality you want the data from}
 
-\item{indicator_layout}{logical; whether the list should contain the}
+\item{indicator_layout}{logical; whether to use the indicator species and add
+nr of sites statistics. If TRUE this overrides `Art`}
 
 \item{write}{logical; if index should be written to csv}
 

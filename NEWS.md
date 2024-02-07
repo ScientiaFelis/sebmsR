@@ -6,11 +6,21 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# 1.9.5
+
+New from 1.9.3 include:
+
+* New function `get_trendIndex()` which creates a data frame with al species given and the overall trends, including the nr of sites used.
+* Add site number statistics to `get_indicatorAnayses()` through an option in `get_imputedList()`
+* Fix `editcred()` to not include DB entries if they are already in the `.Renviron` file.
+
+
 # v 1.9.3
 
 This version fixes some small issues and improve code and code commenting.
 
 * Fix a bug that caused a error if using more than one year to make `sebms_sunhour_data()`
+* Add source 84, which lack of caused a slight difference in output from trim functions
 * Change warning messages
 
 # v 1.9.2

@@ -18,6 +18,8 @@ Use runShinyApp('poc') to run the Shiny proof-of-concept app"
 #TODO: Fix other start-up message
   #packageStartupMessage(welcome)
   packageStartupMessage("\nFONT PROBLEMS?\n See READMEs 'Font Issues in Windows'", appendLF = T)
+  
+
 }
 
 .onLoad <- function(libname, pkgname) {
@@ -28,10 +30,10 @@ Use runShinyApp('poc') to run the Shiny proof-of-concept app"
   # do something with conn
   #poolReturn(conn)  
   #}
-   sebms_pool <<- sebmsR:::sebms_connect()
+     sebms_pool <<- sebmsR:::sebms_connect()
    if (is.null(sebms_pool)) {
-     message("Please enable db connections for full functionality")
-     message("edit settings with 'editcred()'")
+     packageStartupMessage("Please enable db connections for full functionality")
+     packageStartupMessage("edit settings with 'editcred()'")
    }
 #   pool::poolReturn(pool::poolCheckout(sebms_pool))
 }

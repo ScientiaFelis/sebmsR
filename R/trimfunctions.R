@@ -508,7 +508,7 @@ get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today(
   #2 Of the local species not all may be possible to run
   #3 For the remaining species that did run through thte local trim calc run those species on Swedish data for Sweden.
   
-  imputedLocalList <- get_imputedList(years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, indicator_layout = TRUE) 
+  imputedLocalList <- get_imputedList(years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) 
   
   if (is.null(trimmedImputedSwedishList)) {
     

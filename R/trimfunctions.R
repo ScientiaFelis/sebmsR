@@ -106,20 +106,20 @@ get_trimInfile <- function(years=2010:2023, Art = 1:200, Län = ".", Landskap = 
 #' 
 #' @return a trim file with yearly changes of each species. 
 #' @export
-get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::today()), Art = 1:200, ...) {
+get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", ...) {
   
   if(is.null(infile)) {
     arglist <- list(...)
     
     if(!is.null(arglist$filterPattern)) { #If a filterpattern have been given
       fp <- arglist$filterPattern
-      infile <- get_trimInfile(filterPattern = fp, years = years, Art = Art) %>% 
+      infile <- get_trimInfile(filterPattern = fp, years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
         select(siteuid, year, total_number, freq) %>% 
         group_by(speuid) %>% 
         nest() %>% 
         ungroup()
     }else{ # If there is no filterpattern
-      infile <- get_trimInfile(years = years, Art = Art)
+      infile <- get_trimInfile(years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun)
       if (nrow(infile) > 0) {
         infile <- infile %>% 
           select(site = siteuid, speuid, art, year, total_number, freq) %>% 
@@ -161,6 +161,7 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
 
 #' Create and Save TRIM Plots
 #'
+#' @inheritParams get_trimInfile
 #' @param trimIndex optional; a trimIndex object from the [get_trimIndex()]
 #' @param years the years to calculate trim index on, ignored if a trimIndex file is given
 #' @param Art the species of interest, ignored if trimIndex is not NULL
@@ -174,7 +175,7 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
 #' 
 #' @return figures in png format of the species trends with confidence interval
 #' @export
-get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, ...) {
+get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", ...) {
   
   # This creates a trimIndex file if none is provided
   if(is.null(trimIndex)) {
@@ -185,11 +186,11 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, ...)
       
       fp <- arglist$filterPattern
       
-      trimIndex <- get_trimInfile(years = years, Art = Art, filterPattern = fp) %>% 
+      trimIndex <- get_trimInfile(years = years, Art = Art, filterPattern = fp, Län = Län, Landskap = Landskap, Kommun = Kommun) %>% 
         get_trimIndex()
       
     }else{ # If you want to use the defaults
-      trimIndex <- get_trimIndex(years = years, Art = Art)
+      trimIndex <- get_trimIndex(years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun)
     }
   }  
   

@@ -149,7 +149,10 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
   precip <- filt_precip %>%
     left_join(all_precip, by = "id") %>% 
     bind_rows(norm_precip %>% filter(id %in% c(filt_precip %>% pull(id)))) %>% 
-    mutate(name = str_remove(name, " .*|-.*")) %>%
+    mutate(name = if_else(period == "1", NA_character_, name),
+           name = str_remove(name, " .*|-.*")) %>%
+    arrange(desc(period)) %>% 
+    fill(name) %>% 
     complete(id, monthnr, period, fill = list(nb = 0)) %>%
     fill(c(name,latitud, longitud, month), .direction = "down") 
   
@@ -245,7 +248,10 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
   temp <- filt_temp  %>%
     left_join(all_temp, by = "id") %>% # Join in the data from the chosen station
     bind_rows(norm_temp %>% filter(id %in% c(filt_temp %>% pull(id)))) %>% # add in the normal temperatures from the internal data for the chosen stations
-    mutate(name = str_remove(name, " .*|-.*")) %>%
+    mutate(name = if_else(period == "1", NA_character_, name),
+           name = str_remove(name, " .*|-.*")) %>%
+    arrange(desc(period)) %>% 
+    fill(name) %>% 
     complete(id, monthnr, period, fill = list(temp = 0)) %>%
     fill(c(name,latitud, longitud, month), .direction = "down") 
   

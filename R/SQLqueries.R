@@ -347,7 +347,7 @@ sebms_naturum_climate <- function() {
 sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", source = c(54,55,56,63,64,66,67,84)) {
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
-  # Art <- glue("({paste0({Art}, collapse = ',')})")
+  Art <- glue("({paste0({Art}, collapse = ',')})")
   source <- glue("({paste0({source}, collapse = ',')})")
   
   Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement

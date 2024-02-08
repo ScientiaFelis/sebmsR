@@ -640,7 +640,7 @@ sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()),  m
 #'
 #' Retrieve data with observations of individuals per year.
 #'
-#' @inheritParams sebms_trimSpecies
+#' @inheritParams sebms_abundance_per_species_plot
 #' @param Region character or reg ex; which bioregion you want the data from
 #' @param minmax the first and last week of interest
 #' 

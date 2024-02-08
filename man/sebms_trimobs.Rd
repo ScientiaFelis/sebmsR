@@ -19,11 +19,14 @@ sebms_trimobs(
 \arguments{
 \item{year}{year or years to use for plot}
 
-\item{Art}{integer; the species id of interest}
+\item{Län}{character or regular expression; which county you want the data
+from}
 
 \item{Region}{character or reg ex; which bioregion you want the data from}
 
-\item{filterPattern}{a regex pattern to filter SQL query}
+\item{Landskap}{character or reg ex; which region you want the data from}
+
+\item{Kommun}{character or reg ex; which municipality you want the data from}
 
 \item{minmax}{the first and last week of interest}
 

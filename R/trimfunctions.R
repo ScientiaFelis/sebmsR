@@ -710,6 +710,9 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:lubridate::year(lu
 #' @usage get_indicatorPlots(
 #'    msi_out = NULL,
 #'    years = 2010:2023,
+#'    Län = ".",
+#'    Landskap = ".",
+#'    Kommun = ".",
 #'    write = TRUE,
 #'    print = FALSE
 #' )

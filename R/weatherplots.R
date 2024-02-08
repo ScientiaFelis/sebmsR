@@ -57,7 +57,7 @@ sebms_user_station <- function(my_place) {
 #' Download and Filter out Precipitation Data from SMHI
 #' 
 #' @import dplyr
-#' @importFrom purrr set_names map
+#' @importFrom purrr set_names map compact
 #' @importFrom utils read.csv2
 #' @import lubridate
 #' @import stringr
@@ -86,6 +86,7 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
     pull(id) %>% 
     set_names() %>% # To keep the id-names of the list
     map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/23/station/",.x,"/period/corrected-archive/data.csv")), skip = 12)), .progress = "Downloading precipitation") %>% 
+    compact() %>% 
     map(possibly(~rename_with(.x, ~c("FrDate", "ToDate", "month", "nb", "Delete", "Delete2", "Delete3")))) %>% # Set column names 
     bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
     as_tibble() %>% 
@@ -118,6 +119,7 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
         pull(id) %>% 
         set_names() %>% # To keep the id-names of the list
         map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/23/station/",.x,"/period/latest-months/data.csv")), skip = 9, header = F, na.strings = c("NA", ""))), .progress = "Downloading precipitation") %>% 
+        compact() %>% 
         map(possibly(~rename_with(.x, ~c("FrDate", "ToDate", "month", "nb", "Delete", "Delete2", "Delete3")))) %>% # Set column names 
         bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
         as_tibble() %>%  
@@ -159,7 +161,7 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
 #' @import dplyr 
 #' @import stringr
 #' @import lubridate
-#' @import purrr
+#' @importFrom purrr set_names map compact
 #' @import ggplot2
 #' @noRd
 sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_place = NA) {
@@ -180,6 +182,7 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
     pull(id) %>% 
     set_names() %>% # To keep the id-names of the list
     map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",.x,"/period/corrected-archive/data.csv")), skip = 12)), .progress = "Downloading temperatures") %>% 
+    compact() %>% 
     map(\(x) rename_with(x, ~c("FrDate", "ToDate", "month", "temp", "Delete", "Delete2", "Delete3"))) %>% # Set column names 
     bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
     as_tibble() %>% 
@@ -211,6 +214,7 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
         pull(id) %>% 
         set_names() %>% # To keep the id-names of the list
         map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",.x,"/period/latest-months/data.csv")), skip = 9, header = F, na.strings = c("NA", ""))), .progress = "Downloading temperatures") %>% 
+       compact() %>% 
         map(possibly(~rename_with(.x, ~c("FrDate", "ToDate", "month", "temp", "Delete", "Delete2", "Delete3")))) %>% # Set column names 
        
         bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe

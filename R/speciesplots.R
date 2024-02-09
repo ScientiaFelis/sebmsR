@@ -580,8 +580,8 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
                                after_scale = rep(seq(1.5, tickmarks,1),each = 2)), # This adds a segment, that looks like a tick mark, after each group
                      xend = stage(fct_reorder(interval, sortorder),
                                   after_scale = rep(seq(1.5, tickmarks,1), each = 2)),
-                     y = -1.1, # How long the tickmark is, we want negative as it should go down
-                     yend = 0)) + # The start of the tickmark
+                     y = -maxlim * 0.011, # How long the tick mark is, we want them negative as they should go below x-axis and based on how large the max y-axis is.
+                     yend = 0)) + # The start of the tick mark
     scale_y_continuous(breaks = seq(0,maxlim,steps),
                        labels = seq(0,maxlim,steps),
                        #limits = c(0, 120),

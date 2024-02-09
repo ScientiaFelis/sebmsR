@@ -481,7 +481,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
     group_by(interval) %>%
     fill(sortorder, .direction = "updown") %>%
     group_by(sitetype) %>%
-    fill(medel, .direction = "down") %>%
+    fill(medel, .direction = "downup") %>%
     ungroup() %>% 
     group_by(interval, sitetype) %>% 
     summarise(sortorder = first(sortorder),

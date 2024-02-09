@@ -394,7 +394,7 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
     
   }else { # If NO indicator layout is wanted
     imputedList <- trendList %>% 
-      select(origin, art, year = time, index = imputed, se = se_imp, converged)
+      select(origin, speuid, art, year = time, index = imputed, se = se_imp, converged)
   }
   
   
@@ -512,9 +512,9 @@ get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today(
   
   if (is.null(trimmedImputedSwedishList)) {
     
-    speuid <- imputedLocalList %>% pull(speuid)
+    speuid <- imputedLocalList %>% distinct(speuid) %>% pull(speuid)
     
-    trimmedImputedSwedishList <- get_imputedList(years = years, Art = c(speuid), indicator_layout = TRUE)
+    trimmedImputedSwedishList <- get_imputedList(years = years, Art = c(speuid), indicator_layout = FALSE)
   }
   
   plotcomp <- function(df, species) {

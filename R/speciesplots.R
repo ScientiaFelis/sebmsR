@@ -510,8 +510,8 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   # This makes groups of max limits and set the maxlimit of figure based on max values of data
   # If value fall above a certain threshold it is set at a certain maxlimit
   
-  maxlim <-  case_when(max(df$site_count) <= 9 ~ 10,
-                       between(max(df$site_count), 9,19) ~ 20,
+  maxlim <-  case_when(max(df$site_count) <= 7 ~ 10,
+                       between(max(df$site_count), 8,19) ~ 20,
                        between(max(df$site_count), 20,28) ~ 30,
                        between(max(df$site_count), 29,47) ~ 50,
                        between(max(df$site_count), 48,95) ~ 100,

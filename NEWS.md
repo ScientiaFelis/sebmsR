@@ -6,7 +6,22 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
-# 1.9.5
+
+# v 1.9.6
+
+This version have some bug fixes
+
+* fix a bug in the `sebms_occurence_distribution()`, which affected the `sebms_sites_map()` and `sebms_distribution_map()`, where the `Art` argument was not restructured to fit the SQL call.
+* fix a bug where `get_trimComparePlots()` used indicator species instead of the given species.
+* add missing region filtering capabilities to `get_trimPlots()`
+* fix a bug in weather plot functions where empty lists items caused an error
+* fix a bug where the temp and precipitation averages station names had a different name than the current weather station.
+* increased the max y-axis of `sebms_species_per_sitetype_plot()` when values where over 7
+* fix length of tick marks on x-axis in `sebms_species_per_sitetype_plot()` as they became to long at small values on y-axis. Now they are dynamically set.
+* fix a bug which created NA in the `sebms_species_per_sitetype_plot()` species number average for a sitetype.
+
+
+# v 1.9.5
 
 New from 1.9.3 include:
 

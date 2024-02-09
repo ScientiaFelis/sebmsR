@@ -556,28 +556,28 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
   tickmarks <- (df %>%
                   distinct(interval, sitetype) %>% 
                   pull(interval) %>% 
-                  length()) /2 +0.5 # Produce the correct numbet of tickmarks
+                  length()) /2 +0.5 # Produce the correct number of tick marks
   
   p <- df  %>%
     mutate(interval = fct_reorder(interval, sortorder)) %>% 
     arrange(sortorder) %>% 
     ggplot(aes(x = interval, y = site_count)) +
     geom_col(aes(fill = forcats::fct_rev(sitetype)), 
-             position = position_dodge(preserve = "single"), width = 0.7) +
+             position = position_dodge(preserve = "single"), width = 0.7) + # make the bars of the site types beside each other for each group.
     stat_summary(aes(x = l[findInterval(medel+0.2, b)], y = maxlim-(steps*1.8), colour = sitetype, fill = sitetype),
                  position = position_dodge2(width = 1.1),
                  fun = "mean",
                  geom = "point",
                  size = 5,
-                 shape = 25) +
+                 shape = 25) + # This creates the triangles at the right place on the x- and y-axis.
     geom_text(aes(x = l[findInterval(medel+0.2, b)], y = maxlim-steps*1.4, label = format(round(medel, 1), nsmall = 1)),
               data = lab,
               position = position_dodge2(width = 1.4),
               fontface = "plain",
               size = 5,
-              inherit.aes = F) +
+              inherit.aes = F) + # This creates the numbers of the average species number at the right place (group) on the x-axis and y-axis.
     geom_segment(aes(x = stage(fct_reorder(interval, sortorder),
-                               after_scale = rep(seq(1.5, tickmarks,1),each = 2)), # This adds a segment, that looks like a tickmark, after each group
+                               after_scale = rep(seq(1.5, tickmarks,1),each = 2)), # This adds a segment, that looks like a tick mark, after each group
                      xend = stage(fct_reorder(interval, sortorder),
                                   after_scale = rep(seq(1.5, tickmarks,1), each = 2)),
                      y = -1.1, # How long the tickmark is, we want negative as it should go down
@@ -585,8 +585,8 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
     scale_y_continuous(breaks = seq(0,maxlim,steps),
                        labels = seq(0,maxlim,steps),
                        #limits = c(0, 120),
-                       expand = c(0, 0)) +
-    coord_cartesian(ylim = c(0,maxlim), clip = "off") +
+                       expand = c(0, 0)) + # This distribute values at 'steps' interval up to 'maxlim' 
+    coord_cartesian(ylim = c(0,maxlim), clip = "off") + # This sets the y-axis at 0 to 'maxlim' and clip = "off" makes it possible to set x-axis ticks below the axis
     # scale_x_discrete(breaks = sort(c(unique(df$x1), x_tick)),
     #                  labels = labname) +
     scale_fill_manual("Metod", values = c("P" = sebms_palette[2], "T" = sebms_palette[1])) +

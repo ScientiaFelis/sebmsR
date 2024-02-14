@@ -47,6 +47,9 @@ sebms_user_station <- function(my_place) {
   
   stations <- jsonlite::fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>% 
     filter(str_detect(name, my_place)) %>% 
+    # group_by(id)
+    # arrange(desc(updated)) %>% 
+    # slice(1) %>% 
     select(name, id, latitude, longitude) %>% 
     mutate(id = str_squish(id))
   
@@ -104,8 +107,10 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
               period = "2") %>% 
     mutate(month = str_to_lower(month))
   
+  patt <- paste0(my_place, collapse = "|")
   filt_precip <- all_precip  %>%
-    mutate(name = str_remove(name, " .*|-.*")) %>% 
+    #mutate(name = str_remove(name, " .*|-.*")) %>% 
+  #  mutate(name = str_replace(name, glue(".*({patt}).*"), "\\1")) %>% 
     group_by(name) %>% 
     distinct(id) %>% 
     slice(1) %>%
@@ -150,7 +155,9 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
     left_join(all_precip, by = "id") %>% 
     bind_rows(norm_precip %>% filter(id %in% c(filt_precip %>% pull(id)))) %>% 
     mutate(name = if_else(period == "1", NA_character_, name),
-           name = str_remove(name, " .*|-.*")) %>%
+           #name = str_remove(name, " .*|-.*")
+           name = str_replace(name, glue(".*({patt}).*"), "\\1")
+           ) %>%
     arrange(desc(period)) %>% 
     fill(name) %>% 
     complete(id, monthnr, period, fill = list(nb = 0)) %>%
@@ -170,8 +177,7 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
 sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_place = NA) {
   
   if(year > lubridate::year(lubridate::today())){
-    warning("YOU ARE WAY AHEAD OF YOURSELF!")
-    message("Chose a year that is not in the future.")
+    warning("YOU ARE WAY AHEAD OF YOURSELF!\nChose a year that is not in the future.")
     return()
   }
   
@@ -189,7 +195,7 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
     map(\(x) rename_with(x, ~c("FrDate", "ToDate", "month", "temp", "Delete", "Delete2", "Delete3"))) %>% # Set column names 
     bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
     as_tibble() %>% 
-    select(!starts_with("Delete")) %>% # Remove the columns we do not need
+    #select(!starts_with("Delete")) %>% # Remove the columns we do not need
     filter(lubridate::year(ymd_hms(FrDate)) == year,
            month(ymd_hms(FrDate)) %in% 4:9) %>% 
     left_join(stations, by = "id") %>% # Join in the names
@@ -203,8 +209,10 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
               period = "2") %>%  # Change name and variables I want to keep/have
   mutate(month = str_to_lower(month))
   
+  patt <- paste0(my_place, collapse = "|")
   filt_temp <- all_temp  %>%
-    mutate(name = str_remove(name, " .*|-.*")) %>% # Only keep basic name, e.g. Umeå Flygplats become Umeå
+    #mutate(name = str_remove(name, " .*|-.*")) %>% 
+    #mutate(name = str_replace(name, glue(".*({patt}).*"), "\\1")) %>% # Only keep basic name, e.g. Umeå Flygplats become Umeå
     group_by(name) %>% 
     distinct(id) %>% 
     slice(1) %>% # This take the first station id from the location name if there are several
@@ -249,7 +257,9 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
     left_join(all_temp, by = "id") %>% # Join in the data from the chosen station
     bind_rows(norm_temp %>% filter(id %in% c(filt_temp %>% pull(id)))) %>% # add in the normal temperatures from the internal data for the chosen stations
     mutate(name = if_else(period == "1", NA_character_, name),
-           name = str_remove(name, " .*|-.*")) %>%
+           #name = str_remove(name, " .*|-.*")
+           name = str_replace(name, glue(".*({patt}).*"), "\\1")
+           ) %>%
     arrange(desc(period)) %>% 
     fill(name) %>% 
     complete(id, monthnr, period, fill = list(temp = 0)) %>%

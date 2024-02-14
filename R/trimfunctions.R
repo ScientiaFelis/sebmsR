@@ -165,6 +165,9 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
 #' @param trimIndex optional; a trimIndex object from the [get_trimIndex()]
 #' @param years the years to calculate trim index on, ignored if a trimIndex file is given
 #' @param Art the species of interest, ignored if trimIndex is not NULL
+#' @param write logical; if you want to write result to csv files, default TRUE
+#' @param print logical; if you want to print result to output, default FALSE
+
 #' @param ... optional; other arguments passed on to [get_trimInfile()]
 #'
 #' @import ggplot2
@@ -175,7 +178,7 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
 #' 
 #' @return figures in png format of the species trends with confidence interval
 #' @export
-get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", ...) {
+get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", write = TRUE, print = TRUE, ...) {
   
   # This creates a trimIndex file if none is provided
   if(is.null(trimIndex)) {
@@ -299,8 +302,13 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, Län
   
   ggs <- map2(trimIndex, spname, ~trimplots(.x, .y), .progress = "Making trimplots...")
   
-  walk2(ggs, spname, ~ggsave(plot = .x, filename = glue("{.y}.png"), width = 748, height = 868, units = "px", dpi = 72), .progress = "Saving trimplots...")
+  if (write) {
+    walk2(ggs, spname, ~ggsave(plot = .x, filename = glue("{.y}.png"), width = 748, height = 868, units = "px", dpi = 72), .progress = "Saving trimplots...")
+  }
   
+  if (print) {
+    print(ggs)
+  }
 }
 
 
@@ -385,7 +393,12 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
     sitecalc <- function(indic){
       trendList %>%
         filter(speuid %in% indic) %>%
-        mutate(maxsite = round(max(nsite)), minsite = round(min(nsite)), meansite = round(mean(nsite)), mediansite = round(median(nsite)), sdsite = round(sd(nsite))) 
+        mutate(maxsite = round(max(nsite)),
+               minsite = round(min(nsite)),
+               meansite = round(mean(nsite)),
+               mediansite = round(median(nsite)),
+               sdsite = round(sd(nsite))
+        ) 
     }
     
     imputedList <- map(indicatorlist, sitecalc) %>%
@@ -489,7 +502,7 @@ get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrid
 
 #' Create and Save Local TRIM Plots with National TRIM Reference
 #'
-#' @inheritParams get_trimInfile
+#' @inheritParams get_trimPlots
 #' @param trimmedImputedSwedishList data frame of national wide data of species
 #'   trim values
 #'
@@ -502,7 +515,7 @@ get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrid
 #'
 #' @return figures saved as png comparing national and local trim indices
 #' @export
-get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", trimmedImputedSwedishList=NULL) {
+get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", trimmedImputedSwedishList=NULL, write = TRUE, print = TRUE) {
   
   #1 Run trim index on species with local data
   #2 Of the local species not all may be possible to run
@@ -520,10 +533,13 @@ get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today(
   plotcomp <- function(df, species) {
     
     swedish <- trimmedImputedSwedishList %>%
-      filter(art == {{ species }})
+      filter(art == {{ species }}) %>% 
+      fill(index, se, .direction = "downup")
     
     local <- imputedLocalList %>%
-      filter(art == {{ species }})
+      filter(art == {{ species }}) %>% 
+      fill(index, se, .direction = "downup")
+    
     
     fname <- as.character({{ species }}) %>%
       str_replace_all("/", "_") #replacing escape characters in species name
@@ -586,8 +602,14 @@ get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today(
     nest() %>%
     ungroup() %>%
     mutate(plots = map2(data, art, ~plotcomp(.x, .y)))
-  walk2(ggs$plots, ggs$art, ~ggsave(plot = .x, filename = glue("{.y}_comparison.png"), width=748, height=868, dpi = 72, units = "px"))
   
+  if (write) {
+    walk2(ggs$plots, ggs$art, ~ggsave(plot = .x, filename = glue("{.y}_comparison.png"), width=748, height=868, dpi = 72, units = "px"))
+  }
+  
+  if (print) {
+    print(ggs$plots)
+  }
 }
 
 
@@ -640,7 +662,7 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:lubridate::year(lu
   if(is.null(infile)) { # If no infile is given
     infile <- get_imputedList(Art = c(speid), years = years, indicator_layout = TRUE, Län = Län, Landskap = Landskap, Kommun = Kommun) 
   }
-
+  
   indata <- infile %>%
     transmute(indicator,
               origin,
@@ -670,17 +692,17 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:lubridate::year(lu
     
     result <- msi_out$results[1:8] %>% 
       left_join(indata %>% filter(indicator %in% indn) %>% select(year,
-                                  maxsite,
-                                  minsite,
-                                  meansite,
-                                  mediansite,
-                                  sdsite) %>% distinct(), by = c("year"))
+                                                                  maxsite,
+                                                                  minsite,
+                                                                  meansite,
+                                                                  mediansite,
+                                                                  sdsite) %>% distinct(), by = c("year"))
+    
+    if (write) {
       
-      if (write) {
-        
-        write_csv2(file = glue("{indn}_indicator_in_{origin}.csv"), x = result)
-        write_csv2(file = glue("{indn}_trends_in_{origin}.csv"), x = msi_out$trends)
-      }
+      write_csv2(file = glue("{indn}_indicator_in_{origin}.csv"), x = result)
+      write_csv2(file = glue("{indn}_trends_in_{origin}.csv"), x = msi_out$trends)
+    }
     return(msi_out)
   }
   

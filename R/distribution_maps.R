@@ -31,9 +31,9 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, width 
       st_transform(3021)
   }
   
-  SweLandGrid <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "SweLandGrid", quiet = TRUE) %>% 
+  
+  SweLandGrid <- st_read(system.file("extdata", "SweLandGrid.shp", package = "sebmsR"), quiet = TRUE) %>% 
     st_set_crs(3021)
-
   
   ## Sweden map
   tiff1 <- terra::rast(system.file("extdata", "MapSweden_RGB.png", 
@@ -122,7 +122,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
       st_transform(3021)
   }
   
-  SweLandGrid <- st_read("data-raw/figures/MapDistribution-data/R_files_for_similar_map/", "SweLandGrid", quiet = TRUE) %>% 
+  SweLandGrid <- st_read(system.file("extdata", "SweLandGrid.shp", package = "sebmsR"), quiet = TRUE) %>% 
     st_set_crs(3021)
   
   

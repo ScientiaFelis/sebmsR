@@ -178,7 +178,7 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
 #' 
 #' @return figures in png format of the species trends with confidence interval
 #' @export
-get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", write = TRUE, print = TRUE, ...) {
+get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", xaxis_sep = 5, write = TRUE, print = TRUE, ...) {
   
   # This creates a trimIndex file if none is provided
   if(is.null(trimIndex)) {
@@ -270,7 +270,7 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:2023, Art = 1:200, Län
           scale_y_continuous(labels = gcomma,
                              breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
                              expand = c(0,0)) +#y-axis sectioning & comma labelling #from=yAxisAdjusted[2]
-          scale_x_continuous(breaks = seq(min(years),max(years), by = 5))+
+          scale_x_continuous(breaks = seq(min(years),max(years), by = xaxis_sep)) +
           labs(title = titles) +#Chart title text
           theme(text = element_text(family = "Arial"),
                 plot.title = element_text(hjust = 0.5, # Centered

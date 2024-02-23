@@ -7,7 +7,8 @@
 #' @import sf
 #' @importFrom terra ext ext<- rast rasterize crs crs<- coltab project values
 #' @importFrom ggnewscale new_scale_fill
-#' @importFrom dplyr mutate group_by ungroup
+#' @importFrom dplyr
+#' @importFrom lubridate year today
 #' @importFrom tidyr nest
 #' @importFrom purrr map map2
 #' @importFrom glue glue
@@ -20,9 +21,9 @@
 #' 
 #' @return Figures in png for points, and transects the given year
 #' @export
-sebms_sites_map <- function(year=lubridate::year(lubridate::today()), width = 12, height = 18, occ_sp, print = FALSE) {
+sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, width = 12, height = 18, occ_sp, print = FALSE) {
   
- if (missing(occ_sp)) { #Load in data for all species from given year
+  if (missing(occ_sp)) { #Load in data for all species from given year
     occ_sp <- sebms_occurances_distribution(year = year) %>%
       transmute(sitetype, speuid, lokalnamn, lat, lon) %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
@@ -52,10 +53,10 @@ sebms_sites_map <- function(year=lubridate::year(lubridate::today()), width = 12
     
     # Create a grid for all the visited survey grids the given year and site type
     bf <- apply(st_intersects(SweLandGrid, occ_sp %>% filter(sitetype %in% spid) %>% distinct(lokalnamn, .keep_all = T), sparse = FALSE), 2, function(col) { SweLandGrid[which(col), ]}) %>% 
-      list_rbind() %>% 
+      bind_rows() %>% 
       st_as_sf() %>% 
       st_set_crs(3021)
-   
+    
     # Make the plot
     ggplot() +
       geom_raster(data = tiff, aes(x = x, y = y,fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) + # The Swedish map
@@ -97,7 +98,8 @@ sebms_sites_map <- function(year=lubridate::year(lubridate::today()), width = 12
 #' @import sf
 #' @importFrom terra ext ext<- rast rasterize crs crs<- coltab project values
 #' @importFrom ggnewscale new_scale_fill
-#' @importFrom dplyr mutate group_by ungroup
+#' @import dplyr
+#' @importFrom lubridate year today
 #' @importFrom tidyr nest
 #' @importFrom purrr map map2
 #' @importFrom glue glue
@@ -106,10 +108,10 @@ sebms_sites_map <- function(year=lubridate::year(lubridate::today()), width = 12
 #' @param Art the species of interest as a species id
 #' 
 #' @return ggplot object of map with grid coloured by local density and with
-#'   species occurence points.
+#'   species occurrence points.
 
 #' @export
-sebms_distribution_map <- function(year=lubridate::year(lubridate::today()), Art = 1:200, width=9, height=18, occ_sp, print = FALSE) {
+sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, Art = 1:200, width=9, height=18, occ_sp, print = FALSE) {
   
   if (missing(occ_sp)) { #Load in data for all species from given year
     occ_sp <- sebms_occurances_distribution(year = year) %>%
@@ -129,10 +131,9 @@ sebms_distribution_map <- function(year=lubridate::year(lubridate::today()), Art
   
   # Create a grid for all the visited survey grids the given year
   bf <- apply(st_intersects(SweLandGrid, occ_sp %>% distinct(lokalnamn, .keep_all = T), sparse = FALSE), 2, function(col) { SweLandGrid[which(col), ]}) %>% 
-    list_rbind() %>% 
+    bind_rows() %>% 
     st_as_sf() %>% 
     st_set_crs(3021)
-  
   
   # Make a raster of all grid cells covering Sweden
   grid <- sebms_swe_grid %>% 

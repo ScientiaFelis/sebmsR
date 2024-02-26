@@ -512,7 +512,7 @@ ORDER BY
 
 #' Retrieve Species Data for Trim Functions
 #'
-#' This function retrieve min and max flight week for each species. used for the
+#' This function retrieve min and max flight week for each species. Used for the
 #' trim indices
 #'
 #' @inheritParams sebms_species_abundance_plot 

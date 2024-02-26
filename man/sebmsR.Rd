@@ -65,6 +65,14 @@ This package contains functions to make figures used in e.g. the reports of the 
  the number of sites within a range of species richness found at the site.
  Also show the mean number of species per site in each site type. \cr
  
+ \code{\link{sebms_distribution_map}} produce a map for each species
+ with a grid of all visited sites with red points showing the sites where
+ species were observed. Grids with observed species are coloured to show
+ number of observations. \cr
+ 
+ \code{\link{sebms_sites_map}} produce two maps with the grid for visited
+ sites for Slingor and Transekter with red points showing the sites. \cr
+ 
  ------------------------------------------------------------------------\cr
   }
 }
@@ -82,6 +90,23 @@ This package contains functions to make figures used in e.g. the reports of the 
  
  \code{\link{sebms_species_per_year_filtered}} return a data frame with
  abundance data per species and year. \cr
+
+ \code{\link{sebms_trimSpecies}} return a data frame with min and max 
+ flight week for each species.
+ This is used for the \code{\link{get_trimInfile}} making trim indices. \cr
+
+ \code{\link{sebms_trimSites}} return a data frame with sites included for
+ the given region and year.
+ This is used for the \code{\link{get_trimInfile}} making trim indices.  \cr
+
+ \code{\link{sebms_trimvisits}} return a data frame with visits per site
+ and year. \cr
+
+ \code{\link{sebms_trimobs}} return a data frame with observations per
+ species and year. \cr
+
+ \code{\link{sebms_occurances_distribution}} return a data frame with counts
+ per species and site with coordinates. Used for the \code{\link{sebms_distribution_map}} \cr
  
  ------------------------------------------------------------------------\cr
  }

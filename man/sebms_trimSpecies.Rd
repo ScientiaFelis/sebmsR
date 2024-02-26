@@ -28,6 +28,6 @@ defaults to `54,55,56,63,64,66,67,84`}
 a tibble with species IDs, name, and min and max flight time week
 }
 \description{
-This function retrieve min and max flight week for each species. used for the
+This function retrieve min and max flight week for each species. Used for the
 trim indices
 }

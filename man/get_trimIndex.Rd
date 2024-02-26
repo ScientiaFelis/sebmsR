@@ -8,6 +8,9 @@ get_trimIndex(
   infile = NULL,
   years = 2010:lubridate::year(lubridate::today()),
   Art = 1:200,
+  Län = ".",
+  Landskap = ".",
+  Kommun = ".",
   ...
 )
 }
@@ -17,6 +20,13 @@ get_trimIndex(
 \item{years}{the year span of interest, set as 'firstyear:lastyear'.}
 
 \item{Art}{the species of interest}
+
+\item{Län}{character or regular expression; which county you want the data
+from}
+
+\item{Landskap}{character or reg ex; which region you want the data from}
+
+\item{Kommun}{character or reg ex; which municipality you want the data from}
 
 \item{...}{further arguments to pass to [get_trimInfile()]}
 }

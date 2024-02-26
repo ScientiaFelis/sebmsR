@@ -4,7 +4,18 @@
 \alias{get_trimPlots}
 \title{Create and Save TRIM Plots}
 \usage{
-get_trimPlots(trimIndex = NULL, years = 2010:2023, Art = 1:200, ...)
+get_trimPlots(
+  trimIndex = NULL,
+  years = 2010:2023,
+  Art = 1:200,
+  Län = ".",
+  Landskap = ".",
+  Kommun = ".",
+  xaxis_sep = 5,
+  write = TRUE,
+  print = TRUE,
+  ...
+)
 }
 \arguments{
 \item{trimIndex}{optional; a trimIndex object from the [get_trimIndex()]}
@@ -12,6 +23,17 @@ get_trimPlots(trimIndex = NULL, years = 2010:2023, Art = 1:200, ...)
 \item{years}{the years to calculate trim index on, ignored if a trimIndex file is given}
 
 \item{Art}{the species of interest, ignored if trimIndex is not NULL}
+
+\item{Län}{character or regular expression; which county you want the data
+from}
+
+\item{Landskap}{character or reg ex; which region you want the data from}
+
+\item{Kommun}{character or reg ex; which municipality you want the data from}
+
+\item{write}{logical; if you want to write result to csv files, default TRUE}
+
+\item{print}{logical; if you want to print result to output, default FALSE}
 
 \item{...}{optional; other arguments passed on to [get_trimInfile()]}
 }

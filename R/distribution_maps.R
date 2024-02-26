@@ -7,7 +7,7 @@
 #' @import sf
 #' @importFrom terra ext ext<- rast rasterize crs crs<- coltab project values
 #' @importFrom ggnewscale new_scale_fill
-#' @importFrom dplyr
+#' @import dplyr
 #' @importFrom lubridate year today
 #' @importFrom tidyr nest
 #' @importFrom purrr map map2

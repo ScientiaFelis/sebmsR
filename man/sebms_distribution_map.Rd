@@ -5,7 +5,7 @@
 \title{Swedish Map of SeBMS Distribution Data}
 \usage{
 sebms_distribution_map(
-  year = lubridate::year(lubridate::today()),
+  year = lubridate::year(lubridate::today()) - 1,
   Art = 1:200,
   width = 9,
   height = 18,
@@ -28,7 +28,7 @@ sebms_distribution_map(
 }
 \value{
 ggplot object of map with grid coloured by local density and with
-  species occurence points.
+  species occurrence points.
 }
 \description{
 Producing distribution map for species on the Swedish grid.

@@ -10,13 +10,15 @@ get_trimComparedPlots(
   Län = ".",
   Landskap = ".",
   Kommun = ".",
-  trimmedImputedSwedishList = NULL
+  trimmedImputedSwedishList = NULL,
+  write = TRUE,
+  print = TRUE
 )
 }
 \arguments{
-\item{years}{the year span of interest, set as 'firstyear:lastyear'.}
+\item{years}{the years to calculate trim index on, ignored if a trimIndex file is given}
 
-\item{Art}{the species of interest}
+\item{Art}{the species of interest, ignored if trimIndex is not NULL}
 
 \item{Län}{character or regular expression; which county you want the data
 from}
@@ -27,6 +29,10 @@ from}
 
 \item{trimmedImputedSwedishList}{data frame of national wide data of species
 trim values}
+
+\item{write}{logical; if you want to write result to csv files, default TRUE}
+
+\item{print}{logical; if you want to print result to output, default FALSE}
 }
 \value{
 figures saved as png comparing national and local trim indices

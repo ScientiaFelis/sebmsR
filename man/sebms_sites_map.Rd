@@ -5,7 +5,7 @@
 \title{Swedish Map of SeBMS Sites}
 \usage{
 sebms_sites_map(
-  year = lubridate::year(lubridate::today()),
+  year = lubridate::year(lubridate::today()) - 1,
   width = 12,
   height = 18,
   occ_sp,

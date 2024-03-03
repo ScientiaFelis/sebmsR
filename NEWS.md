@@ -7,6 +7,17 @@ For more fine-grained list of changes or to report a bug, consult
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
 
+# v 1.9.7
+
+* fix bug in `get_trimComparePlots()` where `speuid` was absent
+* fix bug in `get_trimComparePlots()` where the national comparison index was calculated on all indicator species instead of the chosen species.
+* add `print = TRUE` and `write = TRUE` arguments to all trim plot functions
+* fix bug where station names were cut of in weather plots 
+* add SweLandGrid in extdata instead of data_raw
+* fix bug where `sebms_distribution_map()` and `sebms_site_map()` did not work as default year was current year hence no data for the first 9 month or so.
+* the x-axis separation between years is not an argument to accommodate for shorter time span in `sebms_trimPlots()` 
+
+
 # v 1.9.6
 
 This version have some bug fixes

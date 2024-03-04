@@ -84,6 +84,17 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
     ungroup() %>% 
     mutate(plots = map2(data, sitetype, speplot, .progress = "Making plots:"))
   
+  if (str_detect(maptype, "[Pp]oi?nt|[Pp]$")) {
+    ggs <- ggs %>% 
+      filter(sitetype == "P")
+  }
+  
+  if (str_detect(maptype, "[Tt]ransect|[Tt]$")) {
+    ggs <- ggs %>% 
+      filter(sitetype == "T")
+  }
+ 
+ 
   map2(ggs$plots, ggs$sitetype, ~sebms_ggsave(.x, .y, width = width, height = height, weathervar = glue("{year}")), .progress = "Saving plots:")
   
   if (print) {

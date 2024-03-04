@@ -2,7 +2,7 @@
 #'
 #' Producing map for all visited sites on Swedish grid separating transects and
 #' points.
-#' 
+#'
 #' @import ggplot2
 #' @import sf
 #' @importFrom terra ext ext<- rast rasterize crs crs<- coltab project values
@@ -13,18 +13,21 @@
 #' @importFrom purrr map map2
 #' @importFrom glue glue
 #'
-#' @param year the year of interest
+#' @inheritParams sebms_abundance_per_species_plot
+#' @param occ_sp SpatialPoints with occurrence data
 #' @param width the plot width, default 12 inches
 #' @param height the plot height, default 18 inches
-#' @param occ_sp SpatialPoints with occurrence data
+#' @param maptype what survey type to produce map on, can be 'Transect', 'Point'
+#'   or 'both', #'   default to 'both'. The 'Transect' and 'Point' can be
+#'   abbreviated to 'T' and #'   'P'.
 #' @param print logical; should the plots be printed in window, default FALSE
-#' 
+#'
 #' @return Figures in png for points, and transects the given year
 #' @export
-sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, width = 12, height = 18, occ_sp, print = FALSE) {
+sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "both", print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { #Load in data for all species from given year
-    occ_sp <- sebms_occurances_distribution(year = year) %>%
+    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
       transmute(sitetype, speuid, lokalnamn, lat, lon) %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
       st_set_crs(3006) %>% 
@@ -111,10 +114,10 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, width 
 #'   species occurrence points.
 
 #' @export
-sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, Art = 1:200, width=9, height=18, occ_sp, print = FALSE) {
+sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", width=9, height=18, print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { #Load in data for all species from given year
-    occ_sp <- sebms_occurances_distribution(year = year) %>%
+    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
       transmute(speuid, art, lokalnamn, lat, lon, maxobs = as.numeric(max)) %>% 
       mutate(art = str_replace_all(art, "/", "-")) %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 

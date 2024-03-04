@@ -386,6 +386,7 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
   # Add speuid to list
   trendList <- sebms_trimSpecies(Art = speid) %>%
     select(speuid, art) %>%
+    mutate(art = str_replace_all(art, "/", "_")) %>% 
     right_join(imputedList, by = c("art"))
   
   if(indicator_layout) { # If you want indicator layout

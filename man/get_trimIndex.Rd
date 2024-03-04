@@ -6,7 +6,7 @@
 \usage{
 get_trimIndex(
   infile = NULL,
-  years = 2010:lubridate::year(lubridate::today()),
+  years = 2010:lubridate::year(lubridate::today()) - 1,
   Art = 1:200,
   Län = ".",
   Landskap = ".",

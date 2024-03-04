@@ -6,7 +6,7 @@
 \usage{
 get_trimPlots(
   trimIndex = NULL,
-  years = 2010:2023,
+  years = 2010:lubridate::year(lubridate::today()) - 1,
   Art = 1:200,
   Län = ".",
   Landskap = ".",

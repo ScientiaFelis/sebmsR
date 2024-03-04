@@ -70,7 +70,8 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
       theme_void() +
       theme(plot.background = element_rect(fill = "white", colour = "white"),
             plot.margin = margin(t = 1,r = 0,b = 1,l = 0, unit = "mm"),
-            legend.position = c(0.1,0.91),
+            legend.position = "inside",
+            legend.position.inside = c(0.1,0.91),
             legend.spacing.y = unit(2, units = "mm"),
             legend.key.size = unit(3, units = "mm")) +
       guides(fill = guide_legend(byrow = TRUE))

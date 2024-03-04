@@ -6,22 +6,41 @@
 \usage{
 sebms_sites_map(
   year = lubridate::year(lubridate::today()) - 1,
+  occ_sp,
+  Län = ".",
+  Landskap = ".",
+  Kommun = ".",
   width = 12,
   height = 18,
-  occ_sp,
-  print = FALSE
+  maptype = "both",
+  print = FALSE,
+  source = c(54, 55, 56, 63, 64, 66, 67, 84)
 )
 }
 \arguments{
-\item{year}{the year of interest}
+\item{year}{year or years to use for plot}
+
+\item{occ_sp}{SpatialPoints with occurrence data}
+
+\item{Län}{character or regular expression; which county you want the data
+from}
+
+\item{Landskap}{character or reg ex; which region you want the data from}
+
+\item{Kommun}{character or reg ex; which municipality you want the data from}
 
 \item{width}{the plot width, default 12 inches}
 
 \item{height}{the plot height, default 18 inches}
 
-\item{occ_sp}{SpatialPoints with occurrence data}
+\item{maptype}{what survey type to produce map on, can be 'Transect', 'Point'
+or 'both', #'   default to 'both'. The 'Transect' and 'Point' can be
+abbreviated to 'T' and #'   'P'.}
 
 \item{print}{logical; should the plots be printed in window, default FALSE}
+
+\item{source}{the database sources as id numbers,
+defaults to `54,55,56,63,64,66,67,84`}
 }
 \value{
 Figures in png for points, and transects the given year

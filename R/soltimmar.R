@@ -142,6 +142,8 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
     message("IF YOU ARE MAKING A FIGURE, IT IS OPTIMIZED FOR THE SUNHOURS OVER 6 SUMMER MONTH\n")
     message("USE 'per_month = TRUE' TO GET VALUES PER MONTH")
   }
+  
+  
   sunlist <- map(year, ~allyears(year = .x, months = months), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
     set_names(year) %>% # set names to Year
     bind_rows(.id = "Year")
@@ -507,7 +509,7 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
 #'   mean and diff from mean at that location. It also gives the name of the
 #'   nearest city or village for that location.
 #' @export
-sebms_minmax_sunhour <- function(df, year = 2017:2022, months = 4:9, sunvar = total_sunH, per_month = FALSE, per_day = FALSE) {
+sebms_minmax_sunhour <- function(year = 2017:2022, df, months = 4:9, sunvar = total_sunH, per_month = FALSE, per_day = FALSE) {
   
   if(missing(df)) {
     

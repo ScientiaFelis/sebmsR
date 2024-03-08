@@ -69,6 +69,7 @@ sunHdata <- function(year, months, day, per_day = FALSE) {
 #' @export
 sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, months = 4:9, per_month = FALSE, per_day = FALSE, to_env = FALSE) {
   
+  ## QUESTION: Is not the allyear and dayfunc the same? So the only two allyears() you need is with and without per day?
   if (per_month) { #This runs two different versions of the functions. Summarise per month or per year.
     
     if (per_day) {
@@ -143,7 +144,8 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
     message("USE 'per_month = TRUE' TO GET VALUES PER MONTH")
   }
   
-  
+  # This is the function loop that download the data with the appropiate function calls loaded above.
+  #FIXME: how long is the list? What determine the length, years, months? Dependent on per_month?
   sunlist <- map(year, ~allyears(year = .x, months = months), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
     set_names(year) %>% # set names to Year
     bind_rows(.id = "Year")

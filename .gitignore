@@ -10,5 +10,6 @@ sites.txt
 vignettes/.build.timestamp
 vignettes/sebms-intro.R
 *.png
+!inst/extdata/MapSweden_RGB.png
 Test_SQL.rmd
 zgeomaps*

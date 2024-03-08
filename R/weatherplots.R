@@ -158,7 +158,7 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
            #name = str_remove(name, " .*|-.*")
            name = str_replace(name, glue(".*({patt}).*"), "\\1")
            ) %>%
-    arrange(desc(period)) %>% 
+    arrange(id, desc(period)) %>% 
     fill(name) %>% 
     complete(id, monthnr, period, fill = list(nb = 0)) %>%
     fill(c(name,latitud, longitud, month), .direction = "down") 
@@ -260,7 +260,7 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
            #name = str_remove(name, " .*|-.*")
            name = str_replace(name, glue(".*({patt}).*"), "\\1")
            ) %>%
-    arrange(desc(period)) %>% 
+    arrange(id, desc(period)) %>% 
     fill(name) %>% 
     complete(id, monthnr, period, fill = list(temp = 0)) %>%
     fill(c(name,latitud, longitud, month), .direction = "down") 

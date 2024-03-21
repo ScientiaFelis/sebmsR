@@ -140,17 +140,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
   SweLandGrid <- st_read(system.file("extdata", "SweLandGrid.shp", package = "sebmsR"), quiet = TRUE) %>% 
     st_set_crs(3021)
   
-  
-  # bf <- occ_sp %>% st_join(SweLandGrid, .) %>%  # Filter out grids which have been visited
-  #   distinct(lokalnamn, .keep_all = T)
-  
-  # Create a grid for all the visited survey grids the given year
-  bf <- apply(st_intersects(SweLandGrid, occ_sp %>% distinct(lokalnamn, .keep_all = T), sparse = FALSE), 2, function(col) { SweLandGrid[which(col), ]}) %>% 
-    bind_rows() %>% 
-    st_as_sf() %>% 
-    st_set_crs(3021)
-  
-  # Make a raster of all grid cells covering Sweden
+    # Make a raster of all grid cells covering Sweden
   grid <- sebms_swe_grid %>% 
     st_as_sf() %>%
     st_set_crs(3021) %>% 
@@ -175,6 +165,15 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
     filter(Red != 0)
   
   
+  # Create a grid for all the visited survey grids the given year and region
+  bf <- apply(st_intersects(SweLandGrid, occ_sp %>% distinct(lokalnamn, .keep_all = T), sparse = FALSE), 2, function(col) { SweLandGrid[which(col), ]}) %>% 
+    bind_rows() %>% 
+    st_as_sf() %>% 
+    st_set_crs(3021)
+  
+
+  
+  
   # Creating a colour scale for the occurrences fill
   
   # pal_orig <- c("0" = NA_integer_, "1" = rgb(234,173,68, alpha = 96, maxColorValue = 255), "2" = rgb(203,141,53, alpha = 96, maxColorValue = 255), "3" = rgb(171,109,37, alpha = 96, maxColorValue = 255), "4" = rgb(148,77,21, alpha = 96, maxColorValue = 255), "5" = rgb(92,69,4, alpha = 96, maxColorValue = 255))
@@ -194,6 +193,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
     
     df <- as.data.frame(rl, xy = T)
     colnames(df) <- c("x", "y", "value")
+    
     df <- df %>%
       bind_rows(data.frame(x = NA, y = NA, value = 0:5)) %>% # Fill in all possible values to make legend always show all values 0-5
       # Make a colour variable to make scale_fill work

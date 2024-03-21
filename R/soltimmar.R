@@ -465,7 +465,7 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     
   }
   
-  cat("\n Making plots.....\n")
+  message("\n Making plots.....\n")
   
   if (per_month) { # Make figure per month
     
@@ -481,7 +481,7 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
       mutate(plots = map2(data, months, ~sunDiffplot(df = .x, months = .y), .progress = "Create sunhour diff figures"))
     
     
-    walk2(ggs$plots, ggs$month,  ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("SunhourDiff_{year}-{.y}")))
+    walk2(ggs$plots, ggs$month,  ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("SunhourDiff_{year}-{.y}")), .progress = "Saving figures as png...")
     
     return(ggs$plots)
   }else { # Make figures per year
@@ -493,7 +493,7 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
       mutate(plots = map(data, sunDiffplot, .progress = "Create sunhour diff figures"))
     
     
-    walk2(ggs$plots, ggs$Year,  ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("SunhourDiff_{.y}")))
+    walk2(ggs$plots, ggs$Year,  ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("SunhourDiff_{.y}")), .progress = "Saving figures as png...")
     
     return(ggs$plots)
   }

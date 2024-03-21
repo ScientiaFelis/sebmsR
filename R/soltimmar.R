@@ -69,7 +69,7 @@ sunHdata <- function(year, months, day, per_day = FALSE) {
 #' @export
 sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, months = 4:9, per_month = FALSE, per_day = FALSE, to_env = FALSE) {
   
-  ## QUESTION: Is not the allyear and dayfunc the same? So the only two allyears() you need is with and without per day?
+  ## QUESTION: Is not the different allyear and dayfunc actually the same? So the only two allyears() you need is with and without per day?
   if (per_month) { #This runs two different versions of the functions. Summarise per month or per year.
     
     if (per_day) {
@@ -404,10 +404,10 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     message("Please be pacient...")
     message("THIS CAN TAKE A MINUTE OR FIVE\n\n")
     message("Downloading sunhour data from SMHI........\n")
-    dff <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day, to_env = TRUE)
+    df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day, to_env = TRUE)
   }#else{
-  #  dff <- df %>% sebms_sunhours_data(year = year, months = months, per_month = per_month)
-  #}
+  #df <- df# %>% sebms_sunhours_data(year = year, months = months, per_month = per_month)
+  #  }
   
   if (per_month) {
     #FIXME: check actual min and max for each month for years 2017:2022
@@ -426,8 +426,8 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     dec = c(60, 200)
     
     #FIXME: The legend is way to big
-    sunDiffplot <- function(dff, months) { 
-      ggplot(data = dff) +
+    sunDiffplot <- function(df, months) { 
+      ggplot(data = df) +
         geom_sf(aes(colour = sundiff), size = 0.01, show.legend = legends) +
         scale_colour_gradientn(colours = suncols(5),
                                limits = switch(months, "1" = jan, "2"=feb, "3"=mar, "4"=apr, "5"=maj, "6"=jun, "7"=jul, "8"=aug, "9"=sep, "10"=okt, "11"=nov, "12"=dec),
@@ -446,8 +446,8 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     
   }else {
     
-    sunDiffplot <- function(dff) { 
-      ggplot(data = dff) +
+    sunDiffplot <- function(df) { 
+      ggplot(data = df) +
         geom_sf(aes(colour = sundiff), size = 0.01, show.legend = legends) +
         scale_colour_gradientn(colours = suncols(5),
                                limits = c(-600, 600),
@@ -468,11 +468,17 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
   cat("\n Making plots.....\n")
   
   if (per_month) { # Make figure per month
-    ggs <- dff %>% 
+    
+    rmonths <- df %>% st_drop_geometry() %>%  distinct(month) %>% pull(month)  
+    if (length(months) > length(rmonths)) {
+      months <- rmonths
+    }
+    
+    ggs <- df %>% 
       group_by(month) %>% 
       nest() %>% 
       ungroup() %>% 
-      mutate(plots = map2(data, months, ~sunDiffplot(dff = .x, months = .y), .progress = "Create sunhour diff figures"))
+      mutate(plots = map2(data, months, ~sunDiffplot(df = .x, months = .y), .progress = "Create sunhour diff figures"))
     
     
     walk2(ggs$plots, ggs$month,  ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("SunhourDiff_{year}-{.y}")))
@@ -480,7 +486,7 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     return(ggs$plots)
   }else { # Make figures per year
     
-    ggs <- dff %>% 
+    ggs <- df %>% 
       group_by(Year) %>% 
       nest() %>% 
       ungroup() %>% 

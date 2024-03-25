@@ -5,8 +5,8 @@
 \title{Maximum and Minimum Sun Hours for Given Years}
 \usage{
 sebms_minmax_sunhour(
-  df,
   year = 2017:2022,
+  df,
   months = 4:9,
   sunvar = total_sunH,
   per_month = FALSE,
@@ -14,10 +14,10 @@ sebms_minmax_sunhour(
 )
 }
 \arguments{
+\item{year}{the year or years to produce plot for}
+
 \item{df}{a sf object with `year` and `total_sunhour` created by
 [sebms_sunhous_data()]}
-
-\item{year}{the year or years to produce plot for}
 
 \item{months}{numeric value of the months to summarise sun ours over (default
 to 4:9)}

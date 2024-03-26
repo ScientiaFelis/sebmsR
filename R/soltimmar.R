@@ -166,6 +166,9 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
       st_as_sf(coords = c("lon", "lat")) %>%
       st_set_crs(4326) %>%
       st_intersection(SE) %>% # Filter out points for Sweden
+      group_by(month) %>% 
+      mutate(pID = row_number(),
+             pID = glue("{month}_{pID}")) %>% # Make a idnumber per month
       st_join(meansunH_M %>% filter(month %in% months) %>% select(-month)) %>% # Bind in the mean sun hours per month
       group_by(Year, month) %>% 
       mutate(sundiff = total_sunH - mean_sunH) %>% # Calculate difference of sunhours to mean
@@ -191,7 +194,8 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
       st_as_sf(coords = c("lon", "lat")) %>%
       st_set_crs(4326) %>%
       st_intersection(SE) %>% # Filter out points in Sweden
-      st_join(meansunH) %>% # bind in the mean sun hours per month
+      mutate(pID = row_number()) %>% 
+      left_join(meansunH %>% st_drop_geometry(), by = "pID") %>% # bind in the mean sun hours per month
       mutate(sundiff = total_sunH - mean_sunH) # Calculate difference of sunhours to mean
   }
   

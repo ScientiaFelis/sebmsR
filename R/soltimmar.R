@@ -340,7 +340,7 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     }
   }
   
-  cat("\nMaking plots........\n")
+  message("\nMaking plots........\n")
   if (per_month) { # make a figure per month
     
     lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()

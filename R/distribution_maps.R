@@ -128,7 +128,8 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
 #' @export
 sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", width=9, height=18, print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
   
-  if (missing(occ_sp)) { #Load in data for all species from given year
+  if (missing(occ_sp)) { # Load in data for all species from given year,
+                         # without species restriction to get all sites visited
     occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
       transmute(speuid, art, lokalnamn, lat, lon, maxobs = as.numeric(max)) %>% 
       mutate(art = str_replace_all(art, "/", "-")) %>% 
@@ -165,7 +166,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
     filter(Red != 0)
   
   
-  # Create a grid for all the visited survey grids the given year and region
+  # Create a grid for all the visited survey sites the given year and region
   bf <- apply(st_intersects(SweLandGrid, occ_sp %>% distinct(lokalnamn, .keep_all = T), sparse = FALSE), 2, function(col) { SweLandGrid[which(col), ]}) %>% 
     bind_rows() %>% 
     st_as_sf() %>% 
@@ -204,7 +205,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
                                 value == 4 ~ rgb(148,77,21, alpha = 96, maxColorValue = 255),
                                 value == 5 ~ rgb(92,69,4, alpha = 96, maxColorValue = 255),
                                 TRUE ~ "white"),
-             colour = fct_rev(colour))
+             colour = fct_rev(colour)) # reverse to make legend in right order
     
     # Make the plot
     ggplot() +
@@ -214,14 +215,6 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
       geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = F) + # Visited survey grids the given year
       geom_tile(data = df, aes(x, y, fill = colour), colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = FALSE, alpha = 0.3, size = 0.2) + # Tiles/raster with occurrence data with values of the max observation of individuals per day 0-5+
       geom_sf(data = spda, colour = rgb(255,0,0,maxColorValue = 255), size = 0.1, inherit.aes = F) + # Species occurrences
-      # scale_fill_manual(name = NULL,
-      #                   breaks = c("0", "1", "2", "3", "4", "5"),
-      #                   labels = c("0", "1", "2", "3", "4", "5+"),
-      #                   values = pal_orig,
-      #                   guide = "legend",
-      #                   drop = F,
-      #                   na.value = "transparent"
-      # ) +
       scale_fill_identity(name = NULL,
                           guide = "legend",
                           labels = c("0", "1", "2", "3", "4", "5+")
@@ -237,8 +230,9 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
     
   }
   
+  # Create the plots
   ggs <- occ_sp %>% 
-    filter(maxobs > 0, speuid %in% Art) %>% 
+    filter(maxobs > 0, speuid %in% Art) %>% # Now filter out the wanted species
     group_by(speuid, art) %>% 
     nest() %>% # Nest per species to save one png per species
     ungroup() %>% 

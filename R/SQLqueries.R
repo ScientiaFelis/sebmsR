@@ -414,7 +414,8 @@ sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Län = 
           mun.kommun AS kommun,
           EXTRACT (week FROM vis_begintime::date) AS vecka,
           SUM(obs.obs_count) AS sumval,
-          dense_rank() OVER (PARTITION BY spe.spe_uid,sit.sit_uid ORDER BY SUM(obs.obs_count) DESC, vis.vis_uid ) AS sumval_rank
+          dense_rank() OVER (PARTITION BY spe.spe_uid,sit.sit_uid 
+          ORDER BY SUM(obs.obs_count) DESC, vis.vis_uid ) AS sumval_rank
         
         FROM obs_observation AS obs
         

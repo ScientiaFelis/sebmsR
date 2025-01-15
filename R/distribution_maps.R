@@ -155,6 +155,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
   ## Sweden map
   tiff1 <- terra::rast(system.file("extdata", "MapSweden_RGB.png", 
                                    package = "sebmsR", mustWork = TRUE)) %>% 
+    terra::flip() %>% 
     suppressWarnings()
   
   terra::ext(tiff1) <- c(1179998, 1948697, 6129692, 7679610)

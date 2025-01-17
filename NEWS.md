@@ -6,7 +6,15 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
-# v.1.9.8
+# v 1.10.0
+
+* add source argument in trimfunctions
+
+# v 1.9.9
+
+* fix a bug where filled grids where to large for some rare species. `geom_tile()`varied its tile size, now set to a fixed value.
+
+# v 1.9.8
 
 * fix a bug in distribution maps which were 'upsidedown'. This was due to a bug in terra, and will need to be reverted when the terra bug dissappear.
 

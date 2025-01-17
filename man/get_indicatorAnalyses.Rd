@@ -11,6 +11,7 @@ get_indicatorAnalyses(
   Län = ".",
   Landskap = ".",
   Kommun = ".",
+  source = c(54, 55, 56, 63, 64, 66, 67, 84),
   write = TRUE,
   print = FALSE,
   indicators = NULL,
@@ -31,6 +32,8 @@ from}
 \item{Landskap}{character or reg ex; which region you want the data from}
 
 \item{Kommun}{character or reg ex; which municipality you want the data from}
+
+\item{source}{the data sources}
 
 \item{write}{logical; if you want to write result to csv files, default TRUE.}
 

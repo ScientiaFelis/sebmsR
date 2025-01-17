@@ -12,6 +12,7 @@ get_trendIndex(
   Landskap = ".",
   Kommun = ".",
   indicators = TRUE,
+  source = c(54, 55, 56, 63, 64, 66, 67, 84),
   write = FALSE,
   ...
 )
@@ -32,6 +33,8 @@ from}
 
 \item{indicators}{logical; if TRUE use the indicators as species selection,
 this override `Art`}
+
+\item{source}{the data sources}
 
 \item{write}{logical; if index should be written to csv}
 

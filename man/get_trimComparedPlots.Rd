@@ -11,6 +11,7 @@ get_trimComparedPlots(
   Landskap = ".",
   Kommun = ".",
   trimmedImputedSwedishList = NULL,
+  source = c(54, 55, 56, 63, 64, 66, 67, 84),
   write = TRUE,
   print = TRUE
 )
@@ -29,6 +30,8 @@ from}
 
 \item{trimmedImputedSwedishList}{data frame of national wide data of species
 trim values}
+
+\item{source}{the data sources}
 
 \item{write}{logical; if you want to write result to csv files, default TRUE}
 

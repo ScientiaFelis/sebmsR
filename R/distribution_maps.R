@@ -95,8 +95,8 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
     ggs <- ggs %>% 
       filter(sitetype == "T")
   }
- 
- 
+  
+  
   map2(ggs$plots, ggs$sitetype, ~sebms_ggsave(.x, .y, width = width, height = height, weathervar = glue("{year}")), .progress = "Saving plots:")
   
   if (print) {
@@ -130,7 +130,7 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
 sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", width=9, height=18, print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { # Load in data for all species from given year,
-                         # without species restriction to get all sites visited
+    # without species restriction to get all sites visited
     occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
       transmute(speuid, art, lokalnamn, lat, lon, maxobs = as.numeric(max)) %>% 
       mutate(art = str_replace_all(art, "/", "-")) %>% 
@@ -142,7 +142,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
   SweLandGrid <- st_read(system.file("extdata", "SweLandGrid.shp", package = "sebmsR"), quiet = TRUE) %>% 
     st_set_crs(3021)
   
-    # Make a raster of all grid cells covering Sweden
+  # Make a raster of all grid cells covering Sweden
   grid <- sebms_swe_grid %>% 
     st_as_sf() %>%
     st_set_crs(3021) %>% 
@@ -174,7 +174,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
     st_as_sf() %>% 
     st_set_crs(3021)
   
-
+  
   
   
   # Creating a colour scale for the occurrences fill
@@ -249,3 +249,77 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 }
 
 
+
+#' Create Local Maps with Transect
+#' 
+#' Creates a map of the County or Municipality with the transect marked.
+#'
+#' @inheritParams sebms_sites_map
+#' @import leaflet
+#' @importFrom mapview mapshot2
+#' @import webshot2
+#'
+#' @returns a png file with a map of the chosen area with slingor or transects marked.
+#' @export
+
+sebms_local_transekt_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "both", print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
+  
+  if (missing(occ_sp)) { # Load in data for all species from given year,
+    # without species restriction to get all sites visited
+    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
+      select(sitetype, lokalnamn, lat, lon) %>% 
+      mutate(colour = if_else(sitetype == "T", "blue", "red")) 
+    
+    occ_sp <- occ_sp %>% 
+      st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
+      st_set_crs(3006) %>% 
+      st_transform(4326) %>% st_coordinates() %>% bind_cols(occ_sp) %>% transmute(lokalnamn, sitetype, Kommun, lon = X, lat = Y, colour)
+    
+  }
+  
+  wms_topo_nedtonad <- "https://hades.slu.se/lm/topowebb/wms/v1"
+  
+  locplot <- function(data, sitetype) {
+    leaflet(data) %>%
+      setView(lng = 13.29, lat = 55.7, zoom = 11) %>%
+      addWMSTiles(
+        wms_topo_nedtonad,
+        layers = "topowebbkartan_nedtonad",
+        options = WMSTileOptions(format = "image/png", transparent = TRUE)
+      ) %>%
+      addCircleMarkers(lng = data$lon, lat = data$lat,
+                       radius = 5,
+                       color = NA,
+                       fill = TRUE,
+                       fillColor = data$colour,
+                       fillOpacity = 1,
+                       opacity = 1,
+                       label = data$lokalnamn) 
+    
+  }
+  
+  ggs <- occ_sp %>%
+    distinct(sitetype, lokalnamn, .keep_all = T) %>% 
+    group_by(sitetype) %>% 
+    nest() %>% # Nest per species to save one png per species
+    ungroup() %>% 
+    mutate(plots = map2(data, sitetype, locplot, .progress = "Making plots:"))
+  
+  if (str_detect(maptype, "[Pp]oi?nt|[Pp]$")) {
+    ggs <- ggs %>% 
+      filter(sitetype == "P")
+  }
+  
+  if (str_detect(maptype, "[Tt]ransect|[Tt]$")) {
+    ggs <- ggs %>% 
+      filter(sitetype == "T")
+  }
+  
+  walk2(ggs$plots, ggs$sitetype, ~mapshot2(.x, file = glue("{Kommun}_sitetype-{.y}.png")), .progress = "Saving plots:")
+  
+  if (print) {
+    return(ggs$plots)
+  }
+  
+  
+}

@@ -267,14 +267,47 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
   if (missing(occ_sp)) { # Load in data for all species from given year,
     # without species restriction to get all sites visited
     occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
+      drop_na() %>% 
       select(sitetype, lokalnamn, lat, lon) %>% 
-      mutate(colour = if_else(sitetype == "T", "blue", "red")) 
+      mutate(colour = if_else(sitetype == "T", "#1F78B4", "#CE2D30")) 
     
     occ_sp <- occ_sp %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
       st_set_crs(3006) %>% 
-      st_transform(4326) %>% st_coordinates() %>% bind_cols(occ_sp) %>% transmute(lokalnamn, sitetype, Kommun, lon = X, lat = Y, colour)
+      st_transform(4326) %>%
+      st_coordinates() %>%
+      bind_cols(occ_sp) %>%
+      transmute(lokalnamn, sitetype, Kommun, lon = X, lat = Y, colour)
     
+  }
+  
+  # Picking out the borders
+  if (Län != ".") {
+    border <- Counties %>% 
+      filter(str_detect(LNNAMN, Län)) %>% 
+      st_coordinates() %>% 
+      as_tibble()
+    Region <- Län
+  }
+  
+  if (Kommun != ".") {
+    border <- Kommuner %>% 
+      filter(str_detect(KnNamn, Kommun)) %>% 
+      st_coordinates() %>% 
+      as_tibble()
+    
+    Region <- Kommun
+    
+    CPK <- centerPK %>% 
+      filter(str_detect(KnNamn, Kommun))
+  }
+  
+  if (Landskap != ".") {
+    border <- Landskapen %>% 
+      filter(str_detect(reg_name, Landskap)) %>% 
+      st_coordinates() %>% 
+      as_tibble()
+    Region <- Landskap
   }
   
   wms_topo_nedtonad <- "https://hades.slu.se/lm/topowebb/wms/v1"
@@ -296,14 +329,22 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
         layers = "topowebbkartan_nedtonad",
         options = WMSTileOptions(format = "image/png", transparent = TRUE)
       ) %>%
+      addPolylines(lng = border$X, lat = border$Y,
+                   color = "#CE2D30",
+                   weight = 5,
+                   opacity = 1,
+                   dashArray = c("21","9", "21")) %>% 
+    
       addCircleMarkers(lng = data$lon, lat = data$lat,
-                       radius = 5,
-                       color = NA,
+                       radius = 6,
+                       color = "black",
+                       weight = 1,
                        fill = TRUE,
                        fillColor = data$colour,
                        fillOpacity = 1,
                        opacity = 1,
-                       label = data$lokalnamn) 
+                       label = data$lokalnamn) %>% 
+      addScaleBar(position = "topright", options = scaleBarOptions(imperial = F))
     
     if (showgrid) {
       lpl <- lpl %>% 

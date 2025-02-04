@@ -34,8 +34,8 @@ from}
 \item{height}{the plot height, default 18 inches}
 
 \item{maptype}{what survey type to produce map on, can be 'Transect', 'Point'
-or 'both', #'   default to 'both'. The 'Transect' and 'Point' can be
-abbreviated to 'T' and #'   'P'.}
+or 'both' (default). The 'Transect' and 'Point' can be
+abbreviated to 'T' and 'P'.}
 
 \item{print}{logical; should the plots be printed in window, default FALSE}
 

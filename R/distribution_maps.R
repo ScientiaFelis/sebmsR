@@ -18,8 +18,8 @@
 #' @param width the plot width, default 12 inches
 #' @param height the plot height, default 18 inches
 #' @param maptype what survey type to produce map on, can be 'Transect', 'Point'
-#'   or 'both', #'   default to 'both'. The 'Transect' and 'Point' can be
-#'   abbreviated to 'T' and #'   'P'.
+#'   or 'both' (default). The 'Transect' and 'Point' can be
+#'   abbreviated to 'T' and 'P'.
 #' @param print logical; should the plots be printed in window, default FALSE
 #'
 #' @return Figures in png for points, and transects the given year
@@ -251,18 +251,26 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 
 
 #' Create Local Maps with Transect
-#' 
-#' Creates a map of the County or Municipality with the transect marked.
+#'
+#' Creates a map of the County or Municipality with the transect and point data
+#' marked.You need to be on a Lund university or SLU network, or LU/SLU VPN to get the map
+#' as it is created from the SLU WMS topomap.
 #'
 #' @inheritParams sebms_sites_map
+#' @param zoomlevel the level of zoom on map. This is set automatically but this argument
+#'   allow for changing this if wanted.
+#' @param showgrid show the grid lines on the map.
 #' @import leaflet
 #' @importFrom mapview mapshot2
 #' @import webshot2
 #'
-#' @returns a png file with a map of the chosen area with slingor or transects marked.
+#' @returns one or two png files with a map of the chosen area with slingor or transects
+#'   marked.
 #' @export
 
 sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
+  
+  message("Make sure to be on Lund university network or LU VPN to get the map to work!")
   
   if (missing(occ_sp)) { # Load in data for all species from given year,
     # without species restriction to get all sites visited

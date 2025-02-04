@@ -12,6 +12,7 @@ sebms_local_transect_map(
   Kommun = ".",
   width = 12,
   height = 18,
+  zoomlevel = NULL,
   maptype = "both",
   showgrid = F,
   print = FALSE,
@@ -34,9 +35,14 @@ from}
 
 \item{height}{the plot height, default 18 inches}
 
+\item{zoomlevel}{the level of zoom on map. This is set automatically but this argument
+allow for changing this if wanted.}
+
 \item{maptype}{what survey type to produce map on, can be 'Transect', 'Point'
 or 'both' (default). The 'Transect' and 'Point' can be
 abbreviated to 'T' and 'P'.}
+
+\item{showgrid}{show the grid lines on the map.}
 
 \item{print}{logical; should the plots be printed in window, default FALSE}
 
@@ -44,7 +50,7 @@ abbreviated to 'T' and 'P'.}
 defaults to `54,55,56,63,64,66,67,84`}
 }
 \value{
-a png file with a map of the chosen area with slingor or transects marked.
+one or two png files with a map of the chosen area with slingor or transects marked.
 }
 \description{
 Creates a map of the County or Municipality with the transect marked.

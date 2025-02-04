@@ -295,7 +295,11 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
       filter(str_detect(LNNAMN, Län)) %>% 
       st_coordinates() %>% 
       as_tibble()
+    
     Region <- Län
+    
+    CPK <- centerPL %>% 
+      filter(str_detect(LNNAMN, Län))
   }
   
   if (Kommun != ".") {
@@ -315,7 +319,11 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
       filter(str_detect(reg_name, Landskap)) %>% 
       st_coordinates() %>% 
       as_tibble()
+    
     Region <- Landskap
+    
+    CPK <- centerPLsk %>% 
+      filter(str_detect(reg_name, Landskap))
   }
   
   wms_topo_nedtonad <- "https://hades.slu.se/lm/topowebb/wms/v1"
@@ -396,6 +404,10 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
 
 #centerPK <- readr::read_tsv("Centrumpoints.csv", locale = readr::locale(decimal_mark = "."))
 
+#centerPL <- readr::read_tsv("CentrumpointsLän.csv", locale = readr::locale(decimal_mark = "."))
+
+# centerPLsk <- readr::read_tsv("CentrumpointsLsk.csv", locale = readr::locale(decimal_mark = "."))
+
 # Counties <- st_read("../sebmsTrim/BordersTillLokalkarta/lan_SWEREF99TM_clean.shp") %>% 
 #   st_transform(4326)
 # 
@@ -405,7 +417,7 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
 # Kommuner <- st_read("../sebmsTrim/BordersTillLokalkarta/kommuner_SWEREF99TM_clean.shp") %>% 
 #   st_transform(4326)
 # 
-# Landskapen <- st_read("../sebmsTrim/BordersTillLokalkarta/biogeografiska_landskap_SWEREF99TM_clean.shp") %>% 
+# Landskapen <- st_read("../sebmsTrim/BordersTillLokalkarta/biogeografiska_landskap_SWEREF99TM_clean.shp") %>%
 #   st_transform(4326)
 
  # sebmsHex <- st_read("../sebmsTrim/BordersTillLokalkarta/sebms_hex_sites_clean.shp") %>% 
@@ -413,5 +425,5 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
    # st_coordinates() %>% 
    # as_tibble()
 
- #use_data(Bioreg, centerPK, Counties, Day, DayHour, indicatorlist, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, sebms_swe_grid, sebmsHex, internal = T, overwrite = T, compress = "xz", version = 3)
+# use_data(Bioreg, centerPK, centerPL, centerPLsk, Counties, Day, DayHour, indicatorlist, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, sebms_swe_grid, sebmsHex, internal = T, overwrite = T, compress = "xz", version = 3)
  

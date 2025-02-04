@@ -275,7 +275,7 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
   if (missing(occ_sp)) { # Load in data for all species from given year,
     # without species restriction to get all sites visited
     occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
-      drop_na() %>% 
+      #drop_na() %>% 
       select(sitetype, lokalnamn, lat, lon) %>% 
       mutate(colour = if_else(sitetype == "T", "#1F78B4", "#CE2D30")) 
     
@@ -356,7 +356,7 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
     
     if (showgrid) {
       lpl <- lpl %>% 
-        addPolygons(lng = TestHext$X, lat = TestHext$Y)
+        addPolygons(lng = sebmsHex$X, lat = sebmsHex$Y)
     }
     return(lpl)
   }
@@ -378,17 +378,8 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
     ungroup() %>% 
     mutate(plots = map2(data, sitetype, locplot, .progress = "Making plots:"))
   
-  if (str_detect(maptype, "[Pp]oi?nt|[Pp]$")) {
-    ggs <- ggs %>% 
-      filter(sitetype == "P")
-  }
   
-  if (str_detect(maptype, "[Tt]ransect|[Tt]$")) {
-    ggs <- ggs %>% 
-      filter(sitetype == "T")
-  }
-  
-  walk2(ggs$plots, ggs$sitetype, ~mapshot2(.x, file = glue("{Kommun}_sitetype-{.y}.png")), .progress = "Saving plots:")
+  walk2(ggs$plots, ggs$sitetype, ~mapshot2(.x, file = glue("{Region}_sitetype-{.y}.png")), .progress = "Saving plots:")
   
   if (print) {
     return(ggs$plots)

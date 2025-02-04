@@ -17,9 +17,9 @@
 #' @param occ_sp SpatialPoints with occurrence data
 #' @param width the plot width, default 12 inches
 #' @param height the plot height, default 18 inches
-#' @param maptype what survey type to produce map on, can be 'Transect', 'Point'
-#'   or 'both', #'   default to 'both'. The 'Transect' and 'Point' can be
-#'   abbreviated to 'T' and #'   'P'.
+#' @param maptype what survey type to produce map on, can be 'Transect', 'Point', 'Transekt', 'Punkt',
+#'   or 'both' (default). The 'Transect' and 'Point' can be
+#'   abbreviated to 'T' and 'P'.
 #' @param print logical; should the plots be printed in window, default FALSE
 #'
 #' @return Figures in png for points, and transects the given year
@@ -41,6 +41,7 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
   ## Sweden map
   tiff1 <- terra::rast(system.file("extdata", "MapSweden_RGB.png", 
                                    package = "sebmsR", mustWork = TRUE)) %>% 
+    terra::flip() %>% 
     suppressWarnings()
   
   terra::ext(tiff1) <- c(1179998, 1948697, 6129692, 7679610)
@@ -77,6 +78,17 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
       guides(fill = guide_legend(byrow = TRUE))
     
   }
+   
+  if (str_detect(maptype, "[Pp][ou]i?nk?t|[Pp]$")) {
+    occ_sp <- occ_sp %>% 
+      filter(sitetype == "P")
+  }
+  
+  if (str_detect(maptype, "[Tt]ranse[ck]t|[Tt]$")) {
+    occ_sp <- occ_sp %>% 
+      filter(sitetype == "T")
+  }
+  
   
   ggs <- occ_sp %>%
     distinct(sitetype, lokalnamn, .keep_all = T) %>% 
@@ -84,17 +96,6 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
     nest() %>% # Nest per species to save one png per species
     ungroup() %>% 
     mutate(plots = map2(data, sitetype, speplot, .progress = "Making plots:"))
-  
-  if (str_detect(maptype, "[Pp]oi?nt|[Pp]$")) {
-    ggs <- ggs %>% 
-      filter(sitetype == "P")
-  }
-  
-  if (str_detect(maptype, "[Tt]ransect|[Tt]$")) {
-    ggs <- ggs %>% 
-      filter(sitetype == "T")
-  }
- 
  
   map2(ggs$plots, ggs$sitetype, ~sebms_ggsave(.x, .y, width = width, height = height, weathervar = glue("{year}")), .progress = "Saving plots:")
   
@@ -129,7 +130,7 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
 sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", width=9, height=18, print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { # Load in data for all species from given year,
-                         # without species restriction to get all sites visited
+    # without species restriction to get all sites visited
     occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
       transmute(speuid, art, lokalnamn, lat, lon, maxobs = as.numeric(max)) %>% 
       mutate(art = str_replace_all(art, "/", "-")) %>% 
@@ -141,7 +142,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
   SweLandGrid <- st_read(system.file("extdata", "SweLandGrid.shp", package = "sebmsR"), quiet = TRUE) %>% 
     st_set_crs(3021)
   
-    # Make a raster of all grid cells covering Sweden
+  # Make a raster of all grid cells covering Sweden
   grid <- sebms_swe_grid %>% 
     st_as_sf() %>%
     st_set_crs(3021) %>% 
@@ -173,7 +174,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
     st_as_sf() %>% 
     st_set_crs(3021)
   
-
+  
   
   
   # Creating a colour scale for the occurrences fill
@@ -248,3 +249,181 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 }
 
 
+
+#' Create Local Maps with Transect and Point Locales
+#'
+#' Creates a map of the County or Municipality with the transect and point data
+#' marked.You need to be on a Lund university or SLU network, or LU/SLU VPN to get the map
+#' as it is created from the SLU WMS topomap.
+#'
+#' @inheritParams sebms_sites_map
+#' @param zoomlevel the level of zoom on map. This is set automatically but this argument
+#'   allow for changing this if wanted.
+#' @param showgrid show the grid lines on the map.
+#' @import leaflet
+#' @importFrom mapview mapshot2
+#' @import webshot2
+#'
+#' @returns one or two png files with a map of the chosen area with slingor or transects
+#'   marked.
+#' @export
+
+sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
+  
+  message("Make sure to be on Lund university network or LU VPN to get the map to work!")
+  
+  if (missing(occ_sp)) { # Load in data for all species from given year,
+    # without species restriction to get all sites visited
+    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
+      #drop_na() %>% 
+      select(sitetype, lokalnamn, lat, lon) %>% 
+      mutate(colour = if_else(sitetype == "T", "#1F78B4", "#CE2D30")) 
+    
+    occ_sp <- occ_sp %>% 
+      st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
+      st_set_crs(3006) %>% 
+      st_transform(4326) %>%
+      st_coordinates() %>%
+      bind_cols(occ_sp) %>%
+      transmute(lokalnamn, sitetype, Kommun, lon = X, lat = Y, colour)
+    
+  }
+  
+  # Picking out the borders
+  if (Län != ".") {
+    border <- Counties %>% 
+      filter(str_detect(LNNAMN, Län)) %>% 
+      st_coordinates() %>% 
+      as_tibble()
+    
+    Region <- Län # to use when setting name for the saved png
+    
+    CPK <- centerPL %>% 
+      filter(str_detect(LNNAMN, Län)) # This loads in the center point and automatic zoom level.
+  }
+  
+  if (Kommun != ".") {
+    border <- Kommuner %>% 
+      filter(str_detect(KnNamn, Kommun)) %>% 
+      st_coordinates() %>% 
+      as_tibble()
+    
+    Region <- Kommun
+    
+    CPK <- centerPK %>% 
+      filter(str_detect(KnNamn, Kommun))
+  }
+  
+  if (Landskap != ".") {
+    border <- Landskapen %>% 
+      filter(str_detect(reg_name, Landskap)) %>% 
+      st_coordinates() %>% 
+      as_tibble()
+    
+    Region <- Landskap
+    
+    CPK <- centerPLsk %>% 
+      filter(str_detect(reg_name, Landskap))
+  }
+  
+  wms_topo_nedtonad <- "https://hades.slu.se/lm/topowebb/wms/v1" # wms topografic map from SLU
+  
+  #TODO: Optional: filtrering för äldre lokaler, exv data från senast 2009:2016, pricken blir då liten, 2 mm diameter, hairline svart ytterkant
+  #TODO: Optional: region2: smalare linje 0,66 mm röd #CE2D30, 60% opacity, longdash
+  #TODO: Hex sites är en annan grid än vår vanliga utbredning, det är den som visar täckning i eBMS (Europanivå), optional att visa den (eller den vanliga, default är ingen grid)
+  
+  if (is.null(zoomlevel)) { # if zoom level is not set, use the predefined one in centerpoint object
+    zoomlevel = CPK$zoom
+  }
+  
+  # Function to create the map
+  locplot <- function(data, sitetype) {
+    lpl <- leaflet(data) %>%
+      setView(lng = CPK$X, lat = CPK$Y, zoom = zoomlevel) %>% # Set center and zoom
+      addWMSTiles(
+        wms_topo_nedtonad,
+        layers = "topowebbkartan_nedtonad",
+        options = WMSTileOptions(format = "image/png", transparent = TRUE)
+      ) %>%
+      addPolylines(lng = border$X, lat = border$Y, # add border lines
+                   color = "#CE2D30",
+                   weight = 5,
+                   opacity = 1,
+                   dashArray = c("21","9", "21")) %>% 
+      
+      addCircleMarkers(lng = data$lon, lat = data$lat, # add circles from visited locals  in occurence data
+                       radius = 6,
+                       color = "black",
+                       weight = 1,
+                       fill = TRUE,
+                       fillColor = data$colour, # fill depending on site type
+                       fillOpacity = 1,
+                       opacity = 1,
+                       label = data$lokalnamn) %>% 
+      addScaleBar(position = "topright", options = scaleBarOptions(imperial = F)) # this does not work with simple webshot save
+    
+    if (showgrid) { # show the bms grid
+      lpl <- lpl %>% 
+        addPolygons(lng = sebmsHex$X, lat = sebmsHex$Y)
+    }
+    return(lpl)
+  }
+  
+  if (str_detect(maptype, "[Pp][ou]i?nk?t|[Pp]$")) {
+    occ_sp <- occ_sp %>% 
+      filter(sitetype == "P") # filter out if only point locales are wanted
+  }
+  
+  if (str_detect(maptype, "[Tt]ranse[ck]t|[Tt]$")) {
+    occ_sp <- occ_sp %>% 
+      filter(sitetype == "T") # filter out if only transect locales are wanted
+  }
+  
+  ggs <- occ_sp %>%
+    distinct(sitetype, lokalnamn, .keep_all = T) %>% 
+    group_by(sitetype) %>%  ## Create a map per site type
+    nest() %>% # QUESTION: Nest per species to save one png per species?
+    ungroup() %>% 
+    mutate(plots = map2(data, sitetype, locplot, .progress = "Making plots:"))
+  
+  
+  # Save a plot per site type as png
+  walk2(ggs$plots, ggs$sitetype, ~mapshot2(.x, file = glue("{Region}_sitetype-{.y}.png")), .progress = "Saving plots:")
+  
+  if (print) {
+    return(ggs$plots)
+  }
+  
+  
+}
+
+
+# KomList <- Kommuner %>% 
+#   pull(KnNamn)
+# 
+# walk(KomList, purrr::possibly(~sebms_local_transect_map(2009:2023, Kommun = .x, maptype = "T")))
+
+#centerPK <- readr::read_tsv("Centrumpoints.csv", locale = readr::locale(decimal_mark = "."))
+
+#centerPL <- readr::read_tsv("CentrumpointsLän.csv", locale = readr::locale(decimal_mark = "."))
+
+# centerPLsk <- readr::read_tsv("CentrumpointsLsk.csv", locale = readr::locale(decimal_mark = "."))
+
+# Counties <- st_read("../sebmsTrim/BordersTillLokalkarta/lan_SWEREF99TM_clean.shp") %>% 
+#   st_transform(4326)
+# 
+# Bioreg <- st_read("../sebmsTrim/BordersTillLokalkarta/biogeografiska_regioner_SWEREF99TM_clean.shp") %>% 
+#   st_transform(4326)
+#   
+# Kommuner <- st_read("../sebmsTrim/BordersTillLokalkarta/kommuner_SWEREF99TM_clean.shp") %>% 
+#   st_transform(4326)
+# 
+# Landskapen <- st_read("../sebmsTrim/BordersTillLokalkarta/biogeografiska_landskap_SWEREF99TM_clean.shp") %>%
+#   st_transform(4326)
+
+# sebmsHex <- st_read("../sebmsTrim/BordersTillLokalkarta/sebms_hex_sites_clean.shp") %>% 
+#    st_transform(4326) %>% 
+# st_coordinates() %>% 
+# as_tibble()
+
+# use_data(Bioreg, centerPK, centerPL, centerPLsk, Counties, Day, DayHour, indicatorlist, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, sebms_swe_grid, sebmsHex, internal = T, overwrite = T, compress = "xz", version = 3)

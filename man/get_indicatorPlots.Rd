@@ -26,6 +26,8 @@ from}
 
 \item{Kommun}{character or reg ex; which municipality you want the data from}
 
+\item{source}{the data sources}
+
 \item{write}{logical; if you want to write result to csv files, default TRUE.}
 
 \item{print}{logical; if you want to print result to output, default FALSE}

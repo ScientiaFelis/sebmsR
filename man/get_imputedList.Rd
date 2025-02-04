@@ -12,6 +12,7 @@ get_imputedList(
   Landskap = ".",
   Kommun = ".",
   indicator_layout = FALSE,
+  source = c(54, 55, 56, 63, 64, 66, 67, 84),
   write = FALSE,
   ...
 )
@@ -32,6 +33,8 @@ from}
 
 \item{indicator_layout}{logical; whether to use the indicator species and add
 nr of sites statistics. If TRUE this overrides `Art`}
+
+\item{source}{the data sources}
 
 \item{write}{logical; if index should be written to csv}
 

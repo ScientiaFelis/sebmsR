@@ -78,6 +78,17 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
       guides(fill = guide_legend(byrow = TRUE))
     
   }
+   
+  if (str_detect(maptype, "[Pp][ou]i?nk?t|[Pp]$")) {
+    occ_sp <- occ_sp %>% 
+      filter(sitetype == "P")
+  }
+  
+  if (str_detect(maptype, "[Tt]ranse[ck]t|[Tt]$")) {
+    occ_sp <- occ_sp %>% 
+      filter(sitetype == "T")
+  }
+  
   
   ggs <- occ_sp %>%
     distinct(sitetype, lokalnamn, .keep_all = T) %>% 
@@ -85,18 +96,7 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
     nest() %>% # Nest per species to save one png per species
     ungroup() %>% 
     mutate(plots = map2(data, sitetype, speplot, .progress = "Making plots:"))
-  
-  if (str_detect(maptype, "[Pp]oi?nt|[Pp]$")) {
-    ggs <- ggs %>% 
-      filter(sitetype == "P")
-  }
-  
-  if (str_detect(maptype, "[Tt]ransect|[Tt]$")) {
-    ggs <- ggs %>% 
-      filter(sitetype == "T")
-  }
-  
-  
+ 
   map2(ggs$plots, ggs$sitetype, ~sebms_ggsave(.x, .y, width = width, height = height, weathervar = glue("{year}")), .progress = "Saving plots:")
   
   if (print) {

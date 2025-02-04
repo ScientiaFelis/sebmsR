@@ -387,3 +387,31 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
   
   
 }
+
+
+# KomList <- Kommuner %>% 
+#   pull(KnNamn)
+# 
+# walk(KomList, purrr::possibly(~sebms_local_transect_map(2009:2023, Kommun = .x, maptype = "T")))
+
+#centerPK <- readr::read_tsv("Centrumpoints.csv", locale = readr::locale(decimal_mark = "."))
+
+# Counties <- st_read("../sebmsTrim/BordersTillLokalkarta/lan_SWEREF99TM_clean.shp") %>% 
+#   st_transform(4326)
+# 
+# Bioreg <- st_read("../sebmsTrim/BordersTillLokalkarta/biogeografiska_regioner_SWEREF99TM_clean.shp") %>% 
+#   st_transform(4326)
+#   
+# Kommuner <- st_read("../sebmsTrim/BordersTillLokalkarta/kommuner_SWEREF99TM_clean.shp") %>% 
+#   st_transform(4326)
+# 
+# Landskapen <- st_read("../sebmsTrim/BordersTillLokalkarta/biogeografiska_landskap_SWEREF99TM_clean.shp") %>% 
+#   st_transform(4326)
+
+ # sebmsHex <- st_read("../sebmsTrim/BordersTillLokalkarta/sebms_hex_sites_clean.shp") %>% 
+ #    st_transform(4326) %>% 
+   # st_coordinates() %>% 
+   # as_tibble()
+
+ #use_data(Bioreg, centerPK, Counties, Day, DayHour, indicatorlist, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, sebms_swe_grid, sebmsHex, internal = T, overwrite = T, compress = "xz", version = 3)
+ 

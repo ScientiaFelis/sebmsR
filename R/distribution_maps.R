@@ -17,7 +17,7 @@
 #' @param occ_sp SpatialPoints with occurrence data
 #' @param width the plot width, default 12 inches
 #' @param height the plot height, default 18 inches
-#' @param maptype what survey type to produce map on, can be 'Transect', 'Point'
+#' @param maptype what survey type to produce map on, can be 'Transect', 'Point', 'Transekt', 'Punkt',
 #'   or 'both' (default). The 'Transect' and 'Point' can be
 #'   abbreviated to 'T' and 'P'.
 #' @param print logical; should the plots be printed in window, default FALSE
@@ -250,7 +250,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 
 
 
-#' Create Local Maps with Transect
+#' Create Local Maps with Transect and Point Locales
 #'
 #' Creates a map of the County or Municipality with the transect and point data
 #' marked.You need to be on a Lund university or SLU network, or LU/SLU VPN to get the map
@@ -296,10 +296,10 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
       st_coordinates() %>% 
       as_tibble()
     
-    Region <- Län
+    Region <- Län # to use when setting name for the saved png
     
     CPK <- centerPL %>% 
-      filter(str_detect(LNNAMN, Län))
+      filter(str_detect(LNNAMN, Län)) # This loads in the center point and automatic zoom level.
   }
   
   if (Kommun != ".") {
@@ -326,67 +326,68 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
       filter(str_detect(reg_name, Landskap))
   }
   
-  wms_topo_nedtonad <- "https://hades.slu.se/lm/topowebb/wms/v1"
+  wms_topo_nedtonad <- "https://hades.slu.se/lm/topowebb/wms/v1" # wms topografic map from SLU
   
-  #TODO: Default.  alla lokaler med besök från något år, exv 2009:2024,
   #TODO: Optional: filtrering för äldre lokaler, exv data från senast 2009:2016, pricken blir då liten, 2 mm diameter, hairline svart ytterkant
   #TODO: Optional: region2: smalare linje 0,66 mm röd #CE2D30, 60% opacity, longdash
   #TODO: Hex sites är en annan grid än vår vanliga utbredning, det är den som visar täckning i eBMS (Europanivå), optional att visa den (eller den vanliga, default är ingen grid)
   
-  if (is.null(zoomlevel)) {
+  if (is.null(zoomlevel)) { # if zoom level is not set, use the predefined one in centerpoint object
     zoomlevel = CPK$zoom
   }
   
+  # Function to create the map
   locplot <- function(data, sitetype) {
     lpl <- leaflet(data) %>%
-      setView(lng = CPK$X, lat = CPK$Y, zoom = zoomlevel) %>%
+      setView(lng = CPK$X, lat = CPK$Y, zoom = zoomlevel) %>% # Set center and zoom
       addWMSTiles(
         wms_topo_nedtonad,
         layers = "topowebbkartan_nedtonad",
         options = WMSTileOptions(format = "image/png", transparent = TRUE)
       ) %>%
-      addPolylines(lng = border$X, lat = border$Y,
+      addPolylines(lng = border$X, lat = border$Y, # add border lines
                    color = "#CE2D30",
                    weight = 5,
                    opacity = 1,
                    dashArray = c("21","9", "21")) %>% 
-    
-      addCircleMarkers(lng = data$lon, lat = data$lat,
+      
+      addCircleMarkers(lng = data$lon, lat = data$lat, # add circles from visited locals  in occurence data
                        radius = 6,
                        color = "black",
                        weight = 1,
                        fill = TRUE,
-                       fillColor = data$colour,
+                       fillColor = data$colour, # fill depending on site type
                        fillOpacity = 1,
                        opacity = 1,
                        label = data$lokalnamn) %>% 
-      addScaleBar(position = "topright", options = scaleBarOptions(imperial = F))
+      addScaleBar(position = "topright", options = scaleBarOptions(imperial = F)) # this does not work with simple webshot save
     
-    if (showgrid) {
+    if (showgrid) { # show the bms grid
       lpl <- lpl %>% 
         addPolygons(lng = sebmsHex$X, lat = sebmsHex$Y)
     }
     return(lpl)
   }
-
+  
   if (str_detect(maptype, "[Pp][ou]i?nk?t|[Pp]$")) {
     occ_sp <- occ_sp %>% 
-      filter(sitetype == "P")
+      filter(sitetype == "P") # filter out if only point locales are wanted
   }
   
   if (str_detect(maptype, "[Tt]ranse[ck]t|[Tt]$")) {
     occ_sp <- occ_sp %>% 
-      filter(sitetype == "T")
+      filter(sitetype == "T") # filter out if only transect locales are wanted
   }
   
   ggs <- occ_sp %>%
     distinct(sitetype, lokalnamn, .keep_all = T) %>% 
-    group_by(sitetype) %>% 
-    nest() %>% # Nest per species to save one png per species
+    group_by(sitetype) %>%  ## Create a map per site type
+    nest() %>% # QUESTION: Nest per species to save one png per species?
     ungroup() %>% 
     mutate(plots = map2(data, sitetype, locplot, .progress = "Making plots:"))
   
   
+  # Save a plot per site type as png
   walk2(ggs$plots, ggs$sitetype, ~mapshot2(.x, file = glue("{Region}_sitetype-{.y}.png")), .progress = "Saving plots:")
   
   if (print) {
@@ -420,10 +421,9 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
 # Landskapen <- st_read("../sebmsTrim/BordersTillLokalkarta/biogeografiska_landskap_SWEREF99TM_clean.shp") %>%
 #   st_transform(4326)
 
- # sebmsHex <- st_read("../sebmsTrim/BordersTillLokalkarta/sebms_hex_sites_clean.shp") %>% 
- #    st_transform(4326) %>% 
-   # st_coordinates() %>% 
-   # as_tibble()
+# sebmsHex <- st_read("../sebmsTrim/BordersTillLokalkarta/sebms_hex_sites_clean.shp") %>% 
+#    st_transform(4326) %>% 
+# st_coordinates() %>% 
+# as_tibble()
 
 # use_data(Bioreg, centerPK, centerPL, centerPLsk, Counties, Day, DayHour, indicatorlist, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, sebms_swe_grid, sebmsHex, internal = T, overwrite = T, compress = "xz", version = 3)
- 

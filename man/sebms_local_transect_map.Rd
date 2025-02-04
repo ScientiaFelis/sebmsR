@@ -2,7 +2,7 @@
 % Please edit documentation in R/distribution_maps.R
 \name{sebms_local_transect_map}
 \alias{sebms_local_transect_map}
-\title{Create Local Maps with Transect}
+\title{Create Local Maps with Transect and Point Locales}
 \usage{
 sebms_local_transect_map(
   year = lubridate::year(lubridate::today()) - 1,
@@ -38,7 +38,7 @@ from}
 \item{zoomlevel}{the level of zoom on map. This is set automatically but this argument
 allow for changing this if wanted.}
 
-\item{maptype}{what survey type to produce map on, can be 'Transect', 'Point'
+\item{maptype}{what survey type to produce map on, can be 'Transect', 'Point', 'Transekt', 'Punkt',
 or 'both' (default). The 'Transect' and 'Point' can be
 abbreviated to 'T' and 'P'.}
 
@@ -50,8 +50,11 @@ abbreviated to 'T' and 'P'.}
 defaults to `54,55,56,63,64,66,67,84`}
 }
 \value{
-one or two png files with a map of the chosen area with slingor or transects marked.
+one or two png files with a map of the chosen area with slingor or transects
+  marked.
 }
 \description{
-Creates a map of the County or Municipality with the transect marked.
+Creates a map of the County or Municipality with the transect and point data
+marked.You need to be on a Lund university or SLU network, or LU/SLU VPN to get the map
+as it is created from the SLU WMS topomap.
 }

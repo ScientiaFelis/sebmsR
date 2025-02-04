@@ -6,9 +6,13 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.0.0
+
+* add new function `sebms_local_transect_map()` to create local maps of counties, regions or municipalities with the point or transect locatins on.
+
 # v 1.10.0
 
-* add source argument in trimfunctions
+* add `source` argument in trimfunctions
 
 # v 1.9.9
 

@@ -262,7 +262,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #' @returns a png file with a map of the chosen area with slingor or transects marked.
 #' @export
 
-sebms_local_transekt_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "both", print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
+sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { # Load in data for all species from given year,
     # without species restriction to get all sites visited
@@ -279,9 +279,18 @@ sebms_local_transekt_map <- function(year = lubridate::year(lubridate::today())-
   
   wms_topo_nedtonad <- "https://hades.slu.se/lm/topowebb/wms/v1"
   
+  #TODO: Default.  alla lokaler med besök från något år, exv 2009:2024,
+  #TODO: Optional: filtrering för äldre lokaler, exv data från senast 2009:2016, pricken blir då liten, 2 mm diameter, hairline svart ytterkant
+  #TODO: Optional: region2: smalare linje 0,66 mm röd #CE2D30, 60% opacity, longdash
+  #TODO: Hex sites är en annan grid än vår vanliga utbredning, det är den som visar täckning i eBMS (Europanivå), optional att visa den (eller den vanliga, default är ingen grid)
+  
+  if (is.null(zoomlevel)) {
+    zoomlevel = CPK$zoom
+  }
+  
   locplot <- function(data, sitetype) {
-    leaflet(data) %>%
-      setView(lng = 13.29, lat = 55.7, zoom = 11) %>%
+    lpl <- leaflet(data) %>%
+      setView(lng = CPK$X, lat = CPK$Y, zoom = zoomlevel) %>%
       addWMSTiles(
         wms_topo_nedtonad,
         layers = "topowebbkartan_nedtonad",
@@ -296,6 +305,21 @@ sebms_local_transekt_map <- function(year = lubridate::year(lubridate::today())-
                        opacity = 1,
                        label = data$lokalnamn) 
     
+    if (showgrid) {
+      lpl <- lpl %>% 
+        addPolygons(lng = TestHext$X, lat = TestHext$Y)
+    }
+    return(lpl)
+  }
+
+  if (str_detect(maptype, "[Pp][ou]i?nk?t|[Pp]$")) {
+    occ_sp <- occ_sp %>% 
+      filter(sitetype == "P")
+  }
+  
+  if (str_detect(maptype, "[Tt]ranse[ck]t|[Tt]$")) {
+    occ_sp <- occ_sp %>% 
+      filter(sitetype == "T")
   }
   
   ggs <- occ_sp %>%

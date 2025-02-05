@@ -32,6 +32,7 @@
 get_trimInfile <- function(years=2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filterPattern=NULL, topList=FALSE, topNumber=200, verification = 109, source = c(54,55,56,63,64,66,67,84)){
   
   trimSpecies <- sebms_trimSpecies(year = years, Art = Art, topList = topList, verification = verification, source = source) %>% 
+    distinct(speuid, art, verification_code, .keep_all = T) %>% 
     slice_head(n=topNumber)
   
   spein <- function(df = data, speuid) {

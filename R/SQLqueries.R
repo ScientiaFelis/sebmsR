@@ -104,8 +104,8 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
 
         SELECT
           spe.spe_uid AS speUId,
-          spe.spe_semainname As Art,
-          obs.obs_typ_vfcid,
+          spe.spe_semainname AS Art,
+          obs.obs_typ_vfcid AS verification_code,
           sit.sit_uid AS sitUId,
           sit.sit_name AS Lokalnamn,
           sit.sit_type AS sitetype,
@@ -206,7 +206,7 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
         SELECT
           spe.spe_uid AS speuid,
           spe.spe_semainname As art,
-          obs.obs_typ_vfcid,
+          obs.obs_typ_vfcid AS verification_code,
           --sit.sit_type AS sitetype,
           SUM(obs.obs_count) AS antal,
           --extract('YEAR' from vis_begintime) AS years,
@@ -256,12 +256,13 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
 sebms_species_per_year_filtered <- function(year = 2020:2021, verification= 109) {
   
   year <- glue("({paste0({year}, collapse = ',')})")
+  verification <- glue("({paste0({verification}, collapse = ',')})")
   
   q <- glue("
       SELECT
         spe.spe_uid AS id,
         spe.spe_semainname As name,
-        obs.obs_typ_vfcid,
+        obs.obs_typ_vfcid AS verification_code,
         SUM(obs.obs_count) AS count,
         extract('YEAR' from vis_begintime) AS years
       FROM obs_observation AS obs
@@ -415,7 +416,7 @@ sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Län = 
         (SELECT
           spe.spe_uid AS speuid,
           spe.spe_semainname As art,
-          obs.obs_typ_vfcid,
+          obs.obs_typ_vfcid AS verification_code,
           sit.sit_uid AS situid,
           sit.sit_name AS Lokalnamn,
           vis.vis_begintime AS dag,
@@ -559,7 +560,7 @@ sebms_trimSpecies <- function(year = 2010:lubridate::year(lubridate::today()), A
          SELECT
             spe.spe_uid as speuid,
             spe.spe_semainname AS species,
-            obs.obs_typ_vfcid,
+            obs.obs_typ_vfcid AS verification_code,
             SUM(obs.obs_count) as speciesno
           FROM obs_observation AS obs
             INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
@@ -581,18 +582,17 @@ sebms_trimSpecies <- function(year = 2010:lubridate::year(lubridate::today()), A
   }else {
     q <- glue("SELECT
                 spv_flightweekmin AS min,
-                spv_flightweekmax as max,
+                spv_flightweekmax AS max,
                 spv_spe_speciesid AS speuid,
                 spe_semainname AS art,
-                obs.obs_typ_vfcid
+                obs.obs_typ_vfcid AS verification_code
               FROM spv_speciesvalidation AS spv
                 INNER JOIN spe_species AS spe ON spe.spe_uid = spv_spe_speciesid
-                INNER JOIN obs_observation AS obs ON obs.obs_spe_speciesid = spv_spe_speciesid
+               INNER JOIN obs_observation AS obs ON obs.obs_spe_speciesid = spv_spe_speciesid
               WHERE
                 spv_spe_speciesid IN {Art}
                 AND obs.obs_typ_vfcid IN {verification}
-                AND
-                spv_flightweekmin IS NOT NULL
+                AND spv_flightweekmin IS NOT NULL
               ORDER BY speuid;")
   }
   
@@ -632,7 +632,7 @@ sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()), mi
   
   q <-  glue("SELECT
                 sit.sit_uid AS siteuid,
-                obs.obs_typ_vfcid,
+                obs.obs_typ_vfcid AS verification_code,
                 EXTRACT (year FROM vis_begintime::date) AS year,
                 COUNT(DISTINCT vis_begintime) AS visit
              FROM obs_observation AS obs
@@ -737,7 +737,7 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
            
             SELECT DISTINCT
                 sit.sit_uid AS siteuid,
-                obs.obs_typ_vfcid,
+                obs.obs_typ_vfcid AS verification_code,
                 EXTRACT (year FROM vis_begintime::date) AS year,
                 SUM(obs.obs_count) AS total_number,
                 reg.län,

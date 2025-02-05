@@ -11,6 +11,7 @@ sebms_species_abundance_plot(
   Landskap = ".",
   Kommun = ".",
   plotname = FALSE,
+  verification = verification,
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
   print = FALSE
 )
@@ -28,6 +29,8 @@ from}
 \item{Kommun}{character or reg ex; which municipality you want the data from}
 
 \item{plotname}{logical; if you want the species name inside the plot}
+
+\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
 
 \item{source}{the database sources as id numbers,
 defaults to `54,55,56,63,64,66,67,84`}

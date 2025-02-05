@@ -11,6 +11,7 @@ get_trimIndex(
   Län = ".",
   Landskap = ".",
   Kommun = ".",
+  verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
   ...
 )
@@ -28,6 +29,8 @@ from}
 \item{Landskap}{character or reg ex; which region you want the data from}
 
 \item{Kommun}{character or reg ex; which municipality you want the data from}
+
+\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
 
 \item{source}{the data sources}
 

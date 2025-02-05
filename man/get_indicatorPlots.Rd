@@ -26,6 +26,8 @@ from}
 
 \item{Kommun}{character or reg ex; which municipality you want the data from}
 
+\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
+
 \item{source}{the data sources}
 
 \item{write}{logical; if you want to write result to csv files, default TRUE.}

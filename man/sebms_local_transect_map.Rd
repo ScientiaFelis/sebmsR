@@ -2,7 +2,7 @@
 % Please edit documentation in R/distribution_maps.R
 \name{sebms_local_transect_map}
 \alias{sebms_local_transect_map}
-\title{Create Local Maps with Transect and Point Locales}
+\title{Create Local Maps with Transect and Point Locals}
 \usage{
 sebms_local_transect_map(
   year = lubridate::year(lubridate::today()) - 1,
@@ -16,6 +16,7 @@ sebms_local_transect_map(
   maptype = "both",
   showgrid = F,
   print = FALSE,
+  verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84)
 )
 }
@@ -45,6 +46,8 @@ abbreviated to 'T' and 'P'.}
 \item{showgrid}{show the grid lines on the map.}
 
 \item{print}{logical; should the plots be printed in window, default FALSE}
+
+\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
 
 \item{source}{the database sources as id numbers,
 defaults to `54,55,56,63,64,66,67,84`}

@@ -9,6 +9,7 @@ sebms_trimSpecies(
   Art = 1:200,
   filterPattern = NULL,
   topList = FALSE,
+  verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84)
 )
 }
@@ -20,6 +21,8 @@ sebms_trimSpecies(
 \item{filterPattern}{a regex pattern to filter SQL query}
 
 \item{topList}{logical; whether the top list of species should be used}
+
+\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
 
 \item{source}{the database sources as id numbers,
 defaults to `54,55,56,63,64,66,67,84`}

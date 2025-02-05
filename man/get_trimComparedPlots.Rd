@@ -11,6 +11,7 @@ get_trimComparedPlots(
   Landskap = ".",
   Kommun = ".",
   trimmedImputedSwedishList = NULL,
+  verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
   write = TRUE,
   print = TRUE
@@ -30,6 +31,8 @@ from}
 
 \item{trimmedImputedSwedishList}{data frame of national wide data of species
 trim values}
+
+\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
 
 \item{source}{the data sources}
 

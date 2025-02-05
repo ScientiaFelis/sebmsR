@@ -13,6 +13,7 @@ sebms_trimobs(
   Kommun = ".",
   filterPattern = NULL,
   minmax = 22:32,
+  verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84)
 )
 }
@@ -29,6 +30,8 @@ from}
 \item{Kommun}{character or reg ex; which municipality you want the data from}
 
 \item{minmax}{the first and last week of interest}
+
+\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
 
 \item{source}{the database sources as id numbers,
 defaults to `54,55,56,63,64,66,67,84`}

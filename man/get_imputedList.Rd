@@ -12,6 +12,7 @@ get_imputedList(
   Landskap = ".",
   Kommun = ".",
   indicator_layout = FALSE,
+  verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
   write = FALSE,
   ...
@@ -33,6 +34,8 @@ from}
 
 \item{indicator_layout}{logical; whether to use the indicator species and add
 nr of sites statistics. If TRUE this overrides `Art`}
+
+\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
 
 \item{source}{the data sources}
 

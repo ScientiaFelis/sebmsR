@@ -12,6 +12,7 @@ get_trendIndex(
   Landskap = ".",
   Kommun = ".",
   indicators = TRUE,
+  verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
   write = FALSE,
   ...
@@ -33,6 +34,8 @@ from}
 
 \item{indicators}{logical; if TRUE use the indicators as species selection,
 this override `Art`}
+
+\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
 
 \item{source}{the data sources}
 

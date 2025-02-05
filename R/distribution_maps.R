@@ -363,8 +363,12 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
       addScaleBar(position = "topright", options = scaleBarOptions(imperial = F))
     
     if (showgrid) {
+      SweGrid <- SweLandGrid %>% st_make_valid() %>% st_coordinates() %>% 
+        as_tibble()
+      
       lpl <- lpl %>% 
-        addPolygons(lng = sebmsHex$X, lat = sebmsHex$Y)
+        addPolygons(data = sebmsHex, lng = sebmsHex$X, lat = sebmsHex$Y, group = sebmsHex$L2)
+        #addPolygons(data = SweGrid, lng = SweGrid$X, lat = SweGrid$Y, group = SweGrid$L2)
     }
     return(lpl)
   }

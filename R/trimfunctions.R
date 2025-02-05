@@ -41,7 +41,8 @@ get_trimInfile <- function(years=2010:lubridate::year(lubridate::today())-1, Art
     maxW <- df %>% pull(max) # last possible week of observation
     
     obses <- sebms_trimobs(year = years, Art = speuid, Län = Län, Landskap = Landskap, Kommun = Kommun, filterPattern = filterPattern, minmax = minW:maxW, verification = verification, source = source) %>% 
-      mutate(total_number = as.numeric(total_number))
+      mutate(total_number = as.numeric(total_number)) %>%
+      summarise(total_number = sum(total_number, na.rm = T), .by = c(siteuid, year, län, landskap, kommun))
     
     visits <- sebms_trimvisits(year = years, minmax = minW:maxW, verification = verification, source = source) %>% 
       mutate(visit = as.numeric(visit))

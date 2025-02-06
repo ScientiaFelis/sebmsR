@@ -24,10 +24,10 @@
 #'
 #' @return Figures in png for points, and transects the given year
 #' @export
-sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "both", print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
+sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "both", print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { #Load in data for all species from given year
-    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
+    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
       transmute(sitetype, speuid, lokalnamn, lat, lon) %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
       st_set_crs(3006) %>% 
@@ -127,11 +127,11 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
 #'   species occurrence points.
 
 #' @export
-sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", width=9, height=18, print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
+sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", width=9, height=18, print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { # Load in data for all species from given year,
     # without species restriction to get all sites visited
-    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
+    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
       transmute(speuid, art, lokalnamn, lat, lon, maxobs = as.numeric(max)) %>% 
       mutate(art = str_replace_all(art, "/", "-")) %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
@@ -250,7 +250,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 
 
 
-#' Create Local Maps with Transect and Point Locales
+#' Create Local Maps with Transect and Point Locals
 #'
 #' Creates a map of the County or Municipality with the transect and point data
 #' marked.You need to be on a Lund university or SLU network, or LU/SLU VPN to get the map
@@ -268,13 +268,13 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #'   marked.
 #' @export
 
-sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
+sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
   
   message("Make sure to be on Lund university network or LU VPN to get the map to work!")
   
   if (missing(occ_sp)) { # Load in data for all species from given year,
     # without species restriction to get all sites visited
-    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
+    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
       #drop_na() %>% 
       select(sitetype, lokalnamn, lat, lon) %>% 
       mutate(colour = if_else(sitetype == "T", "#1F78B4", "#CE2D30")) 

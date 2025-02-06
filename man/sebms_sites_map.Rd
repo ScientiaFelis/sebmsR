@@ -14,6 +14,7 @@ sebms_sites_map(
   height = 18,
   maptype = "both",
   print = FALSE,
+  verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84)
 )
 }
@@ -38,6 +39,8 @@ or 'both' (default). The 'Transect' and 'Point' can be
 abbreviated to 'T' and 'P'.}
 
 \item{print}{logical; should the plots be printed in window, default FALSE}
+
+\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
 
 \item{source}{the database sources as id numbers,
 defaults to `54,55,56,63,64,66,67,84`}

@@ -61,10 +61,12 @@ editcred <- function(homepath = "~/") {
 #'   names, the site ids and names, site type, number of individuals for eahc
 #'   species, the date, county, region, and municipality
 #' @export
-sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", source = c(54,55,56,63,64,66,67,84)){
+sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", verification = 109, source = c(54,55,56,63,64,66,67,84)){
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   source <- glue("({paste0({source}, collapse = ',')})")
+  
+  verification <- glue("({paste0({verification}, collapse = ',')})")
   
   Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement
   Landskap <- paste0(str_to_lower(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
@@ -102,7 +104,8 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
 
         SELECT
           spe.spe_uid AS speUId,
-          spe.spe_semainname As Art,
+          spe.spe_semainname AS Art,
+          obs.obs_typ_vfcid AS verification_code,
           sit.sit_uid AS sitUId,
           sit.sit_name AS Lokalnamn,
           sit.sit_type AS sitetype,
@@ -128,9 +131,10 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
           AND
           vis_typ_datasourceid IN {source}
           AND ( spv.spv_istrim=TRUE OR spe_uid IN (135,131,132,133,139) ) -- Include nullobs and 4 aggregated species groups
+          AND obs.obs_typ_vfcid IN {verification}
         
        GROUP BY
-          Art, Lokalnamn,Datum, sitetype, speUId, sitUId, reg.reg_id, reg.län, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun --, date --, vecka
+          Art, Lokalnamn,Datum, sitetype, speUId, obs.obs_typ_vfcid, sitUId, reg.reg_id, reg.län, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun --, date --, vecka
        ORDER BY
           Antal DESC, Lokalnamn, Art, Datum;")
   
@@ -158,11 +162,12 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
 #'   names, the number of individuals, the date, county, region, and
 #'   municipality.
 #' @export
-sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", source = c(54,55,56,63,64,66,67,84)) {
+sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", verification = 109, source = c(54,55,56,63,64,66,67,84)) {
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   Art <- glue("({paste0({Art}, collapse = ',')})")
   source <- glue("({paste0({source}, collapse = ',')})")
+  verification <- glue("({paste0({verification}, collapse = ',')})")
   
   Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement
   Landskap <- paste0(str_to_lower(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
@@ -201,6 +206,7 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
         SELECT
           spe.spe_uid AS speuid,
           spe.spe_semainname As art,
+          obs.obs_typ_vfcid AS verification_code,
           --sit.sit_type AS sitetype,
           SUM(obs.obs_count) AS antal,
           --extract('YEAR' from vis_begintime) AS years,
@@ -223,9 +229,10 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
           AND vis_typ_datasourceid IN {source}
           AND ( spv.spv_istrim=TRUE OR spe_uid IN (135,131,132,133,139) ) -- Include nullobs and 4 aggregated species groups
           AND spe.spe_uid IN {Art}
+          AND obs.obs_typ_vfcid IN {verification}
         
         GROUP BY
-          spe.spe_uid, Datum, reg.reg_id, reg.län, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun --, years
+          spe.spe_uid, obs.obs_typ_vfcid, Datum, reg.reg_id, reg.län, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun --, years
         ORDER BY
           antal DESC;")
   
@@ -240,20 +247,22 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
 #' 
 #' Return a data frame with abundance data per species and year.
 #' 
-#' @param year the years of interest
+#' @inheritParams sebms_abundance_per_species_plot
 #' 
 #' @import tibble
 #' @import glue
 #' @importFrom DBI dbGetQuery
 #' @export
-sebms_species_per_year_filtered <- function(year = 2020:2021) {
+sebms_species_per_year_filtered <- function(year = 2020:2021, verification= 109) {
   
   year <- glue("({paste0({year}, collapse = ',')})")
+  verification <- glue("({paste0({verification}, collapse = ',')})")
   
   q <- glue("
       SELECT
         spe.spe_uid AS id,
         spe.spe_semainname As name,
+        obs.obs_typ_vfcid AS verification_code,
         SUM(obs.obs_count) AS count,
         extract('YEAR' from vis_begintime) AS years
       FROM obs_observation AS obs
@@ -265,8 +274,9 @@ sebms_species_per_year_filtered <- function(year = 2020:2021) {
       WHERE
         extract('YEAR' from vis_begintime) IN {year}
         AND spv.spv_istrim=TRUE     -- new
+        AND obs.obs_typ_vfcid IN {verification}
       GROUP BY
-        spe.spe_uid, years
+        spe.spe_uid, years, obs.obs_typ_vfcid
       ORDER BY
         name, years;")
   
@@ -344,11 +354,14 @@ sebms_naturum_climate <- function() {
 #'   names, the site ids and names, site type, max number of individuals observed for each site,
 #'   the date, county, region, and municipality, and the rank of site 
 #' @export
-sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", source = c(54,55,56,63,64,66,67,84)) {
+sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", verification = 109, source = c(54,55,56,63,64,66,67,84)) {
+  
+  # TODO: add verification of species c(109, 110, 111) with defauul 109
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   Art <- glue("({paste0({Art}, collapse = ',')})")
   source <- glue("({paste0({source}, collapse = ',')})")
+  verification <- glue("({paste0({verification}, collapse = ',')})")
   
   Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement
   Landskap <- paste0(str_to_lower(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
@@ -403,6 +416,7 @@ sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Län = 
         (SELECT
           spe.spe_uid AS speuid,
           spe.spe_semainname As art,
+          obs.obs_typ_vfcid AS verification_code,
           sit.sit_uid AS situid,
           sit.sit_name AS Lokalnamn,
           vis.vis_begintime AS dag,
@@ -434,8 +448,9 @@ sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Län = 
           AND vis_typ_datasourceid IN {source}
           AND not (vis_typ_datasourceid = 55  and sit_reg_countyid=2)
           AND spe.spe_uid IN {Art}
+          AND obs.obs_typ_vfcid IN {verification}
         GROUP BY
-          spe.spe_uid, sit.sit_uid, vis.vis_uid, sitetype, reg.reg_id, reg.län, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun
+          spe.spe_uid, sit.sit_uid, vis.vis_uid, obs.obs_typ_vfcid, sitetype, reg.reg_id, reg.län, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun
         ORDER BY
             spe.spe_uid,sit.sit_uid) AS t -- End of inner select
            
@@ -533,6 +548,7 @@ sebms_trimSpecies <- function(year = 2010:lubridate::year(lubridate::today()), A
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   Art <- glue("({paste0({Art}, collapse = ',')})")
   source <- glue("({paste0({source}, collapse = ',')})")
+  #verification <- glue("({paste0({verification}, collapse = ',')})")
   
   if (!is.null(filterPattern)) {
     filterPattern <- glue("AND {filterPattern}")
@@ -544,6 +560,7 @@ sebms_trimSpecies <- function(year = 2010:lubridate::year(lubridate::today()), A
          SELECT
             spe.spe_uid as speuid,
             spe.spe_semainname AS species,
+            obs.obs_typ_vfcid AS verification_code,
             SUM(obs.obs_count) as speciesno
           FROM obs_observation AS obs
             INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
@@ -554,17 +571,18 @@ sebms_trimSpecies <- function(year = 2010:lubridate::year(lubridate::today()), A
             INNER JOIN  spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid
           WHERE EXTRACT('YEAR' from vis_begintime) IN {year}
             AND vis_typ_datasourceid IN  {source} 
+            AND obs.obs_typ_vfcid IN {verification}
             {filterPattern}
             --AND spv.spv_istrim=TRUE 
           GROUP BY
-            spe.spe_uid
+            spe.spe_uid, obs.obs_typ_vfcid
           ORDER BY
             speciesno DESC;
 ")
   }else {
     q <- glue("SELECT
                 spv_flightweekmin AS min,
-                spv_flightweekmax as max,
+                spv_flightweekmax AS max,
                 spv_spe_speciesid AS speuid,
                 spe_semainname AS art
               FROM spv_speciesvalidation AS spv
@@ -603,14 +621,16 @@ sebms_trimSpecies <- function(year = 2010:lubridate::year(lubridate::today()), A
 #' @return a tibble with visits per year and site.
 #' 
 #' @export
-sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()),  minmax = 22:32, source = c(54,55,56,63,64,66,67,84)) {
+sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()), minmax = 22:32, source = c(54,55,56,63,64,66,67,84)) {
   
   minmax <- glue("({paste0({minmax}, collapse = ',')})") 
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   source <- glue("({paste0({source}, collapse = ',')})")
+  #verification <- glue("({paste0({verification}, collapse = ',')})")
   
   q <-  glue("SELECT
                 sit.sit_uid AS siteuid,
+                --obs.obs_typ_vfcid AS verification_code,
                 EXTRACT (year FROM vis_begintime::date) AS year,
                 COUNT(DISTINCT vis_begintime) AS visit
              FROM obs_observation AS obs
@@ -623,8 +643,9 @@ sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()),  m
              WHERE EXTRACT (week FROM vis_begintime::date) IN {minmax}
                 AND EXTRACT(YEAR FROM vis_begintime) IN {year}
                 AND vis_typ_datasourceid IN {source} --(54,55,56,63,64,66,67)
+                --AND obs.obs_typ_vfcid IN 
             GROUP BY
-                year, siteuid
+                year, siteuid --, obs.obs_typ_vfcid
             ORDER BY
                 siteuid, year;")
   
@@ -654,11 +675,12 @@ sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()),  m
 #' @return a tibble with number of observed individuals per year and site.
 #' 
 #' @export
-sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filterPattern = NULL, minmax = 22:32, source = c(54,55,56,63,64,66,67,84)) {
+sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filterPattern = NULL, minmax = 22:32, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
   
   minmax <- glue("({paste0({minmax}, collapse = ',')})") 
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   source <- glue("({paste0({source}, collapse = ',')})")
+  verification <- glue("({paste0({verification}, collapse = ',')})")
   Art <- glue("({paste0({Art}, collapse = ',')})")
   
   Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement
@@ -713,6 +735,7 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
            
             SELECT DISTINCT
                 sit.sit_uid AS siteuid,
+                obs.obs_typ_vfcid AS verification_code,
                 EXTRACT (year FROM vis_begintime::date) AS year,
                 SUM(obs.obs_count) AS total_number,
                 reg.län,
@@ -736,10 +759,11 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
              WHERE EXTRACT (week FROM vis_begintime::date) IN {minmax}
                 AND EXTRACT(YEAR FROM vis_begintime) IN {year}
                 AND vis_typ_datasourceid IN {source} --(54,55,56,63,64,66,67)
+                AND obs.obs_typ_vfcid IN {verification}
                 {filterPattern}  -- THIS ADDS A FILTER TO THE SQL FROM THE FUNCTION
                 AND spe.spe_uid IN {Art}
             GROUP BY
-                year, siteuid, reg.reg_id, reg.län,lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun  --bioreg.region_id, bioreg.region, 
+                year, siteuid, reg.reg_id, reg.län,lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun, obs.obs_typ_vfcid  --bioreg.region_id, bioreg.region, 
             ORDER BY
                 siteuid, year;")
   
@@ -769,6 +793,7 @@ sebms_trimSites <- function(year = 2010:lubridate::year(lubridate::today()), Lan
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   source <- glue("({paste0({source}, collapse = ',')})")
+  #verification <- glue("({paste0({verification}, collapse = ',')})")
   Län <- paste0(str_to_lower(Län),collapse = "|") # Make the list of Län to s regex statement
   Landskap <- paste0(str_to_lower(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
   Kommun <- paste0(str_to_lower(Kommun),collapse = "|") # Make the list of Kommun to s regex statement

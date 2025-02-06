@@ -268,7 +268,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #'   marked.
 #' @export
 
-sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
+sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
   
   message("Make sure to be on Lund university network or LU VPN to get the map to work!")
   
@@ -276,8 +276,14 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
     # without species restriction to get all sites visited
     occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
       #drop_na() %>% 
-      select(sitetype, lokalnamn, lat, lon) %>% 
-      mutate(colour = if_else(sitetype == "T", "#1F78B4", "#CE2D30")) 
+      transmute(sitetype, lokalnamn, lat, lon, year = year(dag)) %>% 
+      mutate(colour = if_else(sitetype == "T", "#1F78B4", "#CE2D30"), # Set colours depending on sitetype
+             radius = 6)
+    # fix size of locale circles based on age
+    if (!is.null(active_site_cutoff)) {
+      occ_sp <- occ_sp %>% 
+        mutate(radius = if_else(year <= active_site_cutoff, 4,6.5))
+    }
     
     occ_sp <- occ_sp %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
@@ -285,9 +291,10 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
       st_transform(4326) %>%
       st_coordinates() %>%
       bind_cols(occ_sp) %>%
-      transmute(lokalnamn, sitetype, Kommun, lon = X, lat = Y, colour)
+      transmute(lokalnamn, sitetype, Kommun, lon = X, lat = Y, colour, radius)
     
   }
+  
   
   # Picking out the borders
   if (Län != ".") {
@@ -350,11 +357,11 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
                    weight = 5,
                    opacity = 1,
                    dashArray = c("21","9", "21")) %>% 
-    
+      
       addCircleMarkers(lng = data$lon, lat = data$lat,
-                       radius = 6,
+                       radius = data$radius,
                        color = "black",
-                       weight = 1,
+                       weight = 0.6,
                        fill = TRUE,
                        fillColor = data$colour,
                        fillOpacity = 1,

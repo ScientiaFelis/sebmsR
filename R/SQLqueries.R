@@ -543,12 +543,12 @@ ORDER BY
 #' 
 #' @return a tibble with species IDs, name, and min and max flight time week
 #' @export
-sebms_trimSpecies <- function(year = 2010:lubridate::year(lubridate::today()), Art = 1:200, filterPattern = NULL, topList = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
+sebms_trimSpecies <- function(year = 2010:lubridate::year(lubridate::today()), Art = 1:200, filterPattern = NULL, topList = FALSE, source = c(54,55,56,63,64,66,67,84)) {
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   Art <- glue("({paste0({Art}, collapse = ',')})")
   source <- glue("({paste0({source}, collapse = ',')})")
-  verification <- glue("({paste0({verification}, collapse = ',')})")
+  #verification <- glue("({paste0({verification}, collapse = ',')})")
   
   if (!is.null(filterPattern)) {
     filterPattern <- glue("AND {filterPattern}")
@@ -584,15 +584,13 @@ sebms_trimSpecies <- function(year = 2010:lubridate::year(lubridate::today()), A
                 spv_flightweekmin AS min,
                 spv_flightweekmax AS max,
                 spv_spe_speciesid AS speuid,
-                spe_semainname AS art,
-                obs.obs_typ_vfcid AS verification_code
+                spe_semainname AS art
               FROM spv_speciesvalidation AS spv
                 INNER JOIN spe_species AS spe ON spe.spe_uid = spv_spe_speciesid
-               INNER JOIN obs_observation AS obs ON obs.obs_spe_speciesid = spv_spe_speciesid
               WHERE
                 spv_spe_speciesid IN {Art}
-                AND obs.obs_typ_vfcid IN {verification}
-                AND spv_flightweekmin IS NOT NULL
+                AND
+                spv_flightweekmin IS NOT NULL
               ORDER BY speuid;")
   }
   
@@ -623,16 +621,16 @@ sebms_trimSpecies <- function(year = 2010:lubridate::year(lubridate::today()), A
 #' @return a tibble with visits per year and site.
 #' 
 #' @export
-sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()), minmax = 22:32, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
+sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()), minmax = 22:32, source = c(54,55,56,63,64,66,67,84)) {
   
   minmax <- glue("({paste0({minmax}, collapse = ',')})") 
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   source <- glue("({paste0({source}, collapse = ',')})")
-  verification <- glue("({paste0({verification}, collapse = ',')})")
+  #verification <- glue("({paste0({verification}, collapse = ',')})")
   
   q <-  glue("SELECT
                 sit.sit_uid AS siteuid,
-                obs.obs_typ_vfcid AS verification_code,
+                --obs.obs_typ_vfcid AS verification_code,
                 EXTRACT (year FROM vis_begintime::date) AS year,
                 COUNT(DISTINCT vis_begintime) AS visit
              FROM obs_observation AS obs
@@ -644,10 +642,10 @@ sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()), mi
                 INNER JOIN  typ_type as typ on vis.vis_typ_datasourceid = typ.typ_uid
              WHERE EXTRACT (week FROM vis_begintime::date) IN {minmax}
                 AND EXTRACT(YEAR FROM vis_begintime) IN {year}
-                AND vis_typ_datasourceid IN {source} --(54,55,56,63,64,66,67),
-                AND obs.obs_typ_vfcid IN {verification}
+                AND vis_typ_datasourceid IN {source} --(54,55,56,63,64,66,67)
+                --AND obs.obs_typ_vfcid IN 
             GROUP BY
-                year, siteuid, obs.obs_typ_vfcid
+                year, siteuid --, obs.obs_typ_vfcid
             ORDER BY
                 siteuid, year;")
   

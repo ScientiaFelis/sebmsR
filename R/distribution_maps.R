@@ -140,7 +140,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
   }
   
   #SweLandGrid <- st_read(system.file("extdata", "SweLandGrid.shp", package = "sebmsR"), quiet = TRUE) %>% 
-   # st_set_crs(3021)
+  # st_set_crs(3021)
   
   # Make a raster of all grid cells covering Sweden
   grid <- sebms_swe_grid %>% 
@@ -333,16 +333,18 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
       filter(str_detect(reg_name, Landskap))
   }
   
+  # Loading SLU tppogra map wms
   wms_topo_nedtonad <- "https://hades.slu.se/lm/topowebb/wms/v1"
   
-  #TODO: Default.  alla lokaler med besök från något år, exv 2009:2024,
   #TODO: Optional: filtrering för äldre lokaler, exv data från senast 2009:2016, pricken blir då liten, 2 mm diameter, hairline svart ytterkant
   #TODO: Optional: region2: smalare linje 0,66 mm röd #CE2D30, 60% opacity, longdash
   #TODO: Hex sites är en annan grid än vår vanliga utbredning, det är den som visar täckning i eBMS (Europanivå), optional att visa den (eller den vanliga, default är ingen grid)
   
+  # Add automatic zoom level if not set
   if (is.null(zoomlevel)) {
     zoomlevel = CPK$zoom
   }
+  
   
   locplot <- function(data, sitetype) {
     lpl <- leaflet(data) %>%
@@ -375,11 +377,11 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
       
       lpl <- lpl %>% 
         addPolygons(data = sebmsHex, lng = sebmsHex$X, lat = sebmsHex$Y, group = sebmsHex$L2)
-        #addPolygons(data = SweGrid, lng = SweGrid$X, lat = SweGrid$Y, group = SweGrid$L2)
+      #addPolygons(data = SweGrid, lng = SweGrid$X, lat = SweGrid$Y, group = SweGrid$L2)
     }
     return(lpl)
   }
-
+  
   if (str_detect(maptype, "[Pp][ou]i?nk?t|[Pp]$")) {
     occ_sp <- occ_sp %>% 
       filter(sitetype == "P")
@@ -431,10 +433,9 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
 # Landskapen <- st_read("../sebmsTrim/BordersTillLokalkarta/biogeografiska_landskap_SWEREF99TM_clean.shp") %>%
 #   st_transform(4326)
 
- # sebmsHex <- st_read("../sebmsTrim/BordersTillLokalkarta/sebms_hex_sites_clean.shp") %>% 
- #    st_transform(4326) %>% 
-   # st_coordinates() %>% 
-   # as_tibble()
+# sebmsHex <- st_read("../sebmsTrim/BordersTillLokalkarta/sebms_hex_sites_clean.shp") %>% 
+#    st_transform(4326) %>% 
+# st_coordinates() %>% 
+# as_tibble()
 
 # use_data(Bioreg, centerPK, centerPL, centerPLsk, Counties, Day, DayHour, indicatorlist, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, SweLandGrid, sebms_swe_grid, sebmsHex, internal = T, overwrite = T, compress = "xz", version = 3)
- 

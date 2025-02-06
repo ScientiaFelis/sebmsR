@@ -13,6 +13,7 @@ get_trimInfile(
   filterPattern = NULL,
   topList = FALSE,
   topNumber = 200,
+  verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84)
 )
 }
@@ -33,6 +34,8 @@ from}
 \item{topList}{logical; whether the top list of species should be used}
 
 \item{topNumber}{the number of top most observed species}
+
+\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
 
 \item{source}{the data sources}
 }

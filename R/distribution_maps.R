@@ -24,10 +24,10 @@
 #'
 #' @return Figures in png for points, and transects the given year
 #' @export
-sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "both", print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
+sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "both", print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { #Load in data for all species from given year
-    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
+    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
       transmute(sitetype, speuid, lokalnamn, lat, lon) %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
       st_set_crs(3006) %>% 
@@ -127,11 +127,11 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
 #'   species occurrence points.
 
 #' @export
-sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", width=9, height=18, print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
+sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", width=9, height=18, print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { # Load in data for all species from given year,
     # without species restriction to get all sites visited
-    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
+    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
       transmute(speuid, art, lokalnamn, lat, lon, maxobs = as.numeric(max)) %>% 
       mutate(art = str_replace_all(art, "/", "-")) %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
@@ -139,8 +139,8 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
       st_transform(3021)
   }
   
-  SweLandGrid <- st_read(system.file("extdata", "SweLandGrid.shp", package = "sebmsR"), quiet = TRUE) %>% 
-    st_set_crs(3021)
+  #SweLandGrid <- st_read(system.file("extdata", "SweLandGrid.shp", package = "sebmsR"), quiet = TRUE) %>% 
+   # st_set_crs(3021)
   
   # Make a raster of all grid cells covering Sweden
   grid <- sebms_swe_grid %>% 
@@ -250,7 +250,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 
 
 
-#' Create Local Maps with Transect and Point Locales
+#' Create Local Maps with Transect and Point Locals
 #'
 #' Creates a map of the County or Municipality with the transect and point data
 #' marked.You need to be on a Lund university or SLU network, or LU/SLU VPN to get the map
@@ -268,13 +268,13 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #'   marked.
 #' @export
 
-sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, source = c(54,55,56,63,64,66,67,84)) {
+sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
   
   message("Make sure to be on Lund university network or LU VPN to get the map to work!")
   
   if (missing(occ_sp)) { # Load in data for all species from given year,
     # without species restriction to get all sites visited
-    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, source = source) %>%
+    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
       #drop_na() %>% 
       select(sitetype, lokalnamn, lat, lon) %>% 
       mutate(colour = if_else(sitetype == "T", "#1F78B4", "#CE2D30")) 
@@ -364,7 +364,8 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
     
     if (showgrid) { # show the bms grid
       lpl <- lpl %>% 
-        addPolygons(lng = sebmsHex$X, lat = sebmsHex$Y)
+        addPolygons(data = sebmsHex, lng = sebmsHex$X, lat = sebmsHex$Y)
+        #addPolygons(data = SweGrid, lng = SweGrid$X, lat = SweGrid$Y, group = SweGrid$L2)
     }
     return(lpl)
   }
@@ -426,4 +427,5 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
 # st_coordinates() %>% 
 # as_tibble()
 
-# use_data(Bioreg, centerPK, centerPL, centerPLsk, Counties, Day, DayHour, indicatorlist, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, sebms_swe_grid, sebmsHex, internal = T, overwrite = T, compress = "xz", version = 3)
+# use_data(Bioreg, centerPK, centerPL, centerPLsk, Counties, Day, DayHour, indicatorlist, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, SweLandGrid, sebms_swe_grid, sebmsHex, internal = T, overwrite = T, compress = "xz", version = 3)
+ 

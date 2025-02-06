@@ -6,6 +6,10 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.1.1
+
+* add a `tag` argument to attach a tag at the end of file names for species plots.
+
 # v 2.1.0
 
 * add verification argument for species. Now it is possible to chose what verification level the observations should have. Both for trim functions and species map functions.

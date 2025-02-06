@@ -412,13 +412,13 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
 
 # centerPLsk <- readr::read_tsv("CentrumpointsLsk.csv", locale = readr::locale(decimal_mark = "."))
 
-# Counties <- st_read("../sebmsTrim/BordersTillLokalkarta/lan_SWEREF99TM_clean.shp") %>% 
+# Counties <- st_read("../sebmsTrim/BordersTillLokalkarta/utan holes/lan_SWEREF99TM_clean_wo_holes.shp") %>%
 #   st_transform(4326)
 # 
 # Bioreg <- st_read("../sebmsTrim/BordersTillLokalkarta/biogeografiska_regioner_SWEREF99TM_clean.shp") %>% 
 #   st_transform(4326)
 #   
-# Kommuner <- st_read("../sebmsTrim/BordersTillLokalkarta/kommuner_SWEREF99TM_clean.shp") %>% 
+# Kommuner <- st_read("../sebmsTrim/BordersTillLokalkarta/utan holes/kommuner_SWEREF99TM_clean_wo_holes.shp") %>%
 #   st_transform(4326)
 # 
 # Landskapen <- st_read("../sebmsTrim/BordersTillLokalkarta/biogeografiska_landskap_SWEREF99TM_clean.shp") %>%

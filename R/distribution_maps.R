@@ -139,8 +139,8 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
       st_transform(3021)
   }
   
-  SweLandGrid <- st_read(system.file("extdata", "SweLandGrid.shp", package = "sebmsR"), quiet = TRUE) %>% 
-    st_set_crs(3021)
+  #SweLandGrid <- st_read(system.file("extdata", "SweLandGrid.shp", package = "sebmsR"), quiet = TRUE) %>% 
+   # st_set_crs(3021)
   
   # Make a raster of all grid cells covering Sweden
   grid <- sebms_swe_grid %>% 
@@ -364,7 +364,8 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
     
     if (showgrid) { # show the bms grid
       lpl <- lpl %>% 
-        addPolygons(lng = sebmsHex$X, lat = sebmsHex$Y)
+        addPolygons(data = sebmsHex, lng = sebmsHex$X, lat = sebmsHex$Y)
+        #addPolygons(data = SweGrid, lng = SweGrid$X, lat = SweGrid$Y, group = SweGrid$L2)
     }
     return(lpl)
   }
@@ -426,4 +427,5 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
 # st_coordinates() %>% 
 # as_tibble()
 
-# use_data(Bioreg, centerPK, centerPL, centerPLsk, Counties, Day, DayHour, indicatorlist, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, sebms_swe_grid, sebmsHex, internal = T, overwrite = T, compress = "xz", version = 3)
+# use_data(Bioreg, centerPK, centerPL, centerPLsk, Counties, Day, DayHour, indicatorlist, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, SweLandGrid, sebms_swe_grid, sebmsHex, internal = T, overwrite = T, compress = "xz", version = 3)
+ 

@@ -78,7 +78,7 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
       guides(fill = guide_legend(byrow = TRUE))
     
   }
-   
+  
   if (str_detect(maptype, "[Pp][ou]i?nk?t|[Pp]$")) {
     occ_sp <- occ_sp %>% 
       filter(sitetype == "P")
@@ -96,7 +96,7 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
     nest() %>% # Nest per species to save one png per species
     ungroup() %>% 
     mutate(plots = map2(data, sitetype, speplot, .progress = "Making plots:"))
- 
+  
   map2(ggs$plots, ggs$sitetype, ~sebms_ggsave(.x, .y, width = width, height = height, weathervar = glue("{year}")), .progress = "Saving plots:")
   
   if (print) {
@@ -140,7 +140,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
   }
   
   #SweLandGrid <- st_read(system.file("extdata", "SweLandGrid.shp", package = "sebmsR"), quiet = TRUE) %>% 
-   # st_set_crs(3021)
+  # st_set_crs(3021)
   
   # Make a raster of all grid cells covering Sweden
   grid <- sebms_swe_grid %>% 
@@ -268,7 +268,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #'   marked.
 #' @export
 
-sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
+sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
   
   message("Make sure to be on Lund university network or LU VPN to get the map to work!")
   
@@ -276,8 +276,14 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
     # without species restriction to get all sites visited
     occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
       #drop_na() %>% 
-      select(sitetype, lokalnamn, lat, lon) %>% 
-      mutate(colour = if_else(sitetype == "T", "#1F78B4", "#CE2D30")) 
+      transmute(sitetype, lokalnamn, lat, lon, year = year(dag)) %>% 
+      mutate(colour = if_else(sitetype == "T", "#1F78B4", "#CE2D30"), # Set colours depending on sitetype
+             radius = 6)
+    # fix size of locale circles based on age
+    if (!is.null(active_site_cutoff)) {
+      occ_sp <- occ_sp %>% 
+        mutate(radius = if_else(year <= active_site_cutoff, 4,6.5))
+    }
     
     occ_sp <- occ_sp %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
@@ -285,9 +291,10 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
       st_transform(4326) %>%
       st_coordinates() %>%
       bind_cols(occ_sp) %>%
-      transmute(lokalnamn, sitetype, Kommun, lon = X, lat = Y, colour)
+      transmute(lokalnamn, sitetype, Kommun, lon = X, lat = Y, colour, radius)
     
   }
+  
   
   # Picking out the borders
   if (Län != ".") {
@@ -328,15 +335,18 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
   
   wms_topo_nedtonad <- "https://hades.slu.se/lm/topowebb/wms/v1" # wms topografic map from SLU
   
-  #TODO: Optional: filtrering för äldre lokaler, exv data från senast 2009:2016, pricken blir då liten, 2 mm diameter, hairline svart ytterkant
   #TODO: Optional: region2: smalare linje 0,66 mm röd #CE2D30, 60% opacity, longdash
   #TODO: Hex sites är en annan grid än vår vanliga utbredning, det är den som visar täckning i eBMS (Europanivå), optional att visa den (eller den vanliga, default är ingen grid)
   
-  if (is.null(zoomlevel)) { # if zoom level is not set, use the predefined one in centerpoint object
+  
+  # Function to create the map
+  
+  # Add automatic zoom level if not set
+  if (is.null(zoomlevel)) {
     zoomlevel = CPK$zoom
   }
   
-  # Function to create the map
+  
   locplot <- function(data, sitetype) {
     lpl <- leaflet(data) %>%
       setView(lng = CPK$X, lat = CPK$Y, zoom = zoomlevel) %>% # Set center and zoom
@@ -350,11 +360,10 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
                    weight = 5,
                    opacity = 1,
                    dashArray = c("21","9", "21")) %>% 
-      
-      addCircleMarkers(lng = data$lon, lat = data$lat, # add circles from visited locals  in occurence data
-                       radius = 6,
+      addCircleMarkers(lng = data$lon, lat = data$lat,
+                       radius = data$radius,
                        color = "black",
-                       weight = 1,
+                       weight = 0.6,
                        fill = TRUE,
                        fillColor = data$colour, # fill depending on site type
                        fillOpacity = 1,
@@ -365,7 +374,7 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
     if (showgrid) { # show the bms grid
       lpl <- lpl %>% 
         addPolygons(data = sebmsHex, lng = sebmsHex$X, lat = sebmsHex$Y)
-        #addPolygons(data = SweGrid, lng = SweGrid$X, lat = SweGrid$Y, group = SweGrid$L2)
+      #addPolygons(data = SweGrid, lng = SweGrid$X, lat = SweGrid$Y, group = SweGrid$L2)
     }
     return(lpl)
   }
@@ -428,4 +437,3 @@ sebms_local_transect_map <- function(year = lubridate::year(lubridate::today())-
 # as_tibble()
 
 # use_data(Bioreg, centerPK, centerPL, centerPLsk, Counties, Day, DayHour, indicatorlist, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, SweLandGrid, sebms_swe_grid, sebmsHex, internal = T, overwrite = T, compress = "xz", version = 3)
- 

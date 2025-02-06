@@ -25,8 +25,7 @@ get_imputedList(
 
 \item{Art}{the species of interest}
 
-\item{Län}{character or regular expression; which county you want the data
-from}
+\item{Län}{character or regular expression; which county you want the data from}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 
@@ -35,7 +34,8 @@ from}
 \item{indicator_layout}{logical; whether to use the indicator species and add
 nr of sites statistics. If TRUE this overrides `Art`}
 
-\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
+\item{verification}{a verification code that filter out verified occurenses of species,
+default to 109.}
 
 \item{source}{the data sources}
 

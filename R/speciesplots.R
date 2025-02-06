@@ -4,13 +4,14 @@
 #' Produce a plot with number of individuals per species a given year
 #'
 #' @param year year or years to use for plot
-#' @param Län character or regular expression; which county you want the data
-#'   from
+#' @param Län character or regular expression; which county you want the data from
 #' @param Landskap character or reg ex; which region you want the data from
 #' @param Kommun character or reg ex; which municipality you want the data from
-#' @param verification a verification code that filter out verified occurenses of species, default to 109.
-#' @param source the database sources as id numbers,
-#' defaults to `54,55,56,63,64,66,67,84`
+#' @param tag a tag to be added at the end of the file name; optional. For instance to
+#'   show the county the plot or data contain.
+#' @param verification a verification code that filter out verified occurenses of species,
+#'   default to 109.
+#' @param source the database sources as id numbers, defaults to `54,55,56,63,64,66,67,84`
 #' @param print logical; if FALSE (default) the function does not print to plot window.
 #'
 #' @importFrom plyr round_any
@@ -22,9 +23,8 @@
 #' @importFrom purrr map2
 #' @importFrom stats median
 #'
-#' @return Two png figures with the abundance data for each species. One for
-#'   species count below the median for that year and one for species above
-#'   median.
+#' @return Two png figures with the abundance data for each species. One for species count
+#'   below the median for that year and one for species above median.
 #' @export
 #' 
 sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", tag = NULL,  verification = 109, source = c(54,55,56,63,64,66,67,84), print = FALSE) {

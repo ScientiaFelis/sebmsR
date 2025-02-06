@@ -21,8 +21,7 @@ sebms_trimSpecies(
 
 \item{topList}{logical; whether the top list of species should be used}
 
-\item{source}{the database sources as id numbers,
-defaults to `54,55,56,63,64,66,67,84`}
+\item{source}{the database sources as id numbers, defaults to `54,55,56,63,64,66,67,84`}
 }
 \value{
 a tibble with species IDs, name, and min and max flight time week

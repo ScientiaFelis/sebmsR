@@ -7,6 +7,8 @@
 sebms_weather_png(
   year = lubridate::year(lubridate::today()) - 1,
   my_place = NA,
+  filepath = getwd(),
+  tag = NULL,
   savepng = TRUE,
   colours = sebms_palette
 )

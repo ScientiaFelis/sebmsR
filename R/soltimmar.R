@@ -244,13 +244,14 @@ sebms_sunmean_data <- function(year = 2018:2022, months = 4:9, per_month = FALSE
 
 #' Create an Image with Sun Hour Data
 #'
-#' Create a data frame from e.g. [sebms_sunhours_data()] and creates an raster
-#' image.
+#' Create a data frame from e.g. [sebms_sunhours_data()] and creates an raster image.
 #'
 #' @inheritParams sebms_sunhours_data
 #' @param df optional; a dataframe created by [sebms_sunhours_data()]
-#' @param sunvar the variable to calculate colours on, `total_sunH` or
-#'   `mean_sunH`
+#' @param filepath a path to the directory where the plots should be saved; default to
+#'   working directory
+#' @param tag an optional tag that is added to the end of the file name
+#' @param sunvar the variable to calculate colours on, `total_sunH` or `mean_sunH`
 #' @param legends logical; if you want a legend to the figures (default: FALSE)
 #'
 #' @importFrom lubridate year today
@@ -260,8 +261,8 @@ sebms_sunmean_data <- function(year = 2018:2022, months = 4:9, per_month = FALSE
 #' @importFrom glue glue
 #' @importFrom scales squish
 #'
-#' @return a figure saved as a png with the sunhours in coloour from, high (red)
-#'   to low (blue)
+#' @return a figure saved as a png with the sunhours in coloour from, high (red) to low
+#'   (blue)
 #' @export
 sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df, filepath = getwd(), tag = NULL, sunvar = total_sunH, months = 4:9, per_month = FALSE, per_day = FALSE, legends = FALSE) {
   

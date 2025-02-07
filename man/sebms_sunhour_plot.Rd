@@ -7,6 +7,8 @@
 sebms_sunhour_plot(
   year = lubridate::year(lubridate::today()) - 1,
   df,
+  filepath = getwd(),
+  tag = NULL,
   sunvar = total_sunH,
   months = 4:9,
   per_month = FALSE,
@@ -19,8 +21,12 @@ sebms_sunhour_plot(
 
 \item{df}{optional; a dataframe created by [sebms_sunhours_data()]}
 
-\item{sunvar}{the variable to calculate colours on, `total_sunH` or
-`mean_sunH`}
+\item{filepath}{a path to the directory where the plots should be saved; default to
+working directory}
+
+\item{tag}{an optional tag that is added to the end of the file name}
+
+\item{sunvar}{the variable to calculate colours on, `total_sunH` or `mean_sunH`}
 
 \item{months}{numeric value of the months to summarise sun ours over (default
 to 4:9)}
@@ -32,10 +38,9 @@ to 4:9)}
 \item{legends}{logical; if you want a legend to the figures (default: FALSE)}
 }
 \value{
-a figure saved as a png with the sunhours in coloour from, high (red)
-  to low (blue)
+a figure saved as a png with the sunhours in coloour from, high (red) to low
+  (blue)
 }
 \description{
-Create a data frame from e.g. [sebms_sunhours_data()] and creates an raster
-image.
+Create a data frame from e.g. [sebms_sunhours_data()] and creates an raster image.
 }

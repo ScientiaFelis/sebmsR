@@ -263,7 +263,7 @@ sebms_sunmean_data <- function(year = 2018:2022, months = 4:9, per_month = FALSE
 #' @return a figure saved as a png with the sunhours in coloour from, high (red)
 #'   to low (blue)
 #' @export
-sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df, sunvar = total_sunH, months = 4:9, per_month = FALSE, per_day = FALSE, legends = FALSE) {
+sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df, filepath = getwd(), tag = NULL, sunvar = total_sunH, months = 4:9, per_month = FALSE, per_day = FALSE, legends = FALSE) {
   
   if (missing(df) && length(months) < 6 && per_month == FALSE) {
     warning("THIS FIGURE WILL LOOK VERY BLUE (LOW NR HOURS) AS IT IS OPTIMIZED FOR THE SUM OF SUNHOURS OVER 6 SUMMER MONTH\n  USE 'per_month = TRUE' TO GET VALUES PER MONTH\n  OR SET 'months=4:9'")
@@ -372,7 +372,17 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
       ungroup() %>% 
       mutate(plots = map(data, sunHplot, .progress = "Create sunhour figures"))
     
-    walk2(ggs$plots, ggs$Year, ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("Sunhours_{.y}")))
+    #set tag
+    if (is.null(tag)) {
+      tag = ""
+    }else {
+      tag = glue("_{tag}")
+    }
+    #set filepath
+    filepath <- normalizePath(filepath)
+    
+    
+    walk2(ggs$plots, ggs$Year, ~sebms_ggsave(.x, glue("{filepath}/Sweden"), width = 6, height = 12.67, weathervar = glue("Sunhours_{.y}{tag}")))
     
     return(ggs$plots) 
   }
@@ -402,7 +412,7 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
 #'
 #' @return a figure that shows diffeence in sunhours
 #' @export
-sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df, months = 4:9, per_month = FALSE, legends = FALSE, per_day = FALSE) {
+sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df, filepath = getwd(), tag = NULL, months = 4:9, per_month = FALSE, legends = FALSE, per_day = FALSE) {
   
   if(missing(df)) {
     message("Please be pacient...")
@@ -496,8 +506,16 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
       ungroup() %>% 
       mutate(plots = map(data, sunDiffplot, .progress = "Create sunhour diff figures"))
     
+    #set tag
+    if (is.null(tag)) {
+      tag = ""
+    }else {
+      tag = glue("_{tag}")
+    }
+    #set filepath
+    filepath <- normalizePath(filepath)
     
-    walk2(ggs$plots, ggs$Year,  ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("SunhourDiff_{.y}")), .progress = "Saving figures as png...")
+    walk2(ggs$plots, ggs$Year,  ~sebms_ggsave(.x, glue("{filepath}/Sweden"), width = 6, height = 12.67, weathervar = glue("SunhourDiff_{.y}{tag}")), .progress = "Saving figures as png...")
     
     return(ggs$plots)
   }

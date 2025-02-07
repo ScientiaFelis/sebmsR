@@ -9,6 +9,7 @@ sebms_species_per_sitetype_plot(
   Län = ".",
   Landskap = ".",
   Kommun = ".",
+  filepath = getwd(),
   tag = NULL,
   verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
@@ -23,6 +24,8 @@ sebms_species_per_sitetype_plot(
 \item{Landskap}{character or reg ex; which region you want the data from}
 
 \item{Kommun}{character or reg ex; which municipality you want the data from}
+
+\item{filepath}{a path to a folder where the plot file should be saved}
 
 \item{tag}{a tag to be added at the end of the file name; optional. For instance to
 show the county the plot or data contain.}

@@ -24,7 +24,7 @@
 #'
 #' @return Figures in png for points, and transects the given year
 #' @export
-sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "both", print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
+sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "both", filepath = getwd(), tag = NULL, print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { #Load in data for all species from given year
     occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
@@ -97,7 +97,16 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
     ungroup() %>% 
     mutate(plots = map2(data, sitetype, speplot, .progress = "Making plots:"))
   
-  map2(ggs$plots, ggs$sitetype, ~sebms_ggsave(.x, .y, width = width, height = height, weathervar = glue("{year}")), .progress = "Saving plots:")
+  #set tag
+  if (is.null(tag)) {
+    tag = ""
+  }else {
+    tag = glue("_{tag}")
+  }
+  #set filepath
+  filepath <- normalizePath(filepath)
+  
+  map2(ggs$plots, ggs$sitetype, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), width = width, height = height, weathervar = glue("{year}{tag}")), .progress = "Saving plots:")
   
   if (print) {
     return(ggs$plots)
@@ -127,7 +136,7 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
 #'   species occurrence points.
 
 #' @export
-sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", width=9, height=18, print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
+sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, width=9, height=18, print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { # Load in data for all species from given year,
     # without species restriction to get all sites visited
@@ -240,7 +249,16 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
     ungroup() %>% 
     mutate(plots = map2(data, speuid, speplot, .progress = "Making plots:"))
   
-  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, .y, width = width, height = height, weathervar = glue("{year}")), .progress = "Saving plots:")
+  #set tag
+  if (is.null(tag)) {
+    tag = ""
+  }else {
+    tag = glue("_{tag}")
+  }
+  #set filepath
+  filepath <- normalizePath(filepath)
+  
+  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), width = width, height = height, weathervar = glue("{year}{tag}")), .progress = "Saving plots:")
   
   if (print) {
     return(ggs$plots)
@@ -268,7 +286,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #'   marked.
 #' @export
 
-sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
+sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
   
   message("Make sure to be on Lund university network or LU VPN to get the map to work!")
   
@@ -397,8 +415,17 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
     mutate(plots = map2(data, sitetype, locplot, .progress = "Making plots:"))
   
   
+  #set tag
+  if (is.null(tag)) {
+    tag = ""
+  }else {
+    tag = glue("_{tag}")
+  }
+  #set filepath
+  filepath <- normalizePath(filepath)
+  
   # Save a plot per site type as png
-  walk2(ggs$plots, ggs$sitetype, ~mapshot2(.x, file = glue("{Region}_sitetype-{.y}.png")), .progress = "Saving plots:")
+  walk2(ggs$plots, ggs$sitetype, ~mapshot2(.x, file = glue("{filepath}/{Region}_sitetype-{.y}{tag}.png")), .progress = "Saving plots:")
   
   if (print) {
     return(ggs$plots)

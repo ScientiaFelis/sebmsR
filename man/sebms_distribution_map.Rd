@@ -25,8 +25,7 @@ sebms_distribution_map(
 
 \item{Art}{the species of interest as a species id}
 
-\item{Län}{character or regular expression; which county you want the data
-from}
+\item{Län}{character or regular expression; which county you want the data from}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 
@@ -38,10 +37,10 @@ from}
 
 \item{print}{logical; should the plots be printed in window, default FALSE}
 
-\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
+\item{verification}{a verification code that filter out verified occurenses of species,
+default to 109.}
 
-\item{source}{the database sources as id numbers,
-defaults to `54,55,56,63,64,66,67,84`}
+\item{source}{the database sources as id numbers, defaults to `54,55,56,63,64,66,67,84`}
 }
 \value{
 ggplot object of map with grid coloured by local density and with

@@ -11,7 +11,9 @@ sebms_species_abundance_plot(
   Landskap = ".",
   Kommun = ".",
   plotname = FALSE,
-  verification = verification,
+  filepath = getwd(),
+  tag = NULL,
+  verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
   print = FALSE
 )
@@ -21,8 +23,7 @@ sebms_species_abundance_plot(
 
 \item{Art}{integer; the species id of interest}
 
-\item{Län}{character or regular expression; which county you want the data
-from}
+\item{Län}{character or regular expression; which county you want the data from}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 
@@ -30,10 +31,15 @@ from}
 
 \item{plotname}{logical; if you want the species name inside the plot}
 
-\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
+\item{filepath}{a path to a folder where the plot file should be saved}
 
-\item{source}{the database sources as id numbers,
-defaults to `54,55,56,63,64,66,67,84`}
+\item{tag}{a tag to be added at the end of the file name; optional. For instance to
+show the county the plot or data contain.}
+
+\item{verification}{a verification code that filter out verified occurenses of species,
+default to 109.}
+
+\item{source}{the database sources as id numbers, defaults to `54,55,56,63,64,66,67,84`}
 
 \item{print}{logical; if FALSE (default) the function does not print to plot window.}
 }

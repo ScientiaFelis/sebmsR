@@ -15,8 +15,7 @@ sebms_trimvisits(
 
 \item{minmax}{the first and last week of interest}
 
-\item{source}{the database sources as id numbers,
-defaults to `54,55,56,63,64,66,67,84`}
+\item{source}{the database sources as id numbers, defaults to `54,55,56,63,64,66,67,84`}
 }
 \value{
 a tibble with visits per year and site.

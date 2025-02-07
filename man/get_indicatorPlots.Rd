@@ -19,14 +19,14 @@ get_indicatorPlots(
 
 \item{years}{the year span of interest, set as 'firstyear:lastyear'.}
 
-\item{Län}{character or regular expression; which county you want the data
-from}
+\item{Län}{character or regular expression; which county you want the data from}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 
 \item{Kommun}{character or reg ex; which municipality you want the data from}
 
-\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
+\item{verification}{a verification code that filter out verified occurenses of species,
+default to 109.}
 
 \item{source}{the data sources}
 

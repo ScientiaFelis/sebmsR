@@ -9,7 +9,8 @@ sebms_species_per_year_filtered(year = 2020:2021, verification = 109)
 \arguments{
 \item{year}{year or years to use for plot}
 
-\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
+\item{verification}{a verification code that filter out verified occurenses of species,
+default to 109.}
 }
 \description{
 Return a data frame with abundance data per species and year.

@@ -4,13 +4,15 @@
 #' Produce a plot with number of individuals per species a given year
 #'
 #' @param year year or years to use for plot
-#' @param Län character or regular expression; which county you want the data
-#'   from
+#' @param Län character or regular expression; which county you want the data from
 #' @param Landskap character or reg ex; which region you want the data from
 #' @param Kommun character or reg ex; which municipality you want the data from
-#' @param verification a verification code that filter out verified occurenses of species, default to 109.
-#' @param source the database sources as id numbers,
-#' defaults to `54,55,56,63,64,66,67,84`
+#' @param filepath a path to a folder where the plot file should be saved
+#' @param tag a tag to be added at the end of the file name; optional. For instance to
+#'   show the county the plot or data contain.
+#' @param verification a verification code that filter out verified occurenses of species,
+#'   default to 109.
+#' @param source the database sources as id numbers, defaults to `54,55,56,63,64,66,67,84`
 #' @param print logical; if FALSE (default) the function does not print to plot window.
 #'
 #' @importFrom plyr round_any
@@ -22,12 +24,11 @@
 #' @importFrom purrr map2
 #' @importFrom stats median
 #'
-#' @return Two png figures with the abundance data for each species. One for
-#'   species count below the median for that year and one for species above
-#'   median.
+#' @return Two png figures with the abundance data for each species. One for species count
+#'   below the median for that year and one for species above median.
 #' @export
 #' 
-sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", verification = 109, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
+sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = 109, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
   
   sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
     filter(!speuid %in% c(131,132,133,139,135)) %>% 
@@ -138,9 +139,19 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
     theme_sebms2()
   
   # Make correct file name for png.
-  res <- list(p1 = p1, p2 = p2)
-  name <- list(glue("Above-median_{year}"), glue("Below-median_{year}"))
-  map2(res, name, ~sebms_ggsave(.x, "Species_tot_count", width = 22, height=32, weathervar = .y, text.factor = 4))
+  if (is.null(tag)) {
+    tag = ""
+  }else {
+    tag = glue("_{tag}")
+  }
+  res <- list(p1 = p1, p2 = p2) # list with the two plots
+  name <- list(glue("Above-median_{year}{tag}"), glue("Below-median_{year}{tag}"))
+  
+  # fix filepath 
+  filepath <- normalizePath(filepath)
+  filepath <- glue("{filepath}/Species_tot_count")
+  
+  walk2(res, name, ~sebms_ggsave(.x, filepath, width = 22, height = 32, weathervar = .y, text.factor = 4), .progress = "Saving images...")
   
   if (print) {
     return(res)
@@ -163,7 +174,7 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
 #'   comparing years per week,
 #' @export
 #' 
-sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", verification = 109, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
+sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = 109, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
   
   if (length(year) > 2) {
     return(cat("More than two year in interval.\n\nGIVE ONLY TWO YEARS TO COMPARE!")
@@ -267,8 +278,18 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
           plot.tag.position = c(0.05,0.075)
     )
   
-  yearname <- paste0(year, collapse = "-")
-  sebms_ggsave(p, "Butterflynumber", width = 30, height = 15, weathervar = yearname)
+  if (is.null(tag)) {
+    tag = ""
+  }else {
+    tag = glue("_{tag}")
+  }
+  yearname <- paste0(year,tag, collapse = "-")
+  
+  # fix filepath 
+  filepath <- normalizePath(filepath)
+  filepath <- glue("{filepath}/Butterflynumber")
+  
+  sebms_ggsave(p, filepath, width = 30, height = 15, weathervar = yearname)
   
   if (print) {
     return(p)
@@ -295,7 +316,7 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
 #' @return A png per species showing the number of individuals per week.
 #' @export
 #' 
-sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", plotname = FALSE, verification = verification, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
+sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", plotname = FALSE, filepath = getwd(), tag = NULL, verification = 109, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
   
   df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>% 
     filter(!str_detect(art, "[Nn]oll"), speuid != 132) %>%
@@ -423,7 +444,18 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
     yearname <- year
   }
   
-  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, filename = .y, width = 24, height = 14, weathervar = yearname), .progress = "Saving individual species plots as png.....")
+  if (is.null(tag)) {
+    tag = ""
+    yearname <- paste0(yearname, tag)
+  }else {
+    yearname <-  paste0(yearname,"_",tag)
+  }
+
+  
+  # fix filepath 
+  filepath <- normalizePath(filepath)
+  
+  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, filename = glue("{filepath}/{.y}"), width = 24, height = 14, weathervar = yearname), .progress = "Saving individual species plots as png.....")
   
   #sebms_ggsave(p, Art, width = 26, height = 12, weathervar = year)
   if (print) {
@@ -449,7 +481,7 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
 #'   species per site type.
 #' @export
 #' 
-sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", verification = 109, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
+sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = 109, source = c(54,55,56,63,64,66,67,84), print = FALSE) {
   
   b <- seq(1, 65, by = 5) # make the start of species number groups
   l <- paste0(b, "-", b + 4) # This maes the group intervals
@@ -601,7 +633,17 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap =
     yearname <- year
   }
   
-  sebms_ggsave(p, "Species_per_site", width = 22, height = 13, weathervar = yearname)
+  if (is.null(tag)) {
+    tag = ""
+    yearname <- paste0(yearname, tag)
+  }else {
+    yearname <-  paste0(yearname,"_",tag)
+  }
+   # fix filepath 
+  filepath <- normalizePath(filepath)
+  filepath <- glue("{filepath}/Species_per_site")
+ 
+  sebms_ggsave(p, filepath, width = 22, height = 13, weathervar = yearname)
   
   if (print) {
     return(p)

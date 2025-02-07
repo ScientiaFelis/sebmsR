@@ -10,6 +10,8 @@ get_trimComparedPlots(
   Län = ".",
   Landskap = ".",
   Kommun = ".",
+  filepath = getwd(),
+  tag = NULL,
   trimmedImputedSwedishList = NULL,
   verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
@@ -22,8 +24,7 @@ get_trimComparedPlots(
 
 \item{Art}{the species of interest, ignored if trimIndex is not NULL}
 
-\item{Län}{character or regular expression; which county you want the data
-from}
+\item{Län}{character or regular expression; which county you want the data from}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 
@@ -32,7 +33,8 @@ from}
 \item{trimmedImputedSwedishList}{data frame of national wide data of species
 trim values}
 
-\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
+\item{verification}{a verification code that filter out verified occurenses of species,
+default to 109.}
 
 \item{source}{the data sources}
 

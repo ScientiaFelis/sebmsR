@@ -31,8 +31,8 @@
 #' @export
 get_trimInfile <- function(years=2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filterPattern=NULL, topList=FALSE, topNumber=200, verification = 109, source = c(54,55,56,63,64,66,67,84)){
   
-  trimSpecies <- sebms_trimSpecies(year = years, Art = Art, topList = topList, verification = verification, source = source) %>% 
-    distinct(speuid, art, verification_code, .keep_all = T) %>% 
+  trimSpecies <- sebms_trimSpecies(year = years, Art = Art, topList = topList, source = source) %>% 
+    distinct(speuid, art, .keep_all = T) %>% 
     slice_head(n=topNumber)
   
   spein <- function(df = data, speuid) {
@@ -45,7 +45,7 @@ get_trimInfile <- function(years=2010:lubridate::year(lubridate::today())-1, Art
       mutate(total_number = as.numeric(total_number)) %>%
       summarise(total_number = sum(total_number, na.rm = T), .by = c(siteuid, year, län, landskap, kommun))
     
-    visits <- sebms_trimvisits(year = years, minmax = minW:maxW, verification = verification, source = source) %>% 
+    visits <- sebms_trimvisits(year = years, minmax = minW:maxW, source = source) %>% 
       mutate(visit = as.numeric(visit))
     
     if(nrow(obses) > 0) { #Precondition to skip species with zero observations
@@ -180,7 +180,7 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
 #' 
 #' @return figures in png format of the species trends with confidence interval
 #' @export
-get_trimPlots <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", xaxis_sep = 5, verification = 109, source = c(54,55,56,63,64,66,67,84), write = TRUE, print = TRUE, ...) {
+get_trimPlots <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, xaxis_sep = 5, verification = 109, source = c(54,55,56,63,64,66,67,84), write = TRUE, print = TRUE, ...) {
   
   # This creates a trimIndex file if none is provided
   if(is.null(trimIndex)) {
@@ -304,8 +304,17 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrida
   
   ggs <- map2(trimIndex, spname, ~trimplots(.x, .y), .progress = "Making trimplots...")
   
+  #set tag
+  if (is.null(tag)) {
+    tag = ""
+  }else {
+    tag = glue("_{tag}")
+  }
+  #set filepath
+  filepath <- normalizePath(filepath)
+  
   if (write) {
-    walk2(ggs, spname, ~ggsave(plot = .x, filename = glue("{.y}.png"), width = 748, height = 868, units = "px", dpi = 72), .progress = "Saving trimplots...")
+    walk2(ggs, spname, ~ggsave(plot = .x, filename = glue("{filepath}/{.y}{tag}.png"), width = 748, height = 868, units = "px", dpi = 72), .progress = "Saving trimplots...")
   }
   
   if (print) {
@@ -332,7 +341,7 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrida
 #'
 #' @return a data frame with trim indices per species
 #' @export
-get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", indicator_layout = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84), write = FALSE, ...) {
+get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, indicator_layout = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84), write = FALSE, ...) {
   
   if (indicator_layout) {
     speid <- unlist(indicatorlist, use.names = F) %>%  # 'indicatorlist' is loaded by package
@@ -414,10 +423,18 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
   }
   
   
-  
   if (write) {
+    #set tag
+    if (is.null(tag)) {
+      tag = ""
+    }else {
+      tag = glue("_{tag}")
+    }
+    #set filepath
+    filepath <- normalizePath(filepath)
+    
     Year <- glue("{min(years)}-{max(years)}")
-    write_csv2(imputedList, glue("Index_{Year}.csv"))
+    write_csv2(imputedList, glue("{filepath}/Index_{Year}{tag}.csv"))
   }
   return(imputedList) # Called Index.csv in LP code
 }
@@ -442,11 +459,12 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
 #' 
 #' @return trendindex per species with the number of sites used
 #' @export
-get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", indicators = TRUE, verification = 109, source = c(54,55,56,63,64,66,67,84), write = FALSE, ...) {
+get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, indicators = TRUE, verification = 109, source = c(54,55,56,63,64,66,67,84), write = FALSE, ...) {
   
   if(is.null(trimIndex)) { # If there is no trimIndex
     
     if (indicators) { # if indicator species should be used
+      warning("indicators is set to TRUE and the Indicator species will be used!", immediate. = T)
       speid <- unlist(indicatorlist, use.names = F) %>%  # 'indicatorlist' is loaded by package
         unique()
       
@@ -495,9 +513,18 @@ get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrid
   
   
   if (write) {
+    #set tag
+    if (is.null(tag)) {
+      tag = ""
+    }else {
+      tag = glue("_{tag}")
+    }
+    #set filepath
+    filepath <- normalizePath(filepath)
+    
     Year <- glue("{min(years)}-{max(years)}")
     #write_csv2(imputedList, glue("Index_{Year}.csv"))
-    write_csv2(trendList, glue("Trendindex_{Year}.csv"))
+    write_csv2(trendList, glue("{filepath}/Trendindex_{Year}{tag}.csv"))
   }
   return(trendList)
 }
@@ -518,7 +545,7 @@ get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrid
 #'
 #' @return figures saved as png comparing national and local trim indices
 #' @export
-get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", trimmedImputedSwedishList=NULL, verification = 109, source = c(54,55,56,63,64,66,67,84), write = TRUE, print = TRUE) {
+get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filepath= getwd(), tag = NULL, trimmedImputedSwedishList=NULL, verification = 109, source = c(54,55,56,63,64,66,67,84), write = TRUE, print = TRUE) {
   
   #1 Run trim index on species with local data
   #2 Of the local species not all may be possible to run
@@ -607,7 +634,16 @@ get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today(
     mutate(plots = map2(data, art, ~plotcomp(.x, .y)))
   
   if (write) {
-    walk2(ggs$plots, ggs$art, ~ggsave(plot = .x, filename = glue("{.y}_comparison.png"), width=748, height=868, dpi = 72, units = "px"))
+    #set tag
+    if (is.null(tag)) {
+      tag = ""
+    }else {
+      tag = glue("_{tag}")
+    }
+    #set filepath
+    filepath <- normalizePath(filepath)
+    
+    walk2(ggs$plots, ggs$art, ~ggsave(plot = .x, filename = glue("{filepath}/{.y}_comparison{tag}.png"), width=748, height=868, dpi = 72, units = "px"))
   }
   
   if (print) {
@@ -638,7 +674,7 @@ get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today(
 #' @return two csv files for each indicator groups. One with indicator index and
 #'   changes and one with trend data.
 #' @export
-get_indicatorAnalyses <- function(infile = NULL, years = 2010:lubridate::year(lubridate::today())-1, lastyear = 7, Län = ".", Landskap = ".", Kommun = ".", verification = 109, source = c(54,55,56,63,64,66,67,84), write = TRUE, print = FALSE, indicators = NULL, indicatorname = NULL) {
+get_indicatorAnalyses <- function(infile = NULL, years = 2010:lubridate::year(lubridate::today())-1, lastyear = 7, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = 109, source = c(54,55,56,63,64,66,67,84), write = TRUE, print = FALSE, indicators = NULL, indicatorname = NULL) {
   
   if(!is.null(indicators)) { # If a new indicator is added
     # If no new name is added
@@ -702,9 +738,17 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:lubridate::year(lu
                                                                   sdsite) %>% distinct(), by = c("year"))
     
     if (write) {
+      #set tag
+      if (is.null(tag)) {
+        tag = ""
+      }else {
+        tag = glue("_{tag}")
+      }
+      #set filepath
+      filepath <- normalizePath(filepath)
       
-      write_csv2(file = glue("{indn}_indicator_in_{origin}.csv"), x = result)
-      write_csv2(file = glue("{indn}_trends_in_{origin}.csv"), x = msi_out$trends)
+      write_csv2(file = glue("{filepath}/{indn}_indicator_in_{origin}{tag}.csv"), x = result)
+      write_csv2(file = glue("{filepath}/{indn}_trends_in_{origin}{tag}.csv"), x = msi_out$trends)
     }
     return(msi_out)
   }
@@ -745,7 +789,7 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:lubridate::year(lu
 #' @return trend plots with confidence interval for the indicator groups, saved
 #'   as png files.
 #' @export
-get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubridate::today())-1, Län = ".", Landskap = ".", Kommun = ".", verification = 109, source = c(54,55,56,63,64,66,67,84), write = TRUE, print = FALSE) {
+get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubridate::today())-1, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = 109, source = c(54,55,56,63,64,66,67,84), write = TRUE, print = FALSE) {
   
   if (is.null(msi_out)) {
     msi_out <- get_indicatorAnalyses(years = years, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source, write = FALSE, print = TRUE)
@@ -852,7 +896,16 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
   #ggs <- imap(msi_out, trimplots) # The imap(df) is the same as map2(df, names(df)) above. It take the msi_out as first argument and the names(msi_out) as second and feed that into the function
   
   if(write) {
-    walk2(ggs, spname, ~ggsave(plot = .x, filename = glue("{.y}-Indicatorplot.png"), width = 748, height = 868, units = "px", dpi = 72), .progress = "Saving trimplots...")
+    #set tag
+    if (is.null(tag)) {
+      tag = ""
+    }else {
+      tag = glue("_{tag}")
+    }
+    #set filepath
+    filepath <- normalizePath(filepath)
+    
+    walk2(ggs, spname, ~ggsave(plot = .x, filename = glue("{filepath}/{.y}-Indicatorplot{tag}.png"), width = 748, height = 868, units = "px", dpi = 72), .progress = "Saving trimplots...")
   } 
   if (print) {
     ggs

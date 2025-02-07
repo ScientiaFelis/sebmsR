@@ -11,6 +11,8 @@ get_trimPlots(
   Län = ".",
   Landskap = ".",
   Kommun = ".",
+  filepath = getwd(),
+  tag = NULL,
   xaxis_sep = 5,
   verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
@@ -26,14 +28,14 @@ get_trimPlots(
 
 \item{Art}{the species of interest, ignored if trimIndex is not NULL}
 
-\item{Län}{character or regular expression; which county you want the data
-from}
+\item{Län}{character or regular expression; which county you want the data from}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 
 \item{Kommun}{character or reg ex; which municipality you want the data from}
 
-\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
+\item{verification}{a verification code that filter out verified occurenses of species,
+default to 109.}
 
 \item{source}{the data sources}
 

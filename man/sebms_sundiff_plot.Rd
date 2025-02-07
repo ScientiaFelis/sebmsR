@@ -7,6 +7,8 @@
 sebms_sundiff_plot(
   year = lubridate::year(lubridate::today()) - 1,
   df,
+  filepath = getwd(),
+  tag = NULL,
   months = 4:9,
   per_month = FALSE,
   legends = FALSE,
@@ -17,6 +19,11 @@ sebms_sundiff_plot(
 \item{year}{the year or years to produce plot for}
 
 \item{df}{optinal; dataframe from the [sebms_sunhour_diff()]}
+
+\item{filepath}{a path to the directory where the plots should be saved; default to
+working directory}
+
+\item{tag}{an optional tag that is added to the end of the file name}
 
 \item{months}{numeric value of the months to summarise sun ours over (default
 to 4:9)}

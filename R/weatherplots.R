@@ -371,7 +371,7 @@ sebms_tempplot <- function(temp, colours = sebms_palette){
 #' @return png files with temperature and precipitation figures
 #'
 #' @export
-sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_place = NA, savepng = TRUE, colours = sebms_palette) {
+sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_place = NA, filepath = getwd(), tag = NULL, savepng = TRUE, colours = sebms_palette) {
   
   if(length(colours) != 2) {
     cat("GIVE TWO COLOURS")
@@ -389,8 +389,8 @@ sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_p
     if(unique(is.na(my_place))) # This is the default station names
       my_place <- c("Lund","Visby","Stockholm", "Umeå")
     
-    try(map2(plotst, my_place, sebms_ggsave, weathervar = glue("Temp_{year}"), .progress = "Saving temp figure"), silent = T) # This iterates over plot + name and save it to file
-    try(map2(plotsp, my_place, sebms_ggsave, weathervar = glue("Precip_{year}"), .progress = "Saving precip figure"), silent = T)
+    try(map2(plotst, my_place, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), weathervar = glue("Temp_{year}{tag}")), .progress = "Saving temp figure"), silent = T) # This iterates over plot + name and save it to file
+    try(map2(plotsp, my_place, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), weathervar = glue("Precip_{year}{tag}")), .progress = "Saving precip figure"), silent = T)
   }
   
   list(plotst, plotsp)

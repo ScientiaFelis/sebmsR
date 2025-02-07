@@ -6,6 +6,23 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.2.0
+
+* add a `filepath` argument to set the path to a directory where the produced files are saved. This works in the species plots, distribution maps and trim functions.
+
+# v 2.1.1
+
+* add a `tag` argument to attach a tag at the end of file names for species plots.
+
+# v 2.1.0
+
+* add verification argument for species. Now it is possible to chose what verification level the observations should have. Both for trim functions and species map functions.
+* add argument to set size of circles in `sebms_local_transect_map()` based on year of visit.
+
+# v 2.0.1
+
+* fix small issues with `sebms_local_transect_map()`
+
 # v 2.0.0
 
 * add new function `sebms_local_transect_map()` to create local maps of counties, regions or municipalities with the point or transect locatins on.

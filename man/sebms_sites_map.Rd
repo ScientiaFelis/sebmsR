@@ -13,6 +13,8 @@ sebms_sites_map(
   width = 12,
   height = 18,
   maptype = "both",
+  filepath = getwd(),
+  tag = NULL,
   print = FALSE,
   verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84)
@@ -23,8 +25,7 @@ sebms_sites_map(
 
 \item{occ_sp}{SpatialPoints with occurrence data}
 
-\item{Län}{character or regular expression; which county you want the data
-from}
+\item{Län}{character or regular expression; which county you want the data from}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 
@@ -38,12 +39,17 @@ from}
 or 'both' (default). The 'Transect' and 'Point' can be
 abbreviated to 'T' and 'P'.}
 
+\item{filepath}{a path to a folder where the plot file should be saved}
+
+\item{tag}{a tag to be added at the end of the file name; optional. For instance to
+show the county the plot or data contain.}
+
 \item{print}{logical; should the plots be printed in window, default FALSE}
 
-\item{verification}{a verification code that filter out verified occurenses of species, default to 109.}
+\item{verification}{a verification code that filter out verified occurenses of species,
+default to 109.}
 
-\item{source}{the database sources as id numbers,
-defaults to `54,55,56,63,64,66,67,84`}
+\item{source}{the database sources as id numbers, defaults to `54,55,56,63,64,66,67,84`}
 }
 \value{
 Figures in png for points, and transects the given year

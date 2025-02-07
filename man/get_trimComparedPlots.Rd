@@ -10,6 +10,8 @@ get_trimComparedPlots(
   Län = ".",
   Landskap = ".",
   Kommun = ".",
+  filepath = getwd(),
+  tag = NULL,
   trimmedImputedSwedishList = NULL,
   verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84),

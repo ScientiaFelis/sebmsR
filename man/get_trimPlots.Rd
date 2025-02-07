@@ -11,6 +11,8 @@ get_trimPlots(
   Län = ".",
   Landskap = ".",
   Kommun = ".",
+  filepath = getwd(),
+  tag = NULL,
   xaxis_sep = 5,
   verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84),

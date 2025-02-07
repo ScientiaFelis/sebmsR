@@ -11,6 +11,8 @@ get_indicatorAnalyses(
   Län = ".",
   Landskap = ".",
   Kommun = ".",
+  filepath = getwd(),
+  tag = NULL,
   verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
   write = TRUE,

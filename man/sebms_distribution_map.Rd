@@ -11,6 +11,8 @@ sebms_distribution_map(
   Län = ".",
   Landskap = ".",
   Kommun = ".",
+  filepath = getwd(),
+  tag = NULL,
   width = 9,
   height = 18,
   print = FALSE,
@@ -30,6 +32,11 @@ sebms_distribution_map(
 \item{Landskap}{character or reg ex; which region you want the data from}
 
 \item{Kommun}{character or reg ex; which municipality you want the data from}
+
+\item{filepath}{a path to a folder where the plot file should be saved}
+
+\item{tag}{a tag to be added at the end of the file name; optional. For instance to
+show the county the plot or data contain.}
 
 \item{width}{the plot width, default 12 inches}
 

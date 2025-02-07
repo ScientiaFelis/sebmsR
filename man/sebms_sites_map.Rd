@@ -13,6 +13,8 @@ sebms_sites_map(
   width = 12,
   height = 18,
   maptype = "both",
+  filepath = getwd(),
+  tag = NULL,
   print = FALSE,
   verification = 109,
   source = c(54, 55, 56, 63, 64, 66, 67, 84)
@@ -36,6 +38,11 @@ sebms_sites_map(
 \item{maptype}{what survey type to produce map on, can be 'Transect', 'Point', 'Transekt', 'Punkt',
 or 'both' (default). The 'Transect' and 'Point' can be
 abbreviated to 'T' and 'P'.}
+
+\item{filepath}{a path to a folder where the plot file should be saved}
+
+\item{tag}{a tag to be added at the end of the file name; optional. For instance to
+show the county the plot or data contain.}
 
 \item{print}{logical; should the plots be printed in window, default FALSE}
 

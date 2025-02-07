@@ -31,8 +31,8 @@
 #' @export
 get_trimInfile <- function(years=2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filterPattern=NULL, topList=FALSE, topNumber=200, verification = 109, source = c(54,55,56,63,64,66,67,84)){
   
-  trimSpecies <- sebms_trimSpecies(year = years, Art = Art, topList = topList, verification = verification, source = source) %>% 
-    distinct(speuid, art, verification_code, .keep_all = T) %>% 
+  trimSpecies <- sebms_trimSpecies(year = years, Art = Art, topList = topList, source = source) %>% 
+    distinct(speuid, art, .keep_all = T) %>% 
     slice_head(n=topNumber)
   
   spein <- function(df = data, speuid) {
@@ -45,7 +45,7 @@ get_trimInfile <- function(years=2010:lubridate::year(lubridate::today())-1, Art
       mutate(total_number = as.numeric(total_number)) %>%
       summarise(total_number = sum(total_number, na.rm = T), .by = c(siteuid, year, län, landskap, kommun))
     
-    visits <- sebms_trimvisits(year = years, minmax = minW:maxW, verification = verification, source = source) %>% 
+    visits <- sebms_trimvisits(year = years, minmax = minW:maxW, source = source) %>% 
       mutate(visit = as.numeric(visit))
     
     if(nrow(obses) > 0) { #Precondition to skip species with zero observations

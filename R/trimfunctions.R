@@ -176,7 +176,7 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
 #' @importFrom stringr str_replace
 #' @importFrom glue glue
 #' @importFrom rtrim index overall
-#' @importFrom purrr map2 walk2
+#' @importFrom purrr map2 walk2 discard
 #' 
 #' @return figures in png format of the species trends with confidence interval
 #' @export
@@ -297,6 +297,8 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrida
       }
     }
   }
+  
+  trimIndex <- trimIndex %>% discard(is.null)
   
   ggs <- vector("list", length = length(trimIndex))
   spname <- names(trimIndex) %>% 

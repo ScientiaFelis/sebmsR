@@ -97,6 +97,14 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
     ungroup() %>% 
     mutate(plots = map2(data, sitetype, speplot, .progress = "Making plots:"))
   
+  
+  #Set year name  
+  if (length(year)>1) {
+    yearname <- paste0(min(year),"-",max(year))  
+  }else {
+    yearname <- year
+  }
+  
   #set tag
   if (is.null(tag)) {
     tag = ""
@@ -106,7 +114,7 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
   #set filepath
   filepath <- normalizePath(filepath)
   
-  map2(ggs$plots, ggs$sitetype, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), width = width, height = height, weathervar = glue("{year}{tag}")), .progress = "Saving plots:")
+  map2(ggs$plots, ggs$sitetype, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), width = width, height = height, weathervar = glue("{yearname}{tag}")), .progress = "Saving plots:")
   
   if (print) {
     return(ggs$plots)
@@ -249,6 +257,13 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
     ungroup() %>% 
     mutate(plots = map2(data, speuid, speplot, .progress = "Making plots:"))
   
+  # set year variable  
+  if (length(year)>1) {
+    yearname <- paste0(min(year),"-",max(year))  
+  }else {
+    yearname <- year
+  }
+  
   #set tag
   if (is.null(tag)) {
     tag = ""
@@ -258,7 +273,8 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
   #set filepath
   filepath <- normalizePath(filepath)
   
-  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), width = width, height = height, weathervar = glue("{year}{tag}")), .progress = "Saving plots:")
+  
+  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), width = width, height = height, weathervar = glue("{yearname}{tag}")), .progress = "Saving plots:")
   
   if (print) {
     return(ggs$plots)

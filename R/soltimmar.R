@@ -69,40 +69,44 @@ sunHdata <- function(year, months, day, per_day = FALSE) {
 #' @export
 sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, months = 4:9, per_month = FALSE, per_day = FALSE, to_env = FALSE) {
   
-  ## QUESTION: Is not the different allyear and dayfunc actually the same? So the only two allyears() you need is with and without per day?
+  
+  # Functions for per day,  per month and per year data
+  
+  dayfunc <- function(year, months) {
+    pmap(Day, possibly(~sunHdata(year = year, months = months, day = .x, per_day = TRUE))) %>%
+      list_rbind() %>% 
+      group_by(gapvalue, lat, lon) %>% 
+      summarise(value = sum(value), .groups = "drop")
+  } # This function iterate over days (and hour combinations if wanted) in combination with the year and month.
+  
+  allyears <- function(year, months, .f = sunHdata){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
+    map2(year, months, .f) %>% ##iterate through year plus month and send that to sunHdata via dayfunc and fix_sunhour_NAs, se above
+      set_names(months) %>% # set the names of month to list items
+      bind_rows(.id = "month") %>% # Take the name of list items (month) and set them in a variable
+      group_by(month, gapvalue, lat, lon) %>% 
+      summarise(total_sunH = sum(value),
+                .groups = "drop") 
+  }
+  
   if (per_month) { #This runs two different versions of the functions. Summarise per month or per year.
-    
     if (per_day) {
-      dayfunc <- function(year, months) {
-        pmap(Day, possibly(~sunHdata(year = year, months = months, day = .x, per_day = TRUE))) %>%
-          list_rbind() %>% 
-          group_by(gapvalue, lat, lon) %>% 
-          summarise(daysunH = sum(value), .groups = "drop")
-      } # This function iterate over days (and hour combinations if wanted) in combination with the year and month.
+      # This is the function loop that download the data with the appropiate function calls loaded above.
+      #FIXME: how long is the list? What determine the length, years, months? Dependent on per_month?
+      sunlist <- map(year, ~allyears(year = .x, months = months, .f = dayfunc), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
+        set_names(year) %>% # set names to Year
+        bind_rows(.id = "Year")%>%
+        mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
       
-      allyears <- function(year, months){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
-        map2(year, months, dayfunc) %>% ##iterate through year plus month and send that to sunHdata via dayfunc and fix_sunhour_NAs, se above
-          set_names(months) %>% # set the names of month to list items
-          bind_rows(.id = "month") %>% # Take the name of list items (month) and set them in a variable
-          group_by(month, gapvalue, lat, lon) %>% 
-          summarise(total_sunH = sum(daysunH),
-                    .groups = "drop") %>%
-          mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
-        
-      }
+      
     }else {# This function summarise per month but do not use per day values.
       
-      allyears <- function(year, months){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
-        map2(year, months, possibly(sunHdata)) %>% ##iterate through year plus month and send that to sunHdata, se above
-          set_names(months) %>% # set the names of month to list items
-          bind_rows(.id = "month") %>% # Take the name of list items (month) and set them in a variable
-          group_by(month, gapvalue, lat, lon) %>%
-          summarise(total_sunH = sum(value),.groups = "drop") %>%
-          mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
-      }
+      sunlist <- map(year, ~allyears(year = .x, months = months, .f = sunHdata), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
+        set_names(year) %>% # set names to Year
+        bind_rows(.id = "Year")%>%
+        mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
+      
     }  
   }else { # Below functions summarise per year instead.
-    
     
     # DayHour <- list(day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"),# All days in a month
     #   hour = c("00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23")
@@ -111,103 +115,83 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
     # Day <- list(day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31")) # All days in a month
     
     if (per_day) { # Take out data per day
-      dayfunc <- function(year, months) {
-        pmap(Day, possibly(~sunHdata(year = year, months = months, day = .x, per_day = TRUE))) %>%
-          list_rbind() %>% 
-          group_by(gapvalue, lat, lon) %>% 
-          summarise(daysunH = sum(value), .groups = "drop")
-      } # This function iterate over days (and hour combinations if wanted) in combination with the year and month.
+      sunlist <- map(year, ~allyears(year = .x, months = months, .f = dayfunc), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
+        set_names(year) %>% # set names to Year
+        bind_rows(.id = "Year")
       
-      allyears <- function(year, months){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
-        map2(year, months, dayfunc) %>% ##iterate through year plus month and send that to sunHdata via dayfunc and fix_sunhour_NAs, se above
-          set_names(months) %>% # set the names of month to list items
-          bind_rows(.id = "month") %>% # Take the nmae of list items (month) and set them in a variable
-          group_by(month, gapvalue, lat, lon) %>%
-          summarise(total_sunH = sum(daysunH),
-                    .groups = "drop")
-        
-      }
     }else { # Use monthly data from SMHI to summarise on
-      
-      allyears <- function(year, months){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
-        map2(year, months, possibly(sunHdata)) %>% ##iterate through year plus month and send that to sunHdata, se above
-          set_names(months) %>% # set the names of month to list items
-          bind_rows(.id = "month") %>% # Take the name of list items (month) and set them in a variable
-          group_by(month, gapvalue, lat, lon) %>%
-          summarise(total_sunH = sum(value),.groups = "drop")
-      }
-    }
+    
+    sunlist <- map(year, ~allyears(year = .x, months = months, .f = sunHdata), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
+      set_names(year) %>% # set names to Year
+      bind_rows(.id = "Year")
+    
+  }
+}
+
+if (length(months) < 6 && per_month == FALSE) {
+  message("IF YOU ARE MAKING A FIGURE, IT IS OPTIMIZED FOR THE SUNHOURS OVER 6 SUMMER MONTH\n")
+  message("USE 'per_month = TRUE' TO GET VALUES PER MONTH")
+}
+
+
+# Now we take the data frame and convert it to a sf object and intersect with a sf object over Sweden.
+# We then also bind the mean values to the resulting data frame and calculate a diff from the total sun hours
+if (per_month) { #per month sunlist data
+  
+  lmon <- sunlist %>% distinct(month) %>% pull()
+  if(length(lmon) < length(months)) {
+    message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n 'per_day=TRUE' MIGHT WORK.")
+    months <- as.integer(lmon)
   }
   
-  if (length(months) < 6 && per_month == FALSE) {
-    message("IF YOU ARE MAKING A FIGURE, IT IS OPTIMIZED FOR THE SUNHOURS OVER 6 SUMMER MONTH\n")
-    message("USE 'per_month = TRUE' TO GET VALUES PER MONTH")
+  sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.
+    select(Year, month, gapvalue, total_sunH, lon, lat) %>% # Put year in a column
+    filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
+    st_as_sf(coords = c("lon", "lat")) %>%
+    st_set_crs(4326) %>%
+    st_intersection(SE) %>% # Filter out points for Sweden
+    group_by(month) %>% 
+    mutate(pID = row_number(),
+           pID = glue("{month}_{pID}")) %>% # Make a idnumber per month
+    st_join(meansunH_M %>% filter(month %in% months) %>% select(-month)) %>% # Bind in the mean sun hours per month
+    group_by(Year, month) %>% 
+    mutate(sundiff = total_sunH - mean_sunH) %>% # Calculate difference of sunhours to mean
+    ungroup() 
+  
+}else { # Per year sunlist data
+  
+  lmon <- sunlist %>% distinct(month) %>% pull()
+  
+  if(length(lmon) < length(months)) {
+    message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n")
+    message("IF YOU ARE MAKING A FIGURE, IT WILL BE INCORRECT, TO BLUE!\n")
+    message("USE 'per_day=T', WHICH MAY SOLVE THE PROBLEM BUT TAKE LONG TIME.")
   }
   
-  # This is the function loop that download the data with the appropiate function calls loaded above.
-  #FIXME: how long is the list? What determine the length, years, months? Dependent on per_month?
-  sunlist <- map(year, ~allyears(year = .x, months = months), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
-    set_names(year) %>% # set names to Year
-    bind_rows(.id = "Year")
+  sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.
+    group_by(Year, gapvalue, lat, lon) %>% 
+    summarise(total_sunH = sum(total_sunH)) %>% 
+    ungroup() %>% 
+    mutate(total_sunH = total_sunH / 60) %>% # Convert minutes to hours
+    select(Year, gapvalue, total_sunH, lon, lat) %>% # Put year in a column
+    filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
+    st_as_sf(coords = c("lon", "lat")) %>%
+    st_set_crs(4326) %>%
+    st_intersection(SE) %>% # Filter out points in Sweden
+    mutate(pID = row_number()) %>% 
+    left_join(meansunH %>% st_drop_geometry(), by = "pID") %>% # bind in the mean sun hours per month
+    mutate(sundiff = total_sunH - mean_sunH) # Calculate difference of sunhours to mean
+}
+
+if (to_env) {
   
-  # Now we take the data frame and convert it to a sf object and intersect with a sf object over Sweden.
-  # We then also bind the mean values to the resulting data frame and calculate a diff from the total sun hours
-  if (per_month) { #per month sunlist data
-    
-    lmon <- sunlist %>% distinct(month) %>% pull()
-    if(length(lmon) < length(months)) {
-      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n 'per_day=TRUE' MIGHT WORK.")
-      months <- as.integer(lmon)
-    }
-    
-    sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.
-      select(Year, month, gapvalue, total_sunH, lon, lat) %>% # Put year in a column
-      filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
-      st_as_sf(coords = c("lon", "lat")) %>%
-      st_set_crs(4326) %>%
-      st_intersection(SE) %>% # Filter out points for Sweden
-      group_by(month) %>% 
-      mutate(pID = row_number(),
-             pID = glue("{month}_{pID}")) %>% # Make a idnumber per month
-      st_join(meansunH_M %>% filter(month %in% months) %>% select(-month)) %>% # Bind in the mean sun hours per month
-      group_by(Year, month) %>% 
-      mutate(sundiff = total_sunH - mean_sunH) %>% # Calculate difference of sunhours to mean
-      ungroup() 
-    
-  }else { # Per year sunlist data
-    
-    lmon <- sunlist %>% distinct(month) %>% pull()
-    
-    if(length(lmon) < length(months)) {
-      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n")
-      message("IF YOU ARE MAKING A FIGURE, IT WILL BE INCORRECT, TO BLUE!\n")
-      message("USE 'per_day=T', WHICH MAY SOLVE THE PROBLEM BUT TAKE LONG TIME.")
-    }
-    
-    sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.
-      group_by(Year, gapvalue, lat, lon) %>% 
-      summarise(total_sunH = sum(total_sunH)) %>% 
-      ungroup() %>% 
-      mutate(total_sunH = total_sunH / 60) %>% # Convert minutes to hours
-      select(Year, gapvalue, total_sunH, lon, lat) %>% # Put year in a column
-      filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
-      st_as_sf(coords = c("lon", "lat")) %>%
-      st_set_crs(4326) %>%
-      st_intersection(SE) %>% # Filter out points in Sweden
-      mutate(pID = row_number()) %>% 
-      left_join(meansunH %>% st_drop_geometry(), by = "pID") %>% # bind in the mean sun hours per month
-      mutate(sundiff = total_sunH - mean_sunH) # Calculate difference of sunhours to mean
+  if(length(year) > 1) {
+    year <- glue("{min(year)}-{max(year)}") 
   }
   
-  if (to_env) {
-    
-    if(length(year) > 1) {
-      year <- glue("{min(year)}-{max(year)}") 
-    }
-    
-    assign(glue("SunHours_{year}"), sunlist, envir = .GlobalEnv) # Send the result to Global environment if the function is used inside a plot function. This way you do not need to download the data again if you want a diff plt to. You can just feed the spatsunlist data to the sun_diff_plot function
-  }
-  return(sunlist) # Also return the data frame to consol
+  assign(glue("SunHours_{year}"), sunlist, envir = .GlobalEnv) # Send the result to Global environment if the function is used inside a plot function. This way you do not need to download the data again if you want a diff plt to. You can just feed the spatsunlist data to the sun_diff_plot function
+}
+return(sunlist) # Also return the data frame to consol
 }
 
 

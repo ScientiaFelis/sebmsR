@@ -336,12 +336,15 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
     
   }
   
-  
   # Picking out the borders
   #Län <- paste0(Län, collapse = "|")
   if (Län != ".") {
     border <- Counties %>% 
-      filter(str_detect(LNNAMN, Län)) %>% 
+      filter(str_detect(LNNAMN, Län)) #Filter out the right borders
+    
+    ekonrut <- ekonrut %>% st_intersection(border) # crop the grid to just the actual area
+    
+    border <- border %>% # Pick out only the X Y coordinates and make it a tibble
       st_coordinates() %>% 
       as_tibble()
     
@@ -349,11 +352,16 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
     
     CPK <- centerPL %>% 
       filter(str_detect(LNNAMN, Län)) # This loads in the center point and automatic zoom level.
+    
   }
   
   if (Kommun != ".") {
     border <- Kommuner %>% 
-      filter(str_detect(KnNamn, Kommun)) %>% 
+      filter(str_detect(KnNamn, Kommun)) 
+    
+    ekonrut <- ekonrut %>% st_intersection(border) 
+    
+    border <- border %>% 
       st_coordinates() %>% 
       as_tibble()
     
@@ -365,7 +373,11 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
   
   if (Landskap != ".") {
     border <- Landskapen %>% 
-      filter(str_detect(reg_name, Landskap)) %>% 
+      filter(str_detect(reg_name, Landskap))   
+    
+    ekonrut <- ekonrut %>% st_intersection(border)
+    
+    border <- border %>% 
       st_coordinates() %>% 
       as_tibble()
     
@@ -378,7 +390,6 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
   wms_topo_nedtonad <- "https://hades.slu.se/lm/topowebb/wms/v1" # wms topografic map from SLU
   
   #TODO: Optional: region2: smalare linje 0,66 mm röd #CE2D30, 60% opacity, longdash
-  #TODO: Hex sites är en annan grid än vår vanliga utbredning, det är den som visar täckning i eBMS (Europanivå), optional att visa den (eller den vanliga, default är ingen grid)
   
   
   # Function to create the map
@@ -396,7 +407,17 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
         wms_topo_nedtonad,
         layers = "topowebbkartan_nedtonad",
         options = WMSTileOptions(format = "image/png", transparent = TRUE)
-      ) %>%
+      ) 
+    
+   # Add grid if wanted 
+    # This is set here to be below the borders and points
+    if (showgrid) {
+      lpl <- lpl %>% 
+        addPolygons(data = ekonrut, weight = 1, fill = F)
+    }
+    
+    # Add the rest of the features (border lines and points showing localities)
+    lpl <- lpl %>% 
       addPolylines(lng = border$X, lat = border$Y, # add border lines
                    color = "#CE2D30",
                    weight = 5,
@@ -413,11 +434,6 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
                        label = data$lokalnamn) %>% 
       addScaleBar(position = "topright", options = scaleBarOptions(imperial = F)) # this does not work with simple webshot save
     
-    if (showgrid) { # show the bms grid
-      lpl <- lpl %>% 
-        addPolygons(data = sebmsHex, lng = sebmsHex$X, lat = sebmsHex$Y)
-      #addPolygons(data = SweGrid, lng = SweGrid$X, lat = SweGrid$Y, group = SweGrid$L2)
-    }
     return(lpl)
   }
   
@@ -487,4 +503,9 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 # st_coordinates() %>% 
 # as_tibble()
 
-# use_data(Bioreg, centerPK, centerPL, centerPLsk, Counties, Day, DayHour, indicatorlist, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, SweLandGrid, sebms_swe_grid, sebmsHex, internal = T, overwrite = T, compress = "xz", version = 3)
+# ekonrut <- st_read("../sebmsTrim/BordersTillLokalkarta/utan holes/EkoRutor.shp") %>% 
+#   st_transform(4326) %>%
+#   st_coordinates() %>%
+#   as_tibble()
+
+# use_data(Bioreg, centerPK, centerPL, centerPLsk, Counties, Day, DayHour, indicatorlist, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, SweLandGrid, sebms_swe_grid, sebmsHex, ekonrut, internal = T, overwrite = T, compress = "xz", version = 3)

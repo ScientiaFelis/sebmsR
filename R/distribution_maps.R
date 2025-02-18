@@ -297,12 +297,18 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #' @import leaflet
 #' @importFrom mapview mapshot2
 #' @import webshot2
-#'
-#' @returns one or two png files with a map of the chosen area with slingor or transects
+#' @import ggplot2
+#' @importFrom sf st_intersection st_as_sf st_transform st_coordinates
+#' @import dplyr
+#' @importFrom lubridate year today
+#' @importFrom tidyr nest
+#' @importFrom purrr walk2 map2
+#' @importFrom glue glue
+#' @returns one or two png files with a map of the chosen area with points or transects
 #'   marked.
 #' @export
 
-sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = "Västmanlands", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
+sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
   
   message("Make sure to be on Lund university network or LU VPN to get the map to work!")
   
@@ -319,18 +325,20 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
         mutate(radius = if_else(year <= active_site_cutoff, 4,6.5))
     }
     
+ 
     occ_sp <- occ_sp %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
       st_set_crs(3006) %>% 
       st_transform(4326) %>%
       st_coordinates() %>%
       bind_cols(occ_sp) %>%
-      transmute(lokalnamn, sitetype, Kommun, lon = X, lat = Y, colour, radius)
+      transmute(lokalnamn, sitetype, lon = X, lat = Y, colour, radius)
     
   }
   
   
   # Picking out the borders
+  #Län <- paste0(Län, collapse = "|")
   if (Län != ".") {
     border <- Counties %>% 
       filter(str_detect(LNNAMN, Län)) %>% 

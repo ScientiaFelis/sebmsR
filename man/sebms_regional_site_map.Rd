@@ -39,6 +39,9 @@ sebms_regional_site_map(
 \item{tag}{a tag to be added at the end of the file name; optional. For instance to
 show the county the plot or data contain.}
 
+\item{active_site_cutoff}{the year where the site is considered old, and get a smaller
+point size on the map (default to no year, all are active).}
+
 \item{width}{the plot width, default 12 inches}
 
 \item{height}{the plot height, default 18 inches}
@@ -64,7 +67,7 @@ one or two png files with a map of the chosen area with points or transects
   marked.
 }
 \description{
-Creates a map of the County or Municipality with the transect and point data
-marked.You need to be on a Lund university or SLU network, or LU/SLU VPN to get the map
-as it is created from the SLU WMS topomap.
+Creates a map of the County or Municipality with the transect and point data marked.You
+need to be on a Lund university or SLU network, or LU/SLU VPN to get the map as it is
+created from the SLU WMS topomap.
 }

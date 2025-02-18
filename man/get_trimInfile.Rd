@@ -13,7 +13,7 @@ get_trimInfile(
   filterPattern = NULL,
   topList = FALSE,
   topNumber = 200,
-  verification = 109,
+  verification = c(109, 110, 111),
   source = c(54, 55, 56, 63, 64, 66, 67, 84)
 )
 }

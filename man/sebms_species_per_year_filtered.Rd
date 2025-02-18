@@ -4,7 +4,10 @@
 \alias{sebms_species_per_year_filtered}
 \title{Retrieve Species Abundance List per Year}
 \usage{
-sebms_species_per_year_filtered(year = 2020:2021, verification = 109)
+sebms_species_per_year_filtered(
+  year = 2020:2021,
+  verification = c(109, 110, 111)
+)
 }
 \arguments{
 \item{year}{year or years to use for plot}

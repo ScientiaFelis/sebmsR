@@ -16,7 +16,7 @@ sebms_distribution_map(
   width = 9,
   height = 18,
   print = FALSE,
-  verification = 109,
+  verification = c(109, 110, 111),
   source = c(54, 55, 56, 63, 64, 66, 67, 84)
 )
 }

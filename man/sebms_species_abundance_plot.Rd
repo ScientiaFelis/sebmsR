@@ -13,7 +13,7 @@ sebms_species_abundance_plot(
   plotname = FALSE,
   filepath = getwd(),
   tag = NULL,
-  verification = 109,
+  verification = c(109, 110, 111),
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
   print = FALSE
 )

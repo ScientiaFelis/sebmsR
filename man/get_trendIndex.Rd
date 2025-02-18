@@ -14,7 +14,7 @@ get_trendIndex(
   filepath = getwd(),
   tag = NULL,
   indicators = TRUE,
-  verification = 109,
+  verification = c(109, 110, 111),
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
   write = FALSE,
   ...

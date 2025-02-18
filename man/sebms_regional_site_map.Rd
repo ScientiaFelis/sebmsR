@@ -19,7 +19,7 @@ sebms_regional_site_map(
   maptype = "both",
   showgrid = F,
   print = FALSE,
-  verification = 109,
+  verification = c(109, 110, 111),
   source = c(54, 55, 56, 63, 64, 66, 67, 84)
 )
 }
@@ -60,7 +60,7 @@ default to 109.}
 \item{source}{the database sources as id numbers, defaults to `54,55,56,63,64,66,67,84`}
 }
 \value{
-one or two png files with a map of the chosen area with slingor or transects
+one or two png files with a map of the chosen area with points or transects
   marked.
 }
 \description{

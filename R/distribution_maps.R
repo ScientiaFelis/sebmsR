@@ -434,7 +434,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
                        fillOpacity = 1,
                        opacity = 1,
                        label = data$lokalnamn) %>% 
-      addScaleBar(position = "topright", options = scaleBarOptions(imperial = F)) # this does not work with simple webshot save
+      addScaleBar(position = "bottomright", options = scaleBarOptions(maxWidth = 150, imperial = F)) # this does not work with simple webshot save
     
     return(lpl)
   }
@@ -467,7 +467,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
   filepath <- normalizePath(filepath)
   
   # Save a plot per site type as png
-  walk2(ggs$plots, ggs$sitetype, ~mapshot2(.x, file = glue("{filepath}/{Region}_sitetype-{.y}{tag}.png")), .progress = "Saving plots:")
+  walk2(ggs$plots, ggs$sitetype, ~mapshot2(.x, file = glue("{filepath}/{Region}_sitetype-{.y}{tag}.png"), remove_controls = c("zoomControl", "layersControl", "homeButton",  "drawToolbar", "easyButton", "control")), .progress = "Saving plots:")
   
   if (print) {
     return(ggs$plots)

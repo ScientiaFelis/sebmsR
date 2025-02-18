@@ -61,7 +61,7 @@ editcred <- function(homepath = "~/") {
 #'   names, the site ids and names, site type, number of individuals for eahc
 #'   species, the date, county, region, and municipality
 #' @export
-sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", verification = 109, source = c(54,55,56,63,64,66,67,84)){
+sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)){
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   source <- glue("({paste0({source}, collapse = ',')})")
@@ -162,7 +162,7 @@ sebms_species_site_count_filtered <- function(year = 2021, Län = ".", Landskap 
 #'   names, the number of individuals, the date, county, region, and
 #'   municipality.
 #' @export
-sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", verification = 109, source = c(54,55,56,63,64,66,67,84)) {
+sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   Art <- glue("({paste0({Art}, collapse = ',')})")
@@ -253,7 +253,7 @@ sebms_species_count_filtered <- function(year = 2020:2021, Art = 1:200, Län = "
 #' @import glue
 #' @importFrom DBI dbGetQuery
 #' @export
-sebms_species_per_year_filtered <- function(year = 2020:2021, verification= 109) {
+sebms_species_per_year_filtered <- function(year = 2020:2021, verification= c(109,110,111)) {
   
   year <- glue("({paste0({year}, collapse = ',')})")
   verification <- glue("({paste0({verification}, collapse = ',')})")
@@ -354,9 +354,8 @@ sebms_naturum_climate <- function() {
 #'   names, the site ids and names, site type, max number of individuals observed for each site,
 #'   the date, county, region, and municipality, and the rank of site 
 #' @export
-sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", verification = 109, source = c(54,55,56,63,64,66,67,84)) {
+sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
   
-  # TODO: add verification of species c(109, 110, 111) with defauul 109
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
   Art <- glue("({paste0({Art}, collapse = ',')})")
@@ -675,7 +674,7 @@ sebms_trimvisits <- function(year = 2010:lubridate::year(lubridate::today()), mi
 #' @return a tibble with number of observed individuals per year and site.
 #' 
 #' @export
-sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filterPattern = NULL, minmax = 22:32, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
+sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filterPattern = NULL, minmax = 22:32, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
   
   minmax <- glue("({paste0({minmax}, collapse = ',')})") 
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL

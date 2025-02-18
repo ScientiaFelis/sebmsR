@@ -24,7 +24,7 @@
 #'
 #' @return Figures in png for points, and transects the given year
 #' @export
-sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "both", filepath = getwd(), tag = NULL, print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
+sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "both", filepath = getwd(), tag = NULL, print = FALSE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { #Load in data for all species from given year
     occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
@@ -144,7 +144,7 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
 #'   species occurrence points.
 
 #' @export
-sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, width=9, height=18, print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
+sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, width=9, height=18, print = FALSE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { # Load in data for all species from given year,
     # without species restriction to get all sites visited
@@ -302,7 +302,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #'   marked.
 #' @export
 
-sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, verification = 109, source = c(54,55,56,63,64,66,67,84)) {
+sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = "Västmanlands", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
   
   message("Make sure to be on Lund university network or LU VPN to get the map to work!")
   

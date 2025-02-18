@@ -6,6 +6,13 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+
+# v 2.3.0
+
+* add a posibility to set a 50x50 grid below map in the `sebms_regional_site_map()`
+* changed some defaults, such as the verification now is 109,110, and 111
+* fix some bugs
+
 # v 2.2.0
 
 * add a `filepath` argument to set the path to a directory where the produced files are saved. This works in the species plots, distribution maps and trim functions.

@@ -13,3 +13,4 @@ vignettes/sebms-intro.R
 !inst/extdata/MapSweden_RGB.png
 Test_SQL.rmd
 zgeomaps*
+Centrum*.csv

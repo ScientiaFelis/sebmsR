@@ -317,27 +317,20 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
   
   if (missing(occ_sp)) { # Load in data for all species from given year,
     # without species restriction to get all sites visited
-    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
-      #drop_na() %>% 
-      transmute(sitetype, lokalnamn, lat, lon, year = year(dag)) %>% 
-      mutate(colour = if_else(sitetype == "T", "#1F78B4", "#CE2D30"), # Set colours depending on sitetype
-             radius = 6)
-    # fix size of locale circles based on age
-    if (!is.null(active_site_cutoff)) {
-      occ_sp <- occ_sp %>% 
-        mutate(radius = if_else(year <= active_site_cutoff, 4,6.5))
-    }
-    
-    
-    occ_sp <- occ_sp %>% 
-      st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
-      st_set_crs(3006) %>% 
-      st_transform(4326) %>%
-      st_coordinates() %>%
-      bind_cols(occ_sp) %>%
-      transmute(lokalnamn, sitetype, lon = X, lat = Y, colour, radius)
-    
+    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) 
+    #drop_na() %>% 
   }
+  
+  occ_sp <- occ_sp %>% 
+    transmute(sitetype, lokalnamn, lat, lon, year = year(dag)) %>% 
+    mutate(colour = if_else(sitetype == "T", "#1F78B4", "#CE2D30"), # Set colours depending on sitetype
+           radius = 6.5)
+  # fix size of locale circles based on age
+  if (!is.null(active_site_cutoff)) {
+    occ_sp <- occ_sp %>% 
+      mutate(radius = if_else(year <= active_site_cutoff, 4,6.5))
+  }
+  
   
   # Picking out the borders
   #Län <- paste0(Län, collapse = "|")
@@ -425,10 +418,37 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
       filter(str_detect(reg_name, Landskap))
   }
   
+  if (str_detect(gridtype, "h")) {
+    occ_sp <- occ_sp %>% 
+      st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
+      st_set_crs(3006) %>% 
+      st_transform(4326) 
+    
+    #FIXME: Separate filling depending on if it is transekt or slinga.
+    segrid <- segrid %>%
+      mutate(fillc = if_else(map_lgl(st_contains(segrid, occ_sp), is_empty), "#ffffff", "#C06020"))
+    
+    occ_sp <- occ_sp %>%
+      st_coordinates() %>%
+      bind_cols(occ_sp) %>%
+      transmute(lokalnamn, sitetype, lon = X, lat = Y, colour, radius)  
+    
+    
+  }else {
+    
+    occ_sp <- occ_sp %>% 
+      st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
+      st_set_crs(3006) %>% 
+      st_transform(4326) %>%
+      st_coordinates() %>%
+      bind_cols(occ_sp) %>%
+      transmute(lokalnamn, sitetype, lon = X, lat = Y, colour, radius)
+  }
+  
   wms_topo_nedtonad <- "https://hades.slu.se/lm/topowebb/wms/v1" # wms topografic map from SLU
   
   #TODO: Optional: region2: smalare linje 0,66 mm röd #CE2D30, 60% opacity, longdash
-  
+  #TODO: Cplour hex grid on where there are observations 
   
   # Function to create the map
   
@@ -451,7 +471,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
     # This is set here to be below the borders and points
     if (showgrid) {
       lpl <- lpl %>% 
-        addPolygons(data = segrid, weight = 1, fill = F)
+        addPolygons(data = segrid, weight = 1, fill = T, fillColor = segrid$fillc)
     } 
     
     # Add the rest of the features (border lines and points showing localities)

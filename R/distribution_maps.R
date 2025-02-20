@@ -324,12 +324,20 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
   occ_sp <- occ_sp %>% 
     transmute(sitetype, lokalnamn, lat, lon, year = year(dag)) %>% 
     mutate(colour = if_else(sitetype == "T", "#1F78B4", "#CE2D30"), # Set colours depending on sitetype
-           radius = 6.5)
+           radius = 6.5) %>% 
+    st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
+    st_set_crs(3006) %>% 
+    st_transform(4326)
   # fix size of locale circles based on age
   if (!is.null(active_site_cutoff)) {
     occ_sp <- occ_sp %>% 
       mutate(radius = if_else(year <= active_site_cutoff, 4,6.5))
   }
+  
+  occ_spCord <- occ_sp %>%
+    st_coordinates() %>%
+    bind_cols(occ_sp) %>%
+    transmute(lokalnamn, sitetype, lon = X, lat = Y, colour, radius)  
   
   
   # Picking out the borders
@@ -418,32 +426,6 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
       filter(str_detect(reg_name, Landskap))
   }
   
-  if (str_detect(gridtype, "h")) {
-    occ_sp <- occ_sp %>% 
-      st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
-      st_set_crs(3006) %>% 
-      st_transform(4326) 
-    
-    #FIXME: Separate filling depending on if it is transekt or slinga.
-    segrid <- segrid %>%
-      mutate(fillc = if_else(map_lgl(st_contains(segrid, occ_sp), is_empty), "#ffffff", "#C06020"))
-    
-    occ_sp <- occ_sp %>%
-      st_coordinates() %>%
-      bind_cols(occ_sp) %>%
-      transmute(lokalnamn, sitetype, lon = X, lat = Y, colour, radius)  
-    
-    
-  }else {
-    
-    occ_sp <- occ_sp %>% 
-      st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
-      st_set_crs(3006) %>% 
-      st_transform(4326) %>%
-      st_coordinates() %>%
-      bind_cols(occ_sp) %>%
-      transmute(lokalnamn, sitetype, lon = X, lat = Y, colour, radius)
-  }
   
   wms_topo_nedtonad <- "https://hades.slu.se/lm/topowebb/wms/v1" # wms topografic map from SLU
   
@@ -458,7 +440,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
   }
   
   
-  locplot <- function(data, sitetype) {
+  locplot <- function(data, sittyp) {
     lpl <- leaflet(data) %>%
       setView(lng = CPK$X, lat = CPK$Y, zoom = zoomlevel) %>% # Set center and zoom
       addWMSTiles(
@@ -470,10 +452,18 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
     # Add grid if wanted 
     # This is set here to be below the borders and points
     if (showgrid) {
-      lpl <- lpl %>% 
-        addPolygons(data = segrid, weight = 1, fill = T, fillColor = segrid$fillc)
+      if (str_detect(gridtype, "h")) {
+        
+        segrid <- segrid %>%
+          mutate(fillc = if_else(map_lgl(st_contains(segrid, occ_sp %>% filter(sitetype == sittyp)), is_empty), "#ffffff", "#C06020"))
+        lpl <- lpl %>% 
+          addPolygons(data = segrid, weight = 1, fill = T, fillColor = segrid$fillc)
+      } else{
+        
+        lpl <- lpl %>% 
+          addPolygons(data = segrid, weight = 1, fill = F)
+      }
     } 
-    
     # Add the rest of the features (border lines and points showing localities)
     lpl <- lpl %>% 
       addPolylines(lng = border$X, lat = border$Y, # add border lines
@@ -496,16 +486,16 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
   }
   
   if (str_detect(maptype, "[Pp][ou]i?nk?t|[Pp]$")) {
-    occ_sp <- occ_sp %>% 
+    occ_spCord <- occ_spCord %>% 
       filter(sitetype == "P") # filter out if only point locales are wanted
   }
   
   if (str_detect(maptype, "[Tt]ranse[ck]t|[Tt]$")) {
-    occ_sp <- occ_sp %>% 
+    occ_spCord <- occ_spCord %>% 
       filter(sitetype == "T") # filter out if only transect locales are wanted
   }
   
-  ggs <- occ_sp %>%
+  ggs <- occ_spCord %>%
     distinct(sitetype, lokalnamn, .keep_all = T) %>% 
     group_by(sitetype) %>%  ## Create a map per site type
     nest() %>% # QUESTION: Nest per species to save one png per species?

@@ -293,7 +293,8 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #' @inheritParams sebms_sites_map
 #' @param zoomlevel the level of zoom on map. This is set automatically but this argument
 #'   allow for changing this if wanted.
-#' @param showgrid show the grid lines on the map.
+#' @param showgrid logical; should the grid show, defaults to FALSE
+#' @param gridtype which grid to show on the map, can take the value of 'square5', 'square10', or 'hex', can be shortened to '5','10', and 'h'. Ignored if showgrid = FALSE
 #' @param active_site_cutoff the year where the site is considered old, and get a smaller
 #'   point size on the map (default to no year, all are active).
 #' @import leaflet
@@ -310,7 +311,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #'   marked.
 #' @export
 
-sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, print = FALSE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
+sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, gridtype = "10", print = FALSE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
   
   message("Make sure to be on Lund university network or LU VPN to get the map to work!")
   
@@ -327,7 +328,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
         mutate(radius = if_else(year <= active_site_cutoff, 4,6.5))
     }
     
- 
+    
     occ_sp <- occ_sp %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
       st_set_crs(3006) %>% 
@@ -344,7 +345,19 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
     border <- Counties %>% 
       filter(str_detect(LNNAMN, Län)) #Filter out the right borders
     
-    ekonrut <- ekonrut %>% st_intersection(border) # crop the grid to just the actual area
+    if (showgrid) {
+      if (str_detect(gridtype, "5")) {
+        segrid <- sebms_5_grid %>% st_intersection(border) # crop the grid to just the actual area
+        
+      } else if (str_detect(gridtype, "10")) {
+        segrid <- sebms_10_grid %>% st_intersection(border) # crop the grid to just the actual area
+        
+      } else if (str_detect(gridtype, "h")) {
+        segrid <- sebms_hex_grid %>% st_intersection(border) # crop the grid to just the actual area
+        
+      }
+      
+    }
     
     border <- border %>% # Pick out only the X Y coordinates and make it a tibble
       st_coordinates() %>% 
@@ -361,8 +374,19 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
     border <- Kommuner %>% 
       filter(str_detect(KnNamn, Kommun)) 
     
-    ekonrut <- ekonrut %>% st_intersection(border) 
-    
+    if (showgrid) {
+      if (str_detect(gridtype, "5")) {
+        segrid <- sebms_5_grid %>% st_intersection(border) # crop the grid to just the actual area
+        
+      } else if (str_detect(gridtype, "10")) {
+        segrid <- sebms_10_grid %>% st_intersection(border) # crop the grid to just the actual area
+        
+      } else if (str_detect(gridtype, "h")) {
+        segrid <- sebms_hex_grid %>% st_intersection(border) # crop the grid to just the actual area
+        
+      }
+      
+    }
     border <- border %>% 
       st_coordinates() %>% 
       as_tibble()
@@ -377,7 +401,19 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
     border <- Landskapen %>% 
       filter(str_detect(reg_name, Landskap))   
     
-    ekonrut <- ekonrut %>% st_intersection(border)
+    if (showgrid) {
+      if (str_detect(gridtype, "5")) {
+        segrid <- sebms_5_grid %>% st_intersection(border) # crop the grid to just the actual area
+        
+      } else if (str_detect(gridtype, "10")) {
+        segrid <- sebms_10_grid %>% st_intersection(border) # crop the grid to just the actual area
+        
+      } else if (str_detect(gridtype, "h")) {
+        segrid <- sebms_hex_grid %>% st_intersection(border) # crop the grid to just the actual area
+        
+      }
+      
+    }
     
     border <- border %>% 
       st_coordinates() %>% 
@@ -411,12 +447,12 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
         options = WMSTileOptions(format = "image/png", transparent = TRUE)
       ) 
     
-   # Add grid if wanted 
+    # Add grid if wanted 
     # This is set here to be below the borders and points
     if (showgrid) {
       lpl <- lpl %>% 
-        addPolygons(data = ekonrut, weight = 1, fill = F)
-    }
+        addPolygons(data = segrid, weight = 1, fill = F)
+    } 
     
     # Add the rest of the features (border lines and points showing localities)
     lpl <- lpl %>% 
@@ -499,15 +535,15 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 # 
 # Landskapen <- st_read("../sebmsTrim/BordersTillLokalkarta/biogeografiska_landskap_SWEREF99TM_clean.shp") %>%
 #   st_transform(4326)
+# 
+# sebms_hex_grid <- st_read("../sebmsTrim/BordersTillLokalkarta/utan holes/grids_for_sebmsr/swe_index_hexagonal_50km.shp") %>%
+#    st_transform(4326)
+# 
+# sebms_10_grid <- st_read("../sebmsTrim/BordersTillLokalkarta/utan holes/grids_for_sebmsr/swe_10km_ekorutor_sweref.shp") %>%
+#   st_transform(4326)
+# 
+# sebms_5_grid <- st_read("../sebmsTrim/BordersTillLokalkarta/utan holes/grids_for_sebmsr/swe_5km_ekorutor_sweref.shp") %>%
+#   st_transform(4326)
+# 
 
-# sebmsHex <- st_read("../sebmsTrim/BordersTillLokalkarta/sebms_hex_sites_clean.shp") %>% 
-#    st_transform(4326) %>% 
-# st_coordinates() %>% 
-# as_tibble()
-
-# ekonrut <- st_read("../sebmsTrim/BordersTillLokalkarta/utan holes/EkoRutor.shp") %>% 
-#   st_transform(4326) %>%
-#   st_coordinates() %>%
-#   as_tibble()
-
-# use_data(Bioreg, centerPK, centerPL, centerPLsk, Counties, Day, DayHour, indicatorlist, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, SweLandGrid, sebms_swe_grid, sebmsHex, ekonrut, internal = T, overwrite = T, compress = "xz", version = 3)
+# use_data(Bioreg, centerPK, centerPL, centerPLsk, Counties, Day, DayHour, indicatorlist, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, SweLandGrid, sebms_swe_grid, sebms_hex_grid, sebms_10_grid, sebms_5_grid, internal = T, overwrite = T, compress = "xz", version = 3)

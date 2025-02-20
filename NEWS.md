@@ -6,6 +6,15 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.4.0
+
+* Now you can chose between a 10 or a 5 km square grid, or a large hexagonal grid. Defaults to no grid.
+For example, use the `showgrid = TRUE` and `gridtype = '5'` to show the 5 km square grid. Possible values for `gridtype` is '5', '10', or 'hex' (which can be shortened to 'h').
+
+
+# v 2.3.1
+
+* add scalebar to map
 
 # v 2.3.0
 

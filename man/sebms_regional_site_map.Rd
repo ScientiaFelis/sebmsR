@@ -18,6 +18,7 @@ sebms_regional_site_map(
   zoomlevel = NULL,
   maptype = "both",
   showgrid = F,
+  gridtype = "10",
   print = FALSE,
   verification = c(109, 110, 111),
   source = c(54, 55, 56, 63, 64, 66, 67, 84)
@@ -53,7 +54,9 @@ allow for changing this if wanted.}
 or 'both' (default). The 'Transect' and 'Point' can be
 abbreviated to 'T' and 'P'.}
 
-\item{showgrid}{show the grid lines on the map.}
+\item{showgrid}{logical; should the grid show, defaults to FALSE}
+
+\item{gridtype}{which grid to show on the map, can take the value of 'square5', 'square10', or 'hex', can be shortened to '5','10', and 'h'. Ignored if showgrid = FALSE}
 
 \item{print}{logical; should the plots be printed in window, default FALSE}
 

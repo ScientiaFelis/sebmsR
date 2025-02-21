@@ -297,6 +297,8 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #' @param gridtype which grid to show on the map, can take the value of 'square5', 'square10', or 'hex', can be shortened to '5','10', and 'h'. Ignored if showgrid = FALSE
 #' @param active_site_cutoff the year where the site is considered old, and get a smaller
 #'   point size on the map (default to no year, all are active).
+#' @param showsite logical; whether to show the sites on the map
+#' @param onemap logical; wheter to make one map with all sites or ekse two maps with points and transects separately.
 #' @import leaflet
 #' @importFrom mapview mapshot2
 #' @import webshot2

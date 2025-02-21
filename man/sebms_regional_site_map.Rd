@@ -17,8 +17,10 @@ sebms_regional_site_map(
   height = 18,
   zoomlevel = NULL,
   maptype = "both",
+  showsite = T,
   showgrid = F,
   gridtype = "10",
+  onemap = F,
   print = FALSE,
   verification = c(109, 110, 111),
   source = c(54, 55, 56, 63, 64, 66, 67, 84)
@@ -54,9 +56,13 @@ allow for changing this if wanted.}
 or 'both' (default). The 'Transect' and 'Point' can be
 abbreviated to 'T' and 'P'.}
 
+\item{showsite}{logical; whether to show the sites on the map}
+
 \item{showgrid}{logical; should the grid show, defaults to FALSE}
 
 \item{gridtype}{which grid to show on the map, can take the value of 'square5', 'square10', or 'hex', can be shortened to '5','10', and 'h'. Ignored if showgrid = FALSE}
+
+\item{onemap}{logical; wheter to make one map with all sites or ekse two maps with points and transects separately.}
 
 \item{print}{logical; should the plots be printed in window, default FALSE}
 

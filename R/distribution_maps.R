@@ -311,7 +311,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #'   marked.
 #' @export
 
-sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showgrid = F, gridtype = "10", print = FALSE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
+sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showsite = T, showgrid = F, gridtype = "10", onemap = F, print = FALSE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
   
   message("Make sure to be on Lund university network or LU VPN to get the map to work!")
   
@@ -455,7 +455,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
       if (str_detect(gridtype, "h")) {
         
         segrid <- segrid %>%
-          mutate(fillc = if_else(map_lgl(st_contains(segrid, occ_sp %>% filter(sitetype == sittyp)), is_empty), "#ffffff", "#C06020"))
+          mutate(fillc = if_else(map_lgl(st_contains(segrid, occ_sp %>% filter(str_detect(sitetype, sittyp))), is_empty), "#ffffff", "#C06020"))
         lpl <- lpl %>% 
           addPolygons(data = segrid, weight = 1, fill = T, fillColor = segrid$fillc)
       } else{
@@ -465,42 +465,47 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
       }
     } 
     # Add the rest of the features (border lines and points showing localities)
+    #TODO: Fix so you can show only filled hex grid
     lpl <- lpl %>% 
       addPolylines(lng = border$X, lat = border$Y, # add border lines
                    color = "#CE2D30",
                    weight = 5,
                    opacity = 1,
-                   dashArray = c("21","9", "21")) %>% 
-      addCircleMarkers(lng = data$lon, lat = data$lat,
-                       radius = data$radius,
-                       color = "black",
-                       weight = 0.6,
-                       fill = TRUE,
-                       fillColor = data$colour, # fill depending on site type
-                       fillOpacity = 1,
-                       opacity = 1,
-                       label = data$lokalnamn) %>% 
+                   dashArray = c("21","9", "21"))
+    
+    if (showsite) { # Should you show the sites or not in the map
+      
+      if (onemap) {
+        lpl <- lpl %>% 
+          addCircleMarkers(lng = data$lon, lat = data$lat,
+                           radius = 4,
+                           color = "black",
+                           weight = 0.6,
+                           fill = TRUE,
+                           fillColor = "#000000", # fill depending on site type
+                           fillOpacity = 1,
+                           opacity = 1,
+                           label = data$lokalnamn)
+      } else {
+        lpl <- lpl %>% 
+          addCircleMarkers(lng = data$lon, lat = data$lat,
+                           radius = data$radius,
+                           color = "black",
+                           weight = 0.6,
+                           fill = TRUE,
+                           fillColor = data$colour, # fill depending on site type
+                           fillOpacity = 1,
+                           opacity = 1,
+                           label = data$lokalnamn) 
+      }
+    }
+    
+    lpl <- lpl %>% 
       addScaleBar(position = "bottomright", options = scaleBarOptions(maxWidth = 150, imperial = F)) # this does not work with simple webshot save
     
     return(lpl)
   }
   
-  if (str_detect(maptype, "[Pp][ou]i?nk?t|[Pp]$")) {
-    occ_spCord <- occ_spCord %>% 
-      filter(sitetype == "P") # filter out if only point locales are wanted
-  }
-  
-  if (str_detect(maptype, "[Tt]ranse[ck]t|[Tt]$")) {
-    occ_spCord <- occ_spCord %>% 
-      filter(sitetype == "T") # filter out if only transect locales are wanted
-  }
-  
-  ggs <- occ_spCord %>%
-    distinct(sitetype, lokalnamn, .keep_all = T) %>% 
-    group_by(sitetype) %>%  ## Create a map per site type
-    nest() %>% # QUESTION: Nest per species to save one png per species?
-    ungroup() %>% 
-    mutate(plots = map2(data, sitetype, locplot, .progress = "Making plots:"))
   
   
   #set tag
@@ -512,8 +517,42 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
   #set filepath
   filepath <- normalizePath(filepath)
   
-  # Save a plot per site type as png
-  walk2(ggs$plots, ggs$sitetype, ~mapshot2(.x, file = glue("{filepath}/{Region}_sitetype-{.y}{tag}.png"), remove_controls = c("zoomControl", "layersControl", "homeButton",  "drawToolbar", "easyButton", "control")), .progress = "Saving plots:")
+  
+  # Save a plot with both transect and point in one map.
+  if (onemap) { # This is if you want only one map with both points and transects
+    
+    occ_spCord %>%
+      distinct(lokalnamn, .keep_all = T) %>% 
+      locplot(sittyp = "T|P") %>% 
+      mapshot2(file = glue("{filepath}/{Region}{tag}.png"), remove_controls = c("zoomControl", "layersControl", "homeButton",  "drawToolbar", "easyButton", "control"))
+    
+  } else { # This is of you want separate point and transect maps (default)
+    
+    
+    
+    # Save a plot per site type as png
+    
+    if (str_detect(maptype, "[Pp][ou]i?nk?t|[Pp]$")) {
+      occ_spCord <- occ_spCord %>% 
+        filter(sitetype == "P") # filter out if only point locales are wanted
+    }
+    
+    if (str_detect(maptype, "[Tt]ranse[ck]t|[Tt]$")) {
+      occ_spCord <- occ_spCord %>% 
+        filter(sitetype == "T") # filter out if only transect locales are wanted
+    }
+    
+    ggs <- occ_spCord %>%
+      distinct(sitetype, lokalnamn, .keep_all = T) %>% 
+      group_by(sitetype) %>%  ## Create a map per site type
+      nest() %>% # QUESTION: Nest per species to save one png per species?
+      ungroup() %>% 
+      mutate(plots = map2(data, sitetype, locplot, .progress = "Making plots:"))
+    
+    
+    walk2(ggs$plots, ggs$sitetype, ~mapshot2(.x, file = glue("{filepath}/{Region}_sitetype-{.y}{tag}.png"), remove_controls = c("zoomControl", "layersControl", "homeButton",  "drawToolbar", "easyButton", "control")), .progress = "Saving plots:")
+    
+  }
   
   if (print) {
     return(ggs$plots)

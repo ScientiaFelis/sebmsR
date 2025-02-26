@@ -598,24 +598,35 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 # 
 # walk(KomList, purrr::possibly(~sebms_local_transect_map(2009:2023, Kommun = .x, maptype = "T")))
 
+# st_centroid(Regions) %>% # Make a Centrumpoint file for each type of locale, and manually fill in the zoom 
+#   st_coordinates() %>% 
+#   bind_cols(Regions %>% st_drop_geometry(),.) %>% 
+#   write_csv2("CentrumpointsReg.csv")
+
 #centerPK <- readr::read_tsv("Centrumpoints.csv", locale = readr::locale(decimal_mark = "."))
 
 #centerPL <- readr::read_tsv("CentrumpointsLän.csv", locale = readr::locale(decimal_mark = "."))
 
+#centerPR <- readr::read_tsv("CentrumpointsReg.csv", locale = readr::locale(decimal_mark = "."))
+
 # centerPLsk <- readr::read_tsv("CentrumpointsLsk.csv", locale = readr::locale(decimal_mark = "."))
 
-# Counties <- st_read("../sebmsTrim/BordersTillLokalkarta/utan holes/lan_SWEREF99TM_clean_wo_holes.shp") %>%
+ 
+# Counties <- st_read("../sebmsTrim/BordersTillLokalkarta/hiresborder/highres_lan_SWEREF99TM.shp") %>%
 #   st_transform(4326)
 # 
-# Bioreg <- st_read("../sebmsTrim/BordersTillLokalkarta/biogeografiska_regioner_SWEREF99TM_clean.shp") %>% 
+# Bioreg <- st_read("../sebmsTrim/BordersTillLokalkarta/biogeografiska_regioner_SWEREF99TM_clean.shp") %>%
 #   st_transform(4326)
-#   
-# Kommuner <- st_read("../sebmsTrim/BordersTillLokalkarta/utan holes/kommuner_SWEREF99TM_clean_wo_holes.shp") %>%
+# 
+# Regions <- st_read("../sebmsTrim/BordersTillLokalkarta/hiresborder/highres_regioner_SWEREF99TM.shp") %>%
+#   st_transform(4326)
+# 
+# Kommuner <- st_read("../sebmsTrim/BordersTillLokalkarta/hiresborder/highres_kommuner_SWEREF99TM_clean.shp") %>%
 #   st_transform(4326)
 # 
 # Landskapen <- st_read("../sebmsTrim/BordersTillLokalkarta/biogeografiska_landskap_SWEREF99TM_clean.shp") %>%
 #   st_transform(4326)
-# 
+# # 
 # sebms_hex_grid <- st_read("../sebmsTrim/BordersTillLokalkarta/utan holes/grids_for_sebmsr/swe_index_hexagonal_50km.shp") %>%
 #    st_transform(4326)
 # 

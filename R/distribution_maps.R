@@ -373,6 +373,35 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
     
   }
   
+  if (Region != ".") {
+    border <- Regions %>% 
+      filter(str_detect(RegionName, Region)) #Filter out the right borders
+    
+    if (showgrid) {
+      if (str_detect(gridtype, "5")) {
+        segrid <- sebms_5_grid %>% st_intersection(border) # crop the grid to just the actual area
+        
+      } else if (str_detect(gridtype, "10")) {
+        segrid <- sebms_10_grid %>% st_intersection(border) # crop the grid to just the actual area
+        
+      } else if (str_detect(gridtype, "h")) {
+        segrid <- sebms_hex_grid %>% st_intersection(border) # crop the grid to just the actual area
+        
+      }
+      
+    }
+    
+    border <- border %>% # Pick out only the X Y coordinates and make it a tibble
+      st_coordinates() %>% 
+      as_tibble()
+    
+    #Region <- Län # to use when setting name for the saved png
+    
+    CPK <- centerPR %>% 
+      filter(str_detect(RegionName, Region)) # This loads in the center point and automatic zoom level.
+    
+  }
+  
   if (Kommun != ".") {
     border <- Kommuner %>% 
       filter(str_detect(KnNamn, Kommun)) 
@@ -597,4 +626,4 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 #   st_transform(4326)
 # 
 
-# use_data(Bioreg, centerPK, centerPL, centerPLsk, Counties, Day, DayHour, indicatorlist, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, SweLandGrid, sebms_swe_grid, sebms_hex_grid, sebms_10_grid, sebms_5_grid, internal = T, overwrite = T, compress = "xz", version = 3)
+ #use_data(Bioreg, centerPK, centerPL, centerPLsk, Day, DayHour, indicatorlist, Counties, Regions, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, SweLandGrid, sebms_swe_grid, sebms_hex_grid, sebms_10_grid, sebms_5_grid, internal = T, overwrite = T, compress = "xz", version = 3)

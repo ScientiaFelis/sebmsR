@@ -8,6 +8,7 @@ sebms_sites_map(
   year = lubridate::year(lubridate::today()) - 1,
   occ_sp,
   Län = ".",
+  Region = ".",
   Landskap = ".",
   Kommun = ".",
   width = 12,
@@ -27,6 +28,9 @@ sebms_sites_map(
 \item{occ_sp}{SpatialPoints with occurrence data}
 
 \item{Län}{character or regular expression; which county you want the data from}
+
+\item{Region}{character or reg ex; which region do you want. Possible values are:
+'SGot', 'OGot', 'VGotSve', 'OSve', 'NSveNor', 'NNor'.}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 
@@ -53,9 +57,6 @@ show the county the plot or data contain.}
 default to 109.}
 
 \item{source}{the database sources as id numbers, defaults to `54,55,56,63,64,66,67,84`}
-
-\item{Region}{character or reg ex; which region do you want. Possible values are:
-'SGot', 'OGot', 'VGotSve', 'OSve', 'NSveNor', 'NNor'.}
 }
 \value{
 Figures in png for points, and transects the given year

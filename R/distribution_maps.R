@@ -27,10 +27,10 @@
 #'
 #' @return Figures in png for points, and transects the given year
 #' @export
-sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "both", filepath = getwd(), tag = NULL, print = FALSE, write = TRUE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
+sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Region = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "both", filepath = getwd(), tag = NULL, print = FALSE, write = TRUE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { #Load in data for all species from given year
-    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
+    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
       transmute(sitetype, speuid, lokalnamn, lat, lon) %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
       st_set_crs(3006) %>% 
@@ -149,11 +149,11 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
 #'   species occurrence points.
 
 #' @export
-sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, width=9, height=18, print = FALSE, write = TRUE,  verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
+sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, width=9, height=18, print = FALSE, write = TRUE,  verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { # Load in data for all species from given year,
     # without species restriction to get all sites visited
-    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
+    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
       transmute(speuid, art, lokalnamn, lat, lon, maxobs = as.numeric(max)) %>% 
       mutate(art = str_replace_all(art, "/", "-")) %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 

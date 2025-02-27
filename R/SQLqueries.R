@@ -359,7 +359,7 @@ sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Region 
   
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL
-  Art <- glue("({paste0({Art}, collapse = ',')})")
+  species <- glue("({paste0({Art}, collapse = ',')})")
   source <- glue("({paste0({source}, collapse = ',')})")
   verification <- glue("({paste0({verification}, collapse = ',')})")
   
@@ -368,22 +368,22 @@ sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Region 
   Kommun <- paste0(str_to_lower(Kommun),collapse = "|") # Make the list of Kommun to s regex statement
   Region <- paste0(str_to_lower(Region),collapse = "|") # Make the list of Region to s regex statement
   
-  county <- regID %>% 
+  county <- regID2 %>% 
     filter(str_detect(reg_name, Län)) %>% # Filter out matching Län from a look up table
     pull(reg_uid) %>% # pull out the id-numbers
     paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
   
-  landsc <- regID %>% 
+  province <- regID2 %>% 
     filter(str_detect(reg_name, Landskap)) %>% 
     pull(reg_uid) %>% 
     paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
   
-  municipality <- regID %>% 
+  municipality <- regID2 %>% 
     filter(str_detect(reg_name, Kommun)) %>% 
     pull(reg_uid) %>% 
     paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
   
-  region <- regID %>% 
+  region <- regID2 %>% 
     filter(str_detect(reg_name, Region)) %>% 
     pull(reg_uid) %>% 
     paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
@@ -391,92 +391,222 @@ sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Region 
   #TODO; Add filter for the kommun, län, kandskap and Region JOIN, such that you only get the JOIN for the actual area, e.g. a county.
   # This can then be added to the glue() SQL call as such, {join} instead of all four JOINs 
   
-  q <- glue("
-          WITH cou AS
-           (SELECT reg_uid AS cou_id, reg_name AS län
-             FROM reg_region
-             WHERE reg_uid IN ({county}) AND reg_group = 'C'),
-           lsk AS
-           (SELECT reg_uid AS landskaps_id, reg_name AS landskap
-             FROM reg_region
-             WHERE reg_uid IN ({landsc}) AND reg_group = 'P'),
-           mun AS
-           (SELECT reg_uid AS kommun_id, reg_name AS kommun
-             FROM reg_region
-             WHERE reg_uid IN ({municipality}) AND reg_group = 'M'),
-          reg AS
-           (SELECT reg_uid AS reg_id, reg_name AS regions
-             FROM reg_region
-             WHERE reg_uid IN ({region}) AND reg_group = 'C')
-   
-      SELECT
-        t.speUId,
-        t.art,
-        t.sitUId,
-        t.Lokalnamn,
-        t.sitetype,
-        t.landskap,
-        t.län,
-        t.kommun,
-        --t.regions,
-        t.dag,
-        t.lat,
-        t.lon,
-        t.sumval_rank,
-        MAX(sumval)
-           
-      FROM
-        (SELECT
-          spe.spe_uid AS speuid,
-          spe.spe_semainname As art,
-          obs.obs_typ_vfcid AS verification_code,
-          sit.sit_uid AS situid,
-          sit.sit_name AS Lokalnamn,
-          vis.vis_begintime AS dag,
-          sit.sit_type AS sitetype,
-          sit.sit_geosweref99tmlat AS lat,
-          sit.sit_geosweref99tmlon AS lon,
-          cou.län AS län,
-          lsk.landskap AS landskap,
-          mun.kommun AS kommun,
-         -- reg.regions AS region,
-          EXTRACT (week FROM vis_begintime::date) AS vecka,
-          SUM(obs.obs_count) AS sumval,
-          dense_rank() OVER (PARTITION BY spe.spe_uid,sit.sit_uid 
-          ORDER BY SUM(obs.obs_count) DESC, vis.vis_uid ) AS sumval_rank
-        
-        FROM obs_observation AS obs
-        
-          INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
-          INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
-          INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
-          INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
-          --INNER JOIN reg_region AS reg ON sit.sit_reg_provinceid = reg.reg_uid
-          INNER JOIN spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid      -- så här bör det väl vara?
-          INNER JOIN cou ON sit.sit_reg_countyid = cou.cou_id
-          INNER JOIN lsk ON sit.sit_reg_provinceid = lsk.landskaps_id
-          INNER JOIN mun ON sit.sit_reg_municipalityid = mun.kommun_id
-          --INNER JOIN reg ON sit.sit_reg_municipalityid = reg.reg_id
-         
-        WHERE (spv.spv_istrim=TRUE or spe_uid in (135,131,132,133,139) ) -- Include nullobs and 4 aggregated species groups
-          AND extract('YEAR' from vis_begintime) IN {year}
-          AND vis_typ_datasourceid IN {source}
-          AND not (vis_typ_datasourceid = 55  and sit_reg_countyid=2)
-          AND spe.spe_uid IN {Art}
-          AND obs.obs_typ_vfcid IN {verification}
-        GROUP BY
-          spe.spe_uid, sit.sit_uid, vis.vis_uid, obs.obs_typ_vfcid, sitetype, cou.cou_id, cou.län, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun --, reg.reg_id, reg.regions,
-        ORDER BY
-            spe.spe_uid,sit.sit_uid) AS t -- End of inner select
-           
-      WHERE t.sumval_rank =1 --between 1 and 3 
-      GROUP BY
-        t.speUId, t.art,t.situid,t.Lokalnamn,t.lat,t.lon,t.sumval_rank, t.dag, t.län, t.kommun, t.landskap, t.sitetype --, t.regions
-      ORDER BY
-        t.speuid, MAX DESC, t.situid;"
-      
-  )
+  q <- glue("-- Query input params:
+-- > province     - Comma-separated list of reg_uid values corresponding to provinces, reg_group 'P'
+-- > region       - Comma-separated list of reg_uid values corresponding to regions, reg_group 'R'
+-- > county       - Comma-separated list of reg_uid values corresponding to counties, reg_group 'C'
+-- > municipality - Comma-separated list of reg_uid values corresponding to municipalities, reg_group 'M'
+-- > year         - Comma-separated list of years in 4-digit integer format, YYYY
+-- > source       - Comma-separated list of typ_uid values corresponding to data sources, typ_group 'dts'
+-- > species      - Comma-separated list of spe_uid values representing species
+-- > verification - Comma-separated list of typ_uid values corresponding to verification codes, typ_group 'vfc'
+
+-- Pre-fetch/-calculate dictionary data related to geographical regions, i.e., Provinces, Regions, Counties, and Municipalities
+WITH
+  pro AS (SELECT reg_uid AS pro_uid, reg_name AS pro_name FROM reg_region WHERE reg_group = 'P' AND reg_uid IN ({province}) ),
+  reg AS (SELECT reg_uid AS reg_uid, reg_name AS reg_name FROM reg_region WHERE reg_group = 'R' AND reg_uid IN ({region}) ),
+  cou AS (SELECT reg_uid AS cou_uid, reg_name AS cou_name FROM reg_region WHERE reg_group = 'C' AND reg_uid IN ({county}) ),
+  mun AS (SELECT reg_uid AS mun_uid, reg_name AS mun_name FROM reg_region WHERE reg_group = 'M' AND reg_uid IN ({municipality}))
+
+-- Basing on source data retrieved as part of inner query (tmp), now extract data points to be used for final presentation
+SELECT
+  tmp.spe_uid  AS speuid,
+  tmp.spe_name AS Art,
+  tmp.sit_uid  AS situid,
+  tmp.sit_name AS LokalNamn,
+  tmp.sit_type AS sitetype,
+  tmp.sit_lat  AS lat,
+  tmp.sit_lon  AS lon,
+  tmp.pro_name AS Landskap,
+  tmp.reg_name AS Region,
+  tmp.cou_name AS Län,
+  tmp.mun_name AS Kommun,
+  tmp.vis_time AS ObsDag,
+  tmp.obs_rank AS ObsRank,
+  MAX(obs_sum) AS ObsMaxSum
   
+FROM
+(
+  -- Inner query to retrieve source data from obs, vis, sit, seg, spv, and reg tables; note the row aggregation (SUM, RANK)
+  SELECT
+    spe.spe_uid        AS spe_uid,
+    spe.spe_semainname AS spe_name,
+    obs.obs_typ_vfcid  AS obs_vfc,
+    vis.vis_begintime  AS vis_time,
+    sit.sit_uid        AS sit_uid,
+    sit.sit_name       AS sit_name,
+    sit.sit_type       AS sit_type,
+    sit.sit_geosweref99tmlat AS sit_lat,
+    sit.sit_geosweref99tmlon AS sit_lon,
+    pro.pro_name       AS pro_name,
+    reg.reg_name       AS reg_name,
+    cou.cou_name       AS cou_name,
+    mun.mun_name       AS mun_name,
+    EXTRACT(WEEK FROM vis_begintime::date) AS vis_week, -- TODO: Why the need for a cast from timestamp to date here?
+    SUM(obs.obs_count) AS obs_sum,
+    DENSE_RANK() OVER (
+      PARTITION BY
+        spe.spe_uid,
+        sit.sit_uid 
+      ORDER BY
+        SUM(obs.obs_count) DESC,
+        vis.vis_uid
+    ) AS obs_rank
+    
+  FROM obs_observation AS obs
+  -- Inner Joins require non-NULL references in order to return records; thus, beware of column defs that allow NULLs!
+  INNER JOIN vis_visit   AS vis ON obs.obs_vis_visitid   = vis.vis_uid
+  INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
+  INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
+  INNER JOIN sit_site    AS sit ON seg.seg_sit_siteid    = sit.sit_uid
+  INNER JOIN spv_speciesvalidation AS spv ON spv.spv_spe_speciesid = spe.spe_uid
+  INNER JOIN pro ON sit.sit_reg_provinceid     = pro.pro_uid
+  INNER JOIN reg ON sit.sit_reg_regionid       = reg.reg_uid
+  INNER JOIN cou ON sit.sit_reg_countyid       = cou.cou_uid
+  INNER JOIN mun ON sit.sit_reg_municipalityid = mun.mun_uid
+
+  WHERE
+    -- Include nullobs and 4 aggregated species groups
+    (spv.spv_istrim OR spe.spe_uid IN (135, 131, 132, 133, 139) ) AND
+    -- Exclude BioGeo-sourced observations in Blekinge county
+    NOT (vis.vis_typ_datasourceid = 55 AND sit.sit_reg_countyid = 2) AND
+    -- Filter records based on the query input parameters
+    EXTRACT(YEAR FROM vis.vis_begintime) IN {year} AND
+    vis.vis_typ_datasourceid IN {source} AND
+    spe.spe_uid IN {species} AND
+    obs.obs_typ_vfcid IN {verification}
+    
+  GROUP BY
+    spe.spe_uid,
+    sit.sit_uid,
+    vis.vis_uid,
+    obs.obs_typ_vfcid,
+    sit.sit_type,
+    pro.pro_uid,
+    pro.pro_name,
+    reg.reg_uid,
+    reg.reg_name,
+    cou.cou_uid,
+    cou.cou_name,
+    mun.mun_uid,
+    mun.mun_name
+    
+  ORDER BY
+    spe.spe_uid,
+    sit.sit_uid
+    
+) AS tmp
+           
+WHERE
+  -- Rank between 1 and 3
+  tmp.obs_rank = 1 
+  
+GROUP BY
+  tmp.spe_uid,
+  tmp.spe_name,
+  tmp.sit_uid,
+  tmp.sit_name,
+  tmp.sit_lat,
+  tmp.sit_lon,
+  tmp.obs_rank,
+  tmp.vis_time,
+  tmp.pro_name,
+  tmp.reg_name,
+  tmp.cou_name,
+  tmp.mun_name,
+  tmp.sit_type
+  
+ORDER BY
+  tmp.spe_uid,
+  --MAX ??? DESC, -- TODO: ???
+  tmp.sit_uid;")
+            
+  #           q <- glue("
+  #         WITH cou AS
+  #          (SELECT reg_uid AS cou_id, reg_name AS län
+  #            FROM reg_region
+  #            WHERE reg_uid IN ({county}) AND reg_group = 'C'),
+  #          lsk AS
+  #          (SELECT reg_uid AS landskaps_id, reg_name AS landskap
+  #            FROM reg_region
+  #            WHERE reg_uid IN ({landsc}) AND reg_group = 'P'),
+  #          mun AS
+  #          (SELECT reg_uid AS kommun_id, reg_name AS kommun
+  #            FROM reg_region
+  #            WHERE reg_uid IN ({municipality}) AND reg_group = 'M'),
+  #         reg AS
+  #          (SELECT reg_uid AS reg_id, reg_name AS regions
+  #            FROM reg_region
+  #            WHERE reg_uid IN ({region}) AND reg_group = 'C')
+  #  
+  #     SELECT
+  #       t.speUId,
+  #       t.art,
+  #       t.sitUId,
+  #       t.Lokalnamn,
+  #       t.sitetype,
+  #       t.landskap,
+  #       t.län,
+  #       t.kommun,
+  #       --t.regions,
+  #       t.dag,
+  #       t.lat,
+  #       t.lon,
+  #       t.sumval_rank,
+  #       MAX(sumval)
+  #          
+  #     FROM
+  #       (SELECT
+  #         spe.spe_uid AS speuid,
+  #         spe.spe_semainname As art,
+  #         obs.obs_typ_vfcid AS verification_code,
+  #         sit.sit_uid AS situid,
+  #         sit.sit_name AS Lokalnamn,
+  #         vis.vis_begintime AS dag,
+  #         sit.sit_type AS sitetype,
+  #         sit.sit_geosweref99tmlat AS lat,
+  #         sit.sit_geosweref99tmlon AS lon,
+  #         cou.län AS län,
+  #         lsk.landskap AS landskap,
+  #         mun.kommun AS kommun,
+  #        -- reg.regions AS region,
+  #         EXTRACT (week FROM vis_begintime::date) AS vecka,
+  #         SUM(obs.obs_count) AS sumval,
+  #         dense_rank() OVER (PARTITION BY spe.spe_uid,sit.sit_uid 
+  #         ORDER BY SUM(obs.obs_count) DESC, vis.vis_uid ) AS sumval_rank
+  #       
+  #       FROM obs_observation AS obs
+  #       
+  #         INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
+  #         INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
+  #         INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
+  #         INNER JOIN sit_site AS sit ON seg.seg_sit_siteid = sit.sit_uid
+  #         --INNER JOIN reg_region AS reg ON sit.sit_reg_provinceid = reg.reg_uid
+  #         INNER JOIN spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid      -- så här bör det väl vara?
+  #         INNER JOIN cou ON sit.sit_reg_countyid = cou.cou_id
+  #         INNER JOIN lsk ON sit.sit_reg_provinceid = lsk.landskaps_id
+  #         INNER JOIN mun ON sit.sit_reg_municipalityid = mun.kommun_id
+  #         --INNER JOIN reg ON sit.sit_reg_municipalityid = reg.reg_id
+  #        
+  #       WHERE (spv.spv_istrim=TRUE or spe_uid in (135,131,132,133,139) ) -- Include nullobs and 4 aggregated species groups
+  #         AND extract('YEAR' from vis_begintime) IN {year}
+  #         AND vis_typ_datasourceid IN {source}
+  #         AND not (vis_typ_datasourceid = 55  and sit_reg_countyid=2)
+  #         AND spe.spe_uid IN {Art}
+  #         AND obs.obs_typ_vfcid IN {verification}
+  #       GROUP BY
+  #         spe.spe_uid, sit.sit_uid, vis.vis_uid, obs.obs_typ_vfcid, sitetype, cou.cou_id, cou.län, lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun --, reg.reg_id, reg.regions,
+  #       ORDER BY
+  #           spe.spe_uid,sit.sit_uid) AS t -- End of inner select
+  #          
+  #     WHERE t.sumval_rank =1 --between 1 and 3 
+  #     GROUP BY
+  #       t.speUId, t.art,t.situid,t.Lokalnamn,t.lat,t.lon,t.sumval_rank, t.dag, t.län, t.kommun, t.landskap, t.sitetype --, t.regions
+  #     ORDER BY
+  #       t.speuid, MAX DESC, t.situid;"
+  #     
+  # )
+  # 
   t <- glue("SELECT
  
 t.speUId,
@@ -538,6 +668,12 @@ ORDER BY
   res <- dbGetQuery(sebms_pool, q)
   as_tibble(res)
   
+  # Making regID
+  # regID2 <- dbGetQuery(sebms_pool, "SELECT * FROM reg_region") %>%
+  #   mutate(reg_name = if_else(reg_group == "R", reg_code, reg_name),
+  #          reg_name = str_to_lower(reg_name)) %>% 
+  #   select(reg_name, reg_uid)
+  # 
 } 
 
 #' Retrieve Species Data for Trim Functions

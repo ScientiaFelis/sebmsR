@@ -8,6 +8,7 @@ sebms_regional_site_map(
   year = lubridate::year(lubridate::today()) - 1,
   occ_sp,
   Län = ".",
+  Region = ".",
   Landskap = ".",
   Kommun = ".",
   filepath = getwd(),
@@ -22,6 +23,7 @@ sebms_regional_site_map(
   gridtype = "10",
   onemap = F,
   print = FALSE,
+  write = TRUE,
   verification = c(109, 110, 111),
   source = c(54, 55, 56, 63, 64, 66, 67, 84)
 )
@@ -32,6 +34,9 @@ sebms_regional_site_map(
 \item{occ_sp}{SpatialPoints with occurrence data}
 
 \item{Län}{character or regular expression; which county you want the data from}
+
+\item{Region}{character or reg ex; which region do you want. Possible values are:
+'SGot', 'OGot', 'VGotSve', 'OSve', 'NSveNor', 'NNor'.}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 
@@ -60,11 +65,16 @@ abbreviated to 'T' and 'P'.}
 
 \item{showgrid}{logical; should the grid show, defaults to FALSE}
 
-\item{gridtype}{which grid to show on the map, can take the value of 'square5', 'square10', or 'hex', can be shortened to '5','10', and 'h'. Ignored if showgrid = FALSE}
+\item{gridtype}{which grid to show on the map, can take the value of 'square5',
+'square10', or 'hex', can be shortened to '5','10', and 'h'. Ignored if showgrid =
+FALSE}
 
-\item{onemap}{logical; wheter to make one map with all sites or ekse two maps with points and transects separately.}
+\item{onemap}{logical; wheter to make one map with all sites or ekse two maps with
+points and transects separately.}
 
 \item{print}{logical; should the plots be printed in window, default FALSE}
+
+\item{write}{logical; should the file be written to a png, default to TRUE}
 
 \item{verification}{a verification code that filter out verified occurenses of species,
 default to 109.}

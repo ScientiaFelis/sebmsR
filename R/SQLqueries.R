@@ -355,7 +355,7 @@ sebms_naturum_climate <- function() {
 #'   names, the site ids and names, site type, max number of individuals observed for each site,
 #'   the date, county, region, and municipality, and the rank of site 
 #' @export
-sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200, Region = ".", Län = ".", Landskap = ".", Kommun = ".", verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
+sebms_occurances_distribution <- function(year = 2020:2021, Art = 1:200,  Län = ".", Region = ".", Landskap = ".", Kommun = ".", verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
   
   
   year <- glue("({paste0({year}, collapse = ',')})") # Make year span to a vector of years for the SQL

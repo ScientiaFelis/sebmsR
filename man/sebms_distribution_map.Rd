@@ -16,6 +16,7 @@ sebms_distribution_map(
   width = 9,
   height = 18,
   print = FALSE,
+  write = TRUE,
   verification = c(109, 110, 111),
   source = c(54, 55, 56, 63, 64, 66, 67, 84)
 )
@@ -43,6 +44,8 @@ show the county the plot or data contain.}
 \item{height}{the plot height, default 18 inches}
 
 \item{print}{logical; should the plots be printed in window, default FALSE}
+
+\item{write}{logical; should the file be written to a png, default to TRUE}
 
 \item{verification}{a verification code that filter out verified occurenses of species,
 default to 109.}

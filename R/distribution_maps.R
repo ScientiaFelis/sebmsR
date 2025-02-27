@@ -14,6 +14,8 @@
 #' @importFrom glue glue
 #'
 #' @inheritParams sebms_abundance_per_species_plot
+#' @param Region character or reg ex; which region do you want. Possible values are:
+#'   'SGot', 'OGot', 'VGotSve', 'OSve', 'NSveNor', 'NNor'.
 #' @param occ_sp SpatialPoints with occurrence data
 #' @param width the plot width, default 12 inches
 #' @param height the plot height, default 18 inches
@@ -147,7 +149,7 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
 #'   species occurrence points.
 
 #' @export
-sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, width=9, height=18, print = FALSE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
+sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, width=9, height=18, print = FALSE, write = TRUE,  verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { # Load in data for all species from given year,
     # without species restriction to get all sites visited
@@ -299,14 +301,18 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #' created from the SLU WMS topomap.
 #'
 #' @inheritParams sebms_sites_map
+#'
 #' @param zoomlevel the level of zoom on map. This is set automatically but this argument
 #'   allow for changing this if wanted.
 #' @param showgrid logical; should the grid show, defaults to FALSE
-#' @param gridtype which grid to show on the map, can take the value of 'square5', 'square10', or 'hex', can be shortened to '5','10', and 'h'. Ignored if showgrid = FALSE
+#' @param gridtype which grid to show on the map, can take the value of 'square5',
+#'   'square10', or 'hex', can be shortened to '5','10', and 'h'. Ignored if showgrid =
+#'   FALSE
 #' @param active_site_cutoff the year where the site is considered old, and get a smaller
 #'   point size on the map (default to no year, all are active).
 #' @param showsite logical; whether to show the sites on the map
-#' @param onemap logical; wheter to make one map with all sites or ekse two maps with points and transects separately.
+#' @param onemap logical; wheter to make one map with all sites or ekse two maps with
+#'   points and transects separately.
 #' @import leaflet
 #' @importFrom mapview mapshot2
 #' @import webshot2

@@ -8,6 +8,7 @@ sebms_occurances_distribution(
   year = 2020:2021,
   Art = 1:200,
   Län = ".",
+  Region = ".",
   Landskap = ".",
   Kommun = ".",
   verification = c(109, 110, 111),
@@ -20,6 +21,8 @@ sebms_occurances_distribution(
 \item{Art}{integer; the species uids of interest}
 
 \item{Län}{character or regular expression; which county you want the data from}
+
+\item{Region}{character or reg ex; which aggregated region you want the data from}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 

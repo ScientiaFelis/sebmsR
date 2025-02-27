@@ -16,6 +16,7 @@ sebms_sites_map(
   filepath = getwd(),
   tag = NULL,
   print = FALSE,
+  write = TRUE,
   verification = c(109, 110, 111),
   source = c(54, 55, 56, 63, 64, 66, 67, 84)
 )
@@ -46,10 +47,15 @@ show the county the plot or data contain.}
 
 \item{print}{logical; should the plots be printed in window, default FALSE}
 
+\item{write}{logical; should the file be written to a png, default to TRUE}
+
 \item{verification}{a verification code that filter out verified occurenses of species,
 default to 109.}
 
 \item{source}{the database sources as id numbers, defaults to `54,55,56,63,64,66,67,84`}
+
+\item{Region}{character or reg ex; which region do you want. Possible values are:
+'SGot', 'OGot', 'VGotSve', 'OSve', 'NSveNor', 'NNor'.}
 }
 \value{
 Figures in png for points, and transects the given year

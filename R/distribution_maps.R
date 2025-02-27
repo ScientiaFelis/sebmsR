@@ -344,11 +344,6 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
       mutate(radius = if_else(year <= active_site_cutoff, 4,6.5))
   }
   
-  occ_spCord <- occ_sp %>%
-    st_coordinates() %>%
-    bind_cols(occ_sp) %>%
-    transmute(lokalnamn, sitetype, lon = X, lat = Y, colour, radius)  
-  
   
   # Picking out the borders
   #Län <- paste0(Län, collapse = "|")
@@ -445,7 +440,6 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
       
     }
     
-    
     Region <- Landskap
     
     CPK <- centerPLsk %>% 
@@ -502,7 +496,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
       
       if (onemap) {
         lpl <- lpl %>% 
-          addCircleMarkers(lng = data$lon, lat = data$lat,
+          addCircleMarkers(data = data,
                            radius = 4,
                            color = "black",
                            weight = 0.6,
@@ -513,7 +507,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
                            label = data$lokalnamn)
       } else {
         lpl <- lpl %>% 
-          addCircleMarkers(lng = data$lon, lat = data$lat,
+          addCircleMarkers(data = data,
                            radius = data$radius,
                            color = "black",
                            weight = 0.6,
@@ -546,7 +540,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
   # Save a plot with both transect and point in one map.
   if (onemap) { # This is if you want only one map with both points and transects
     ggs <- list() # Make a ggs data frame to be able to store the plot in a variable ('plots'), for the print to work.
-    ggs$plots <- occ_spCord %>%
+    ggs$plots <- occ_sp %>%
       distinct(lokalnamn, .keep_all = T) %>% 
       locplot(sittyp = "T|P") 
     
@@ -562,16 +556,16 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
     # Save a plot per site type as png
     
     if (str_detect(maptype, "[Pp][ou]i?nk?t|[Pp]$")) {
-      occ_spCord <- occ_spCord %>% 
+      occ_sp <- occ_sp %>% 
         filter(sitetype == "P") # filter out if only point locales are wanted
     }
     
     if (str_detect(maptype, "[Tt]ranse[ck]t|[Tt]$")) {
-      occ_spCord <- occ_spCord %>% 
+      occ_sp <- occ_sp %>% 
         filter(sitetype == "T") # filter out if only transect locales are wanted
     }
     
-    ggs <- occ_spCord %>%
+    ggs <- occ_sp %>%
       distinct(sitetype, lokalnamn, .keep_all = T) %>% 
       group_by(sitetype) %>%  ## Create a map per site type
       nest() %>% # QUESTION: Nest per species to save one png per species?

@@ -354,7 +354,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
   #Län <- paste0(Län, collapse = "|")
   if (Län != ".") {
     border <- Counties %>% 
-      filter(str_detect(LNNAMN, Län)) #Filter out the right borders
+      filter(str_detect(NAME_1, Län)) #Filter out the right borders
     
     if (showgrid) {
       if (str_detect(gridtype, "5")) {
@@ -370,9 +370,6 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
       
     }
     
-    border <- border %>% # Pick out only the X Y coordinates and make it a tibble
-      st_coordinates() %>% 
-      as_tibble()
     
     Region <- Län # to use when setting name for the saved png
     
@@ -383,7 +380,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
   
   if (Region != ".") {
     border <- Regions %>% 
-      filter(str_detect(RegionName, Region)) #Filter out the right borders
+      filter(str_detect(RegionName, Region))  #Filter out the right borders
     
     if (showgrid) {
       if (str_detect(gridtype, "5")) {
@@ -398,14 +395,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
       }
       
     }
-    
-<<<<<<< Updated upstream
-    border <- border %>% # Pick out only the X Y coordinates and make it a tibble
-      st_coordinates() %>% 
-      as_tibble()
-    
-=======
->>>>>>> Stashed changes
+
     #Region <- Län # to use when setting name for the saved png
     
     CPK <- centerPR %>% 
@@ -430,9 +420,6 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
       }
       
     }
-    border <- border %>% 
-      st_coordinates() %>% 
-      as_tibble()
     
     Region <- Kommun
     
@@ -458,9 +445,6 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
       
     }
     
-    border <- border %>% 
-      st_coordinates() %>% 
-      as_tibble()
     
     Region <- Landskap
     
@@ -472,7 +456,6 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
   wms_topo_nedtonad <- "https://hades.slu.se/lm/topowebb/wms/v1" # wms topografic map from SLU
   
   #TODO: Optional: region2: smalare linje 0,66 mm röd #CE2D30, 60% opacity, longdash
-  #TODO: Cplour hex grid on where there are observations 
   
   # Function to create the map
   
@@ -509,7 +492,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
     # Add the rest of the features (border lines and points showing localities)
     #TODO: Fix so you can show only filled hex grid
     lpl <- lpl %>% 
-      addPolylines(lng = border$X, lat = border$Y, # add border lines
+      addPolylines(data = border, # add border lines
                    color = "#CE2D30",
                    weight = 5,
                    opacity = 1,
@@ -623,11 +606,12 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 
 #centerPL <- readr::read_tsv("CentrumpointsLän.csv", locale = readr::locale(decimal_mark = "."))
 
-#centerPR <- readr::read_tsv("CentrumpointsReg.csv", locale = readr::locale(decimal_mark = "."))
+# centerPR <- readr::read_tsv("CentrumpointsReg.csv", locale = readr::locale(decimal_mark = ".")) %>%
+#    select(RegNr = Region, RegionName, X,Y, zoom)
 
 # centerPLsk <- readr::read_tsv("CentrumpointsLsk.csv", locale = readr::locale(decimal_mark = "."))
 
- 
+
 # Counties <- st_read("../sebmsTrim/BordersTillLokalkarta/hiresborder/highres_lan_SWEREF99TM.shp") %>%
 #   st_transform(4326)
 # 
@@ -635,8 +619,9 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 #   st_transform(4326)
 # 
 # Regions <- st_read("../sebmsTrim/BordersTillLokalkarta/hiresborder/highres_regioner_SWEREF99TM.shp") %>%
-#   st_transform(4326)
-# 
+#   st_transform(4326) %>% 
+#   select(RegNr = Region, RegionName)
+
 # Kommuner <- st_read("../sebmsTrim/BordersTillLokalkarta/hiresborder/highres_kommuner_SWEREF99TM_clean.shp") %>%
 #   st_transform(4326)
 # 
@@ -653,4 +638,4 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 #   st_transform(4326)
 # 
 
- #use_data(Bioreg, centerPK, centerPL, centerPLsk, Day, DayHour, indicatorlist, Counties, Regions, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, SE, SweLandGrid, sebms_swe_grid, sebms_hex_grid, sebms_10_grid, sebms_5_grid, internal = T, overwrite = T, compress = "xz", version = 3)
+#use_data(Bioreg, centerPK, centerPL, centerPR, centerPLsk, Day, DayHour, indicatorlist, Counties, Regions, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, regID2, SE, SweLandGrid, sebms_swe_grid, sebms_hex_grid, sebms_10_grid, sebms_5_grid, internal = T, overwrite = T, compress = "xz", version = 3)

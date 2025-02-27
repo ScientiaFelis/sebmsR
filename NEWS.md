@@ -6,11 +6,17 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.5.0
+
+* Now there are also larger regions to be selected in the `Region = ` argument. Possible values are `NSveSNor, NNor, OGot, OSve, SGot, VGotSve`
+* New argument `write = ` can now set whether to write the map as png file.
+
+
 # v 2.4.1
 
 * hex grid show fill colour when there is a site in it.
-* now possible to chose only one map with no points
-* possible to show only grid without sites
+* now possible to chose only one map with no points, `onemap `TRUE`
+* possible to show only grid without sites, `showsite = FALSE`
 
 # v 2.4.0
 

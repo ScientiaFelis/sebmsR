@@ -21,10 +21,11 @@
 #'   or 'both' (default). The 'Transect' and 'Point' can be
 #'   abbreviated to 'T' and 'P'.
 #' @param print logical; should the plots be printed in window, default FALSE
+#' @param write logical; should the file be written to a png, default to TRUE
 #'
 #' @return Figures in png for points, and transects the given year
 #' @export
-sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "both", filepath = getwd(), tag = NULL, print = FALSE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
+sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "both", filepath = getwd(), tag = NULL, print = FALSE, write = TRUE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
   
   if (missing(occ_sp)) { #Load in data for all species from given year
     occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
@@ -114,7 +115,9 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
   #set filepath
   filepath <- normalizePath(filepath)
   
-  map2(ggs$plots, ggs$sitetype, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), width = width, height = height, weathervar = glue("{yearname}{tag}")), .progress = "Saving plots:")
+  if (write) {
+    map2(ggs$plots, ggs$sitetype, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), width = width, height = height, weathervar = glue("{yearname}{tag}")), .progress = "Saving plots:")
+  }
   
   if (print) {
     return(ggs$plots)
@@ -257,24 +260,29 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
     ungroup() %>% 
     mutate(plots = map2(data, speuid, speplot, .progress = "Making plots:"))
   
-  # set year variable  
-  if (length(year)>1) {
-    yearname <- paste0(min(year),"-",max(year))  
-  }else {
-    yearname <- year
+  
+  if (write) {
+    
+    # set year variable  
+    if (length(year)>1) {
+      yearname <- paste0(min(year),"-",max(year))  
+    }else {
+      yearname <- year
+    }
+    
+    #set tag
+    if (is.null(tag)) {
+      tag = ""
+    }else {
+      tag = glue("_{tag}")
+    }
+    #set filepath
+    filepath <- normalizePath(filepath)
+    
+    
+    map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), width = width, height = height, weathervar = glue("{yearname}{tag}")), .progress = "Saving plots:")
+    
   }
-  
-  #set tag
-  if (is.null(tag)) {
-    tag = ""
-  }else {
-    tag = glue("_{tag}")
-  }
-  #set filepath
-  filepath <- normalizePath(filepath)
-  
-  
-  map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), width = width, height = height, weathervar = glue("{yearname}{tag}")), .progress = "Saving plots:")
   
   if (print) {
     return(ggs$plots)
@@ -313,18 +321,18 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #'   marked.
 #' @export
 
-sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showsite = T, showgrid = F, gridtype = "10", onemap = F, print = FALSE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
+sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showsite = T, showgrid = F, gridtype = "10", onemap = F, print = FALSE, write = TRUE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
   
   message("Make sure to be on Lund university network or LU VPN to get the map to work!")
   
   if (missing(occ_sp)) { # Load in data for all species from given year,
     # without species restriction to get all sites visited
-    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) 
+    occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) 
     #drop_na() %>% 
   }
   
   occ_sp <- occ_sp %>% 
-    transmute(sitetype, lokalnamn, lat, lon, year = year(dag)) %>% 
+    transmute(sitetype, lokalnamn, lat, lon, year = year(obsdag)) %>% 
     mutate(colour = if_else(sitetype == "T", "#1F78B4", "#CE2D30"), # Set colours depending on sitetype
            radius = 6.5) %>% 
     st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
@@ -391,10 +399,13 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
       
     }
     
+<<<<<<< Updated upstream
     border <- border %>% # Pick out only the X Y coordinates and make it a tibble
       st_coordinates() %>% 
       as_tibble()
     
+=======
+>>>>>>> Stashed changes
     #Region <- Län # to use when setting name for the saved png
     
     CPK <- centerPR %>% 
@@ -551,11 +562,15 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
   
   # Save a plot with both transect and point in one map.
   if (onemap) { # This is if you want only one map with both points and transects
-    
-    occ_spCord %>%
+    ggs <- list() # Make a ggs data frame to be able to store the plot in a variable ('plots'), for the print to work.
+    ggs$plots <- occ_spCord %>%
       distinct(lokalnamn, .keep_all = T) %>% 
-      locplot(sittyp = "T|P") %>% 
-      mapshot2(file = glue("{filepath}/{Region}{tag}.png"), remove_controls = c("zoomControl", "layersControl", "homeButton",  "drawToolbar", "easyButton", "control"))
+      locplot(sittyp = "T|P") 
+    
+    if (write){
+      ggs$plots %>% 
+        mapshot2(file = glue("{filepath}/{Region}{tag}.png"), remove_controls = c("zoomControl", "layersControl", "homeButton",  "drawToolbar", "easyButton", "control"))
+    }
     
   } else { # This is of you want separate point and transect maps (default)
     
@@ -580,9 +595,10 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
       ungroup() %>% 
       mutate(plots = map2(data, sitetype, locplot, .progress = "Making plots:"))
     
-    
-    walk2(ggs$plots, ggs$sitetype, ~mapshot2(.x, file = glue("{filepath}/{Region}_sitetype-{.y}{tag}.png"), remove_controls = c("zoomControl", "layersControl", "homeButton",  "drawToolbar", "easyButton", "control")), .progress = "Saving plots:")
-    
+    if (write){ #should you write the png file
+      walk2(ggs$plots, ggs$sitetype, ~mapshot2(.x, file = glue("{filepath}/{Region}_sitetype-{.y}{tag}.png"), remove_controls = c("zoomControl", "layersControl", "homeButton",  "drawToolbar", "easyButton", "control")), .progress = "Saving plots:")
+      
+    }
   }
   
   if (print) {

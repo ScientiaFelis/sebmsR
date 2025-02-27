@@ -6,9 +6,13 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.5.1
+
+* Add region maps to all `sebms_sites_map()` and `sebms_distribution_map()`
+
 # v 2.5.0
 
-* Now there are also larger regions to be selected in the `Region = ` argument. Possible values are `NSveSNor, NNor, OGot, OSve, SGot, VGotSve`
+* Now there are also larger regions to be selected in the `Region = ` argument in `sebms_regional_site_map()`. Possible values are `NSveSNor, NNor, OGot, OSve, SGot, VGotSve`
 * New argument `write = ` can now set whether to write the map as png file.
 
 

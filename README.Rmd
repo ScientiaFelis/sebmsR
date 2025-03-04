@@ -72,7 +72,9 @@ install_github(repo = 'biologicalrecordscentre/BRCindicators')
 - glue,
 - httr,
 - jsonlite,
+- leaflet,
 - lubridate,
+- mapview,
 - polite,
 - pool,
 - purrr,
@@ -86,7 +88,8 @@ install_github(repo = 'biologicalrecordscentre/BRCindicators')
 - stringr,
 - terra,
 - tibble,
-- tidyr
+- tidyr,
+- webshot2
     
 **Suggested packages** 
     
@@ -95,7 +98,6 @@ install_github(repo = 'biologicalrecordscentre/BRCindicators')
 - ggthemes,
 - grid,
 - knitr,
-- leaflet,
 - magick,
 - raster,
 - rasterVis,
@@ -195,36 +197,36 @@ To get a list of functions and what they do, use `?sebmsR`
 ### Species Figures
 
 To make a plot and generate the **pngs for the weather data and sunhour** figures for the Butterfly yearly report of **2022** use:
-`sebms_weather_png(2022)` creates png files with the precipitation, temperaure figures.
-`sebms_sunhour_plot(2022)` creates the sun hour figure
-`sebms_sundiff_plot(2022)` shows differences in sun hours between the given year and a 5-year mean.
+
+- **`sebms_weather_png(2022)`** creates png files with the precipitation, temperaure figures.
+- **`sebms_sunhour_plot(2022)`** creates the sun hour figure
+- **`sebms_sundiff_plot(2022)`** shows differences in sun hours between the given year and a 5-year mean.
 
 To make figures with **butterfly data** use:
 
-`sebms_abundance_per_species_plot(2022)` to make bar plots with individual numbers for each species, divided on two png figures.
-`sebms_abundance_year_compare_plot(2021:2022)` to make bar plots comparing individuals per week compared between two years.
-`sebms_species_abundance_plot(2021, Art = 118)` to make bar plots for individual species with numbers per week.
-`sebms_species_per_sitetype_plot(2022)` to make bar plots to show how many species sites have and the number distribution of these, compared between site type.
-Also the mean number of species per site type.
+- **`sebms_abundance_per_species_plot(2022)`** to make bar plots with individual numbers for each species, divided on two png figures.
+- **`sebms_abundance_year_compare_plot(2021:2022)`** to make bar plots comparing individuals per week compared between two years.
+- **`sebms_species_abundance_plot(2021, Art = 118)`** to make bar plots for individual species with numbers per week.
+- **`sebms_species_per_sitetype_plot(2022)`** to make bar plots to show how many species sites have and the number distribution of these, compared between site type. Also the mean number of species per site type.
 
 
 ### Trim index
 
 To get the figures for **species index and indicator index** run:
 
-`get_trimPlot()` to get indices for each given species during the time period given.
-`get_indicatorPlots()` to get indicator indices for the default groups *20 most common*, *Frassland*, *Forest*, and *Agricultural* species. Alsu during the time period given.
 
-To **compare a regional index** for a species with the national Sweden index run:
-`get_trimComparedPlots()` creats a figure that compares the swedish index of a species with the index for a set *Län*, *Landskap*, or *Kommun*.
+- **`get_trimPlot()`** to get indices for each given species during the time period given.
+- **`get_indicatorPlots()`** to get indicator indices for the default groups *20 most common*, *Frassland*, *Forest*, and *Agricultural* species. Alsu during the time period given.
+- **`get_trimComparedPlots()`** creats a figure that compares the Sweden index of a species with the index for a set *Län*, *Landskap*, or *Kommun*.
+
 
 ### Maps
 
 You can make different types of maps for species distributions
 
-`sebms_sites_map()` creates map for all visited sites on Swedish grid separating transects and point data.
-`sebms_distribution_map()` creates a distribution map for species on the Swedish grid.
-`sebms_regional_site_map()` creates a map of the County, Region, Province or Municipality with the transect and point data marked.
+- **`sebms_sites_map()`** creates map for all visited sites on Swedish grid separating transects and point data.
+- **`sebms_distribution_map()`** creates a distribution map for species on the Swedish grid.
+- **`sebms_regional_site_map()`** creates a map of the County, Region, Province or Municipality with the transect and point data marked.
 
 
 

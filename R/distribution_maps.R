@@ -154,7 +154,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
   if (missing(occ_sp)) { # Load in data for all species from given year,
     # without species restriction to get all sites visited
     occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
-      transmute(speuid, art, lokalnamn, lat, lon, maxobs = as.numeric(max)) %>% 
+      transmute(speuid, art, lokalnamn, lat, lon, maxobs = as.numeric(obsmaxsum)) %>% 
       mutate(art = str_replace_all(art, "/", "-")) %>% 
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>% 
       st_set_crs(3006) %>% 

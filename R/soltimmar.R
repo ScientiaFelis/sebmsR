@@ -340,7 +340,16 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
       ungroup() %>% 
       mutate(plots = map2(data, months, ~sunHplot(df = .x, months = .y), .progress = "Create sunhour figures")) # The map2 use data for eachmonth and also give the sunHplot function the month which is used in the switch to give a specific limits for eachmonth.
     
-    map2(ggs$plots, ggs$month, ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("Sunhours_{year}-{.y}")))
+        #set tag
+    if (is.null(tag)) {
+      tag = ""
+    }else {
+      tag = glue("_{tag}")
+    }
+    #set filepath
+    filepath <- normalizePath(filepath)
+    
+    map2(ggs$plots, ggs$month, ~sebms_ggsave(.x, glue("{filepath}/Sweden"), width = 6, height = 12.67, weathervar = glue("Sunhours_{year}-{.y}{tag}")))
     
     return(ggs$plots) 
     

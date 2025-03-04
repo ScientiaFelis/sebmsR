@@ -86,7 +86,7 @@ one or two png files with a map of the chosen area with points or transects
   marked.
 }
 \description{
-Creates a map of the County or Municipality with the transect and point data marked.You
-need to be on a Lund university or SLU network, or LU/SLU VPN to get the map as it is
-created from the SLU WMS topomap.
+Creates a map of the County, Region, Province or Municipality with the transect and
+point data marked. You need to be on a Lund university or SLU network, or LU/SLU VPN to
+get the map as it is created from the SLU WMS topomap.
 }

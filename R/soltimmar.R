@@ -108,85 +108,85 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
     }  
   }else { # Below functions summarise per year instead.
     
-
+    
     if (per_day) { # Take out data per day
       sunlist <- map(year, ~allyears(year = .x, months = months, .f = dayfunc), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
         set_names(year) %>% # set names to Year
         bind_rows(.id = "Year")
       
     }else { # Use monthly data from SMHI to summarise on
+      
+      sunlist <- map(year, ~allyears(year = .x, months = months, .f = sunHdata), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
+        set_names(year) %>% # set names to Year
+        bind_rows(.id = "Year")
+      
+    }
+  }
+  
+  if (length(months) < 6 && per_month == FALSE) {
+    message("IF YOU ARE MAKING A FIGURE, IT IS OPTIMIZED FOR THE SUNHOURS OVER 6 SUMMER MONTH\n")
+    message("USE 'per_month = TRUE' TO GET VALUES PER MONTH")
+  }
+  
+  
+  # Now we take the data frame and convert it to a sf object and intersect with a sf object over Sweden.
+  # We then also bind the mean values to the resulting data frame and calculate a diff from the total sun hours
+  if (per_month) { #per month sunlist data
     
-    sunlist <- map(year, ~allyears(year = .x, months = months, .f = sunHdata), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
-      set_names(year) %>% # set names to Year
-      bind_rows(.id = "Year")
+    lmon <- sunlist %>% distinct(month) %>% pull()
+    if(length(lmon) < length(months)) {
+      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n 'per_day=TRUE' MIGHT WORK.")
+      months <- as.integer(lmon)
+    }
     
-  }
-}
-
-if (length(months) < 6 && per_month == FALSE) {
-  message("IF YOU ARE MAKING A FIGURE, IT IS OPTIMIZED FOR THE SUNHOURS OVER 6 SUMMER MONTH\n")
-  message("USE 'per_month = TRUE' TO GET VALUES PER MONTH")
-}
-
-
-# Now we take the data frame and convert it to a sf object and intersect with a sf object over Sweden.
-# We then also bind the mean values to the resulting data frame and calculate a diff from the total sun hours
-if (per_month) { #per month sunlist data
-  
-  lmon <- sunlist %>% distinct(month) %>% pull()
-  if(length(lmon) < length(months)) {
-    message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n 'per_day=TRUE' MIGHT WORK.")
-    months <- as.integer(lmon)
-  }
-  
-  sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.
-    select(Year, month, gapvalue, total_sunH, lon, lat) %>% # Put year in a column
-    filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
-    st_as_sf(coords = c("lon", "lat")) %>%
-    st_set_crs(4326) %>%
-    st_intersection(SE) %>% # Filter out points for Sweden
-    group_by(month) %>% 
-    mutate(pID = row_number(),
-           pID = glue("{month}_{pID}")) %>% # Make a idnumber per month
-    st_join(meansunH_M %>% filter(month %in% months) %>% select(-month)) %>% # Bind in the mean sun hours per month
-    group_by(Year, month) %>% 
-    mutate(sundiff = total_sunH - mean_sunH) %>% # Calculate difference of sunhours to mean
-    ungroup() 
-  
-}else { # Per year sunlist data
-  
-  lmon <- sunlist %>% distinct(month) %>% pull()
-  
-  if(length(lmon) < length(months)) {
-    message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n")
-    message("IF YOU ARE MAKING A FIGURE, IT WILL BE INCORRECT, TO BLUE!\n")
-    message("USE 'per_day=T', WHICH MAY SOLVE THE PROBLEM BUT TAKE LONG TIME.")
+    sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.
+      select(Year, month, gapvalue, total_sunH, lon, lat) %>% # Put year in a column
+      filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
+      st_as_sf(coords = c("lon", "lat")) %>%
+      st_set_crs(4326) %>%
+      st_intersection(SE) %>% # Filter out points for Sweden
+      group_by(month) %>% 
+      mutate(pID = row_number(),
+             pID = glue("{month}_{pID}")) %>% # Make a idnumber per month
+      st_join(meansunH_M %>% filter(month %in% months) %>% select(-month)) %>% # Bind in the mean sun hours per month
+      group_by(Year, month) %>% 
+      mutate(sundiff = total_sunH - mean_sunH) %>% # Calculate difference of sunhours to mean
+      ungroup() 
+    
+  }else { # Per year sunlist data
+    
+    lmon <- sunlist %>% distinct(month) %>% pull()
+    
+    if(length(lmon) < length(months)) {
+      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n")
+      message("IF YOU ARE MAKING A FIGURE, IT WILL BE INCORRECT, TO BLUE!\n")
+      message("USE 'per_day=T', WHICH MAY SOLVE THE PROBLEM BUT TAKE LONG TIME.")
+    }
+    
+    sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.
+      group_by(Year, gapvalue, lat, lon) %>% 
+      summarise(total_sunH = sum(total_sunH)) %>% 
+      ungroup() %>% 
+      mutate(total_sunH = total_sunH / 60) %>% # Convert minutes to hours
+      select(Year, gapvalue, total_sunH, lon, lat) %>% # Put year in a column
+      filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
+      st_as_sf(coords = c("lon", "lat")) %>%
+      st_set_crs(4326) %>%
+      st_intersection(SE) %>% # Filter out points in Sweden
+      mutate(pID = row_number()) %>% 
+      left_join(meansunH %>% st_drop_geometry(), by = "pID") %>% # bind in the mean sun hours per month
+      mutate(sundiff = total_sunH - mean_sunH) # Calculate difference of sunhours to mean
   }
   
-  sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.
-    group_by(Year, gapvalue, lat, lon) %>% 
-    summarise(total_sunH = sum(total_sunH)) %>% 
-    ungroup() %>% 
-    mutate(total_sunH = total_sunH / 60) %>% # Convert minutes to hours
-    select(Year, gapvalue, total_sunH, lon, lat) %>% # Put year in a column
-    filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
-    st_as_sf(coords = c("lon", "lat")) %>%
-    st_set_crs(4326) %>%
-    st_intersection(SE) %>% # Filter out points in Sweden
-    mutate(pID = row_number()) %>% 
-    left_join(meansunH %>% st_drop_geometry(), by = "pID") %>% # bind in the mean sun hours per month
-    mutate(sundiff = total_sunH - mean_sunH) # Calculate difference of sunhours to mean
-}
-
-if (to_env) {
-  
-  if(length(year) > 1) {
-    year <- glue("{min(year)}-{max(year)}") 
+  if (to_env) {
+    
+    if(length(year) > 1) {
+      year <- glue("{min(year)}-{max(year)}") 
+    }
+    
+    assign(glue("SunHours_{year}"), sunlist, envir = .GlobalEnv) # Send the result to Global environment if the function is used inside a plot function. This way you do not need to download the data again if you want a diff plt to. You can just feed the spatsunlist data to the sun_diff_plot function
   }
-  
-  assign(glue("SunHours_{year}"), sunlist, envir = .GlobalEnv) # Send the result to Global environment if the function is used inside a plot function. This way you do not need to download the data again if you want a diff plt to. You can just feed the spatsunlist data to the sun_diff_plot function
-}
-return(sunlist) # Also return the data frame to consol
+  return(sunlist) # Also return the data frame to consol
 }
 
 
@@ -340,7 +340,7 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
       ungroup() %>% 
       mutate(plots = map2(data, months, ~sunHplot(df = .x, months = .y), .progress = "Create sunhour figures")) # The map2 use data for eachmonth and also give the sunHplot function the month which is used in the switch to give a specific limits for eachmonth.
     
-        #set tag
+    #set tag
     if (is.null(tag)) {
       tag = ""
     }else {
@@ -512,21 +512,24 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
 
 #' Maximum and Minimum Sun Hours for Given Years
 #'
-#' Give the maximum and minimum sun hour per year and the city or village
-#' closest to that location
+#' Give the maximum and minimum sun hour per year and the city or village closest to that
+#' location
 #'
-#' @param df a sf object with `year` and `total_sunhour` created by
-#'   [sebms_sunhous_data()]
-#' @param sunvar which variable to calculate the min and max on, can be
-#'   `total_sunH` or `sundiff`
 #' @inheritParams sebms_sunhours_data
+#' @param df a sf object with `year` and `total_sunhour` created by [sebms_sunhous_data()]
+#' @param sunvar which variable to calculate the min and max on, can be `total_sunH` or
+#'   `sundiff`
+#' @param write logical; if the results should be written to a csv-file; defaults to
+#'   'TRUE'
+#' @param filepath the path to where the file is saved; default to working directory,
+#'   ignored if 'write = FALSE'
 #'
 #' @importFrom sf st_drop_geometry st_coordinates
 #' @import dplyr
 #'
-#' @return a data frame with the max and min of total sun hours per year and the
-#'   mean and diff from mean at that location. It also gives the name of the
-#'   nearest city or village for that location.
+#' @return a data frame with the max and min of total sun hours per year and the mean and
+#'   diff from mean at that location. It also gives the name of the nearest city or
+#'   village for that location.
 #' @export
 sebms_minmax_sunhour <- function(year = 2017:2022, df, months = 4:9, sunvar = total_sunH, per_month = FALSE, per_day = FALSE, filepath = getwd(), write = T) {
   

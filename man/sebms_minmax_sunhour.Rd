@@ -10,31 +10,38 @@ sebms_minmax_sunhour(
   months = 4:9,
   sunvar = total_sunH,
   per_month = FALSE,
-  per_day = FALSE
+  per_day = FALSE,
+  filepath = getwd(),
+  write = T
 )
 }
 \arguments{
 \item{year}{the year or years to produce plot for}
 
-\item{df}{a sf object with `year` and `total_sunhour` created by
-[sebms_sunhous_data()]}
+\item{df}{a sf object with `year` and `total_sunhour` created by [sebms_sunhous_data()]}
 
 \item{months}{numeric value of the months to summarise sun ours over (default
 to 4:9)}
 
-\item{sunvar}{which variable to calculate the min and max on, can be
-`total_sunH` or `sundiff`}
+\item{sunvar}{which variable to calculate the min and max on, can be `total_sunH` or
+`sundiff`}
 
 \item{per_month}{logical; summarise per month instead of per year}
 
 \item{per_day}{logical; if data should be downloaded per day}
+
+\item{filepath}{the path to where the file is saved; default to working directory,
+ignored if 'write = FALSE'}
+
+\item{write}{logical; if the results should be written to a csv-file; defaults to
+'TRUE'}
 }
 \value{
-a data frame with the max and min of total sun hours per year and the
-  mean and diff from mean at that location. It also gives the name of the
-  nearest city or village for that location.
+a data frame with the max and min of total sun hours per year and the mean and
+  diff from mean at that location. It also gives the name of the nearest city or
+  village for that location.
 }
 \description{
-Give the maximum and minimum sun hour per year and the city or village
-closest to that location
+Give the maximum and minimum sun hour per year and the city or village closest to that
+location
 }

@@ -295,9 +295,9 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 
 #' Create Local Maps with Transect and Point Locals
 #'
-#' Creates a map of the County or Municipality with the transect and point data marked.You
-#' need to be on a Lund university or SLU network, or LU/SLU VPN to get the map as it is
-#' created from the SLU WMS topomap.
+#' Creates a map of the County, Region, Province or Municipality with the transect and
+#' point data marked. You need to be on a Lund university or SLU network, or LU/SLU VPN to
+#' get the map as it is created from the SLU WMS topomap.
 #'
 #' @inheritParams sebms_sites_map
 #'

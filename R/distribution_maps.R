@@ -161,8 +161,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
       st_transform(3021)
   }
   
-  #SweLandGrid <- st_read(system.file("extdata", "SweLandGrid.shp", package = "sebmsR"), quiet = TRUE) %>% 
-  # st_set_crs(3021)
+
   
   # Make a raster of all grid cells covering Sweden
   grid <- sebms_swe_grid %>% 
@@ -597,45 +596,3 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 # 
 # walk(KomList, purrr::possibly(~sebms_local_transect_map(2009:2023, Kommun = .x, maptype = "T")))
 
-# st_centroid(Regions) %>% # Make a Centrumpoint file for each type of locale, and manually fill in the zoom 
-#   st_coordinates() %>% 
-#   bind_cols(Regions %>% st_drop_geometry(),.) %>% 
-#   write_csv2("CentrumpointsReg.csv")
-
-#centerPK <- readr::read_tsv("Centrumpoints.csv", locale = readr::locale(decimal_mark = "."))
-
-#centerPL <- readr::read_tsv("CentrumpointsLän.csv", locale = readr::locale(decimal_mark = "."))
-
-# centerPR <- readr::read_tsv("CentrumpointsReg.csv", locale = readr::locale(decimal_mark = ".")) %>%
-#    select(RegNr = Region, RegionName, X,Y, zoom)
-
-# centerPLsk <- readr::read_tsv("CentrumpointsLsk.csv", locale = readr::locale(decimal_mark = "."))
-
-
-# Counties <- st_read("../sebmsTrim/BordersTillLokalkarta/hiresborder/highres_lan_SWEREF99TM.shp") %>%
-#   st_transform(4326)
-# 
-# Bioreg <- st_read("../sebmsTrim/BordersTillLokalkarta/biogeografiska_regioner_SWEREF99TM_clean.shp") %>%
-#   st_transform(4326)
-# 
-# Regions <- st_read("../sebmsTrim/BordersTillLokalkarta/hiresborder/highres_regioner_SWEREF99TM.shp") %>%
-#   st_transform(4326) %>% 
-#   select(RegNr = Region, RegionName)
-
-# Kommuner <- st_read("../sebmsTrim/BordersTillLokalkarta/hiresborder/highres_kommuner_SWEREF99TM_clean.shp") %>%
-#   st_transform(4326)
-# 
-# Landskapen <- st_read("../sebmsTrim/BordersTillLokalkarta/biogeografiska_landskap_SWEREF99TM_clean.shp") %>%
-#   st_transform(4326)
-# # 
-# sebms_hex_grid <- st_read("../sebmsTrim/BordersTillLokalkarta/utan holes/grids_for_sebmsr/swe_index_hexagonal_50km.shp") %>%
-#    st_transform(4326)
-# 
-# sebms_10_grid <- st_read("../sebmsTrim/BordersTillLokalkarta/utan holes/grids_for_sebmsr/swe_10km_ekorutor_sweref.shp") %>%
-#   st_transform(4326)
-# 
-# sebms_5_grid <- st_read("../sebmsTrim/BordersTillLokalkarta/utan holes/grids_for_sebmsr/swe_5km_ekorutor_sweref.shp") %>%
-#   st_transform(4326)
-# 
-
-#use_data(Bioreg, centerPK, centerPL, centerPR, centerPLsk, Day, DayHour, indicatorlist, Counties, Regions, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, regID2, SE, SweLandGrid, sebms_swe_grid, sebms_hex_grid, sebms_10_grid, sebms_5_grid, internal = T, overwrite = T, compress = "xz", version = 3)

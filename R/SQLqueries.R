@@ -668,12 +668,6 @@ ORDER BY
   res <- dbGetQuery(sebms_pool, q)
   as_tibble(res)
   
-  # Making regID
-  # regID2 <- dbGetQuery(sebms_pool, "SELECT * FROM reg_region") %>%
-  #   mutate(reg_name = if_else(reg_group == "R", reg_code, reg_name),
-  #          reg_name = str_to_lower(reg_name)) %>% 
-  #   select(reg_name, reg_uid)
-  # 
 } 
 
 #' Retrieve Species Data for Trim Functions

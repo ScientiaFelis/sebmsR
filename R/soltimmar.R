@@ -108,12 +108,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
     }  
   }else { # Below functions summarise per year instead.
     
-    # DayHour <- list(day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"),# All days in a month
-    #   hour = c("00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23")
-    # )  # All hours of the day
-    
-    # Day <- list(day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31")) # All days in a month
-    
+
     if (per_day) { # Take out data per day
       sunlist <- map(year, ~allyears(year = .x, months = months, .f = dayfunc), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
         set_names(year) %>% # set names to Year

@@ -405,7 +405,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
   
   if (Kommun != ".") {
     border <- Kommuner %>% 
-      filter(str_detect(KnNamn, Kommun)) 
+      filter(str_detect(NAME_2, Kommun)) 
     
     if (showgrid) {
       if (str_detect(gridtype, "5")) {

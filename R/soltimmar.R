@@ -1,6 +1,6 @@
 #' Download Sun Hour Data from SMHI
-#' 
-#' This is a helper function that download sunhour data from SMHI open data. 
+#'
+#' This is a helper function that download sunhour data from SMHI open data.
 #'
 #' @param year the year to produce plot for
 #' @param months numeric value of the months to summarise sun ours over (default
@@ -19,22 +19,22 @@
 #'
 #' @noRd
 sunHdata <- function(year, months, day, per_day = FALSE) {
-  if (per_day) {
+  if (per_day) { # Get data per day
     polite_GET_nrt <- polite::politely(GET, verbose = FALSE, robots = FALSE) # turn off robotstxt checking
-    
-    polite_GET_nrt(glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{months}{day}/parameter/119/data.json?interval=daily")) %>% 
-      httr::content(encoding = "UTF-8") %>% 
-      bind_rows() %>% 
+
+    polite_GET_nrt(glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{months}{day}/parameter/119/data.json?interval=daily")) %>%
+      httr::content(encoding = "UTF-8") %>%
+      bind_rows() %>%
       mutate(gapvalue = if_else(value < 0,
                                 "Low value",
                                 "Normal value"),
              value = if_else(value < 0,
                              mean(c(lag(value), lead(value)), na.rm = T),
                              value))
-  }else {
-    httr::GET(glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{months}/parameter/119/data.json?interval=monthly")) %>% 
-      httr::content(encoding = "UTF-8") %>% 
-      bind_rows() %>% 
+  }else { # Get data per month
+    httr::GET(glue("https://opendata-download-metanalys.smhi.se/api/category/strang1g/version/1/geotype/multipoint/validtime/{year}0{months}/parameter/119/data.json?interval=monthly")) %>%
+      httr::content(encoding = "UTF-8") %>%
+      bind_rows() %>%
       mutate(gapvalue = if_else(value < 0,
                                 "Low value",
                                 "Normal value"),
@@ -68,14 +68,14 @@ sunHdata <- function(year, months, day, per_day = FALSE) {
 #'
 #' @export
 sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, months = 4:9, per_month = FALSE, per_day = FALSE, to_env = FALSE) {
-  
-  
+
+
   # Functions for per day,  per month and per year data
-  
+
   dayfunc <- function(year, months) {
     pmap(Day, possibly(~sunHdata(year = year, months = months, day = .x, per_day = TRUE))) %>%
-      list_rbind() %>% 
-      group_by(gapvalue, lat, lon) %>% 
+      list_rbind() %>%
+      group_by(gapvalue, lat, lon) %>%
       summarise(value = sum(value), .groups = "drop")
   } # This function iterate over days (and hour combinations if wanted) in combination with the year and month.
   
@@ -83,11 +83,11 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
     map2(year, months, .f) %>% ##iterate through year plus month and send that to sunHdata via dayfunc and fix_sunhour_NAs, se above
       set_names(months) %>% # set the names of month to list items
       bind_rows(.id = "month") %>% # Take the name of list items (month) and set them in a variable
-      group_by(month, gapvalue, lat, lon) %>% 
+      group_by(month, gapvalue, lat, lon) %>%
       summarise(total_sunH = sum(value),
-                .groups = "drop") 
+                .groups = "drop")
   }
-  
+
   if (per_month) { #This runs two different versions of the functions. Summarise per month or per year.
     if (per_day) {
       # This is the function loop that download the data with the appropiate function calls loaded above.
@@ -96,19 +96,19 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
         set_names(year) %>% # set names to Year
         bind_rows(.id = "Year")%>%
         mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
-      
-      
+
+
     }else {# This function summarise per month but do not use per day values.
       
       sunlist <- map(year, ~allyears(year = .x, months = months, .f = sunHdata), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
         set_names(year) %>% # set names to Year
         bind_rows(.id = "Year")%>%
         mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
-      
-    }  
+
+    }
   }else { # Below functions summarise per year instead.
-    
-    
+
+
     if (per_day) { # Take out data per day
       sunlist <- map(year, ~allyears(year = .x, months = months, .f = dayfunc), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
         set_names(year) %>% # set names to Year
@@ -119,71 +119,71 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
       sunlist <- map(year, ~allyears(year = .x, months = months, .f = sunHdata), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
         set_names(year) %>% # set names to Year
         bind_rows(.id = "Year")
-      
+
     }
   }
-  
+
   if (length(months) < 6 && per_month == FALSE) {
     message("IF YOU ARE MAKING A FIGURE, IT IS OPTIMIZED FOR THE SUNHOURS OVER 6 SUMMER MONTH\n")
     message("USE 'per_month = TRUE' TO GET VALUES PER MONTH")
   }
-  
-  
+
+
   # Now we take the data frame and convert it to a sf object and intersect with a sf object over Sweden.
   # We then also bind the mean values to the resulting data frame and calculate a diff from the total sun hours
   if (per_month) { #per month sunlist data
-    
+
     lmon <- sunlist %>% distinct(month) %>% pull()
     if(length(lmon) < length(months)) {
       message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n 'per_day=TRUE' MIGHT WORK.")
       months <- as.integer(lmon)
     }
-    
+
     sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.
       select(Year, month, gapvalue, total_sunH, lon, lat) %>% # Put year in a column
       filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
       st_as_sf(coords = c("lon", "lat")) %>%
       st_set_crs(4326) %>%
       st_intersection(SE) %>% # Filter out points for Sweden
-      group_by(month) %>% 
+      group_by(month) %>%
       mutate(pID = row_number(),
              pID = glue("{month}_{pID}")) %>% # Make a idnumber per month
       st_join(meansunH_M %>% filter(month %in% months) %>% select(-month)) %>% # Bind in the mean sun hours per month
-      group_by(Year, month) %>% 
+      group_by(Year, month) %>%
       mutate(sundiff = total_sunH - mean_sunH) %>% # Calculate difference of sunhours to mean
-      ungroup() 
-    
+      ungroup()
+
   }else { # Per year sunlist data
-    
+
     lmon <- sunlist %>% distinct(month) %>% pull()
-    
+
     if(length(lmon) < length(months)) {
       message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n")
       message("IF YOU ARE MAKING A FIGURE, IT WILL BE INCORRECT, TO BLUE!\n")
       message("USE 'per_day=T', WHICH MAY SOLVE THE PROBLEM BUT TAKE LONG TIME.")
     }
-    
+
     sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.
-      group_by(Year, gapvalue, lat, lon) %>% 
-      summarise(total_sunH = sum(total_sunH)) %>% 
-      ungroup() %>% 
+      group_by(Year, gapvalue, lat, lon) %>%
+      summarise(total_sunH = sum(total_sunH)) %>%
+      ungroup() %>%
       mutate(total_sunH = total_sunH / 60) %>% # Convert minutes to hours
       select(Year, gapvalue, total_sunH, lon, lat) %>% # Put year in a column
       filter(lon > 4) %>% # removes negative W longitudes to not mess up the sf and crs
       st_as_sf(coords = c("lon", "lat")) %>%
       st_set_crs(4326) %>%
       st_intersection(SE) %>% # Filter out points in Sweden
-      mutate(pID = row_number()) %>% 
+      mutate(pID = row_number()) %>%
       left_join(meansunH %>% st_drop_geometry(), by = "pID") %>% # bind in the mean sun hours per month
       mutate(sundiff = total_sunH - mean_sunH) # Calculate difference of sunhours to mean
   }
-  
+
   if (to_env) {
-    
+
     if(length(year) > 1) {
-      year <- glue("{min(year)}-{max(year)}") 
+      year <- glue("{min(year)}-{max(year)}")
     }
-    
+
     assign(glue("SunHours_{year}"), sunlist, envir = .GlobalEnv) # Send the result to Global environment if the function is used inside a plot function. This way you do not need to download the data again if you want a diff plt to. You can just feed the spatsunlist data to the sun_diff_plot function
   }
   return(sunlist) # Also return the data frame to consol
@@ -201,23 +201,23 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
 #' @importFrom purrr map set_names
 #' @noRd
 sebms_sunmean_data <- function(year = 2018:2022, months = 4:9, per_month = FALSE) {
-  
+
   if (per_month) {
-    meansunH_M <- sebms_sunhours_data(year, months = months, per_month = per_month, per_day = FALSE) %>% 
-      group_by(month, geometry) %>% 
-      summarise(mean_sunH = mean(total_sunH, na.rm = T), .groups = "drop") %>% 
+    meansunH_M <- sebms_sunhours_data(year, months = months, per_month = per_month, per_day = FALSE) %>%
+      group_by(month, geometry) %>%
+      summarise(mean_sunH = mean(total_sunH, na.rm = T), .groups = "drop") %>%
       select(month, mean_sunH, geometry)
-    
+
     return(meansunH_M)
   }else {
-    meansunH <- sebms_sunhours_data(year, months = months, per_month = per_month, per_day = FALSE) %>% 
-      group_by(geometry) %>% 
-      summarise(mean_sunH = mean(total_sunH, na.rm = T), .groups = "drop") %>% 
+    meansunH <- sebms_sunhours_data(year, months = months, per_month = per_month, per_day = FALSE) %>%
+      group_by(geometry) %>%
+      summarise(mean_sunH = mean(total_sunH, na.rm = T), .groups = "drop") %>%
       select(mean_sunH, geometry)
-    
+
     return(meansunH)
   }
-  
+
 }
 
 
@@ -244,37 +244,37 @@ sebms_sunmean_data <- function(year = 2018:2022, months = 4:9, per_month = FALSE
 #'   (blue)
 #' @export
 sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df, filepath = getwd(), tag = NULL, sunvar = total_sunH, months = 4:9, per_month = FALSE, per_day = FALSE, legends = FALSE) {
-  
+
   if (missing(df) && length(months) < 6 && per_month == FALSE) {
     warning("THIS FIGURE WILL LOOK VERY BLUE (LOW NR HOURS) AS IT IS OPTIMIZED FOR THE SUM OF SUNHOURS OVER 6 SUMMER MONTH\n  USE 'per_month = TRUE' TO GET VALUES PER MONTH\n  OR SET 'months=4:9'")
-    
+
     return(cat("--------------------------------------------------------------\n"))
   }
   if (missing(df) && length(months) > 6 && per_month == FALSE) {
     warning("THIS FIGURE WILL LOOK VERY RED (HIGH NR HOURS) AS IT IS OPTIMIZED FOR THE SUM OF SUNHOURS OVER 6 SUMMER MONTH\n  USE 'per_month = TRUE' TO GET VALUES PER MONTH\n  OR SET 'months=4:9'")
-    
+
     return(cat("--------------------------------------------------------------\n"))
   }
-  
+
   if(missing(df)) {
     message("Please be pacient...")
     message("THIS CAN TAKE A MINUTE OR FIVE\n\n")
     message("Downloading sunhour data from SMHI........\n")
     df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day, to_env = TRUE)
-    
+
   } else if(!missing(df) && per_month) {
     lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()
     months <- as.integer(lmon)
     message(glue("DATA FRAME CONTAINS DATA FROM {length(months)} MONTHS!\n\n IF THAT DOES NOT SEEMS RIGHT 'per_day = TUE' MIGHT BE A WORK AROUND BUT TAKE LONG TIME."))
-    
+
   }
-  
-  
+
+
   if (per_month) { # Figures per month
-    
+
     #FIXME: check actual min and max for each month for years 2017:2022
     ## This makes limits specific for each month
-    jan = c(60, 200) 
+    jan = c(60, 200)
     feb = c(65, 230)
     mar = c(70, 300)
     apr = c(80, 350)
@@ -287,8 +287,8 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     nov = c(60, 200)
     dec = c(60, 200)
     #FIXME: The legend is way to big
-    sunHplot <- function(df, months) {  
-      
+    sunHplot <- function(df, months) {
+
       ggplot(data = df) +
         geom_sf(aes(colour = {{ sunvar }}), size = 0.01, show.legend = legends) +
         scale_colour_gradientn(colours = suncols(5), # Use the 5 colours of suncols, blue to red.
@@ -304,9 +304,9 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
                              legend.position = c(0.8, 0.45)
         )
     }
-    
+
   }else { # Figures per year instead
-    sunHplot <- function(df) {  
+    sunHplot <- function(df) {
       ggplot(data = df) +
         geom_sf(aes(colour = {{ sunvar }}), size = 0.01, show.legend = legends) +
         scale_colour_gradientn(colours = suncols(5), # Use the 5 colours of suncols, blue to red.
@@ -323,23 +323,23 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
         )
     }
   }
-  
+
   message("\nMaking plots........\n")
   if (per_month) { # make a figure per month
-    
+
     lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()
-    
+
     if(length(lmon) < length(months)) {
       message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n'per_day = TUE' MIGHT BE A WORK AROUND BUT TAKE LONG TIME.")
       months <- as.integer(lmon)
     }
-    
-    ggs <- df %>% 
-      group_by(month) %>% 
-      nest() %>% 
-      ungroup() %>% 
+
+    ggs <- df %>%
+      group_by(month) %>%
+      nest() %>%
+      ungroup() %>%
       mutate(plots = map2(data, months, ~sunHplot(df = .x, months = .y), .progress = "Create sunhour figures")) # The map2 use data for eachmonth and also give the sunHplot function the month which is used in the switch to give a specific limits for eachmonth.
-    
+
     #set tag
     if (is.null(tag)) {
       tag = ""
@@ -348,19 +348,19 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     }
     #set filepath
     filepath <- normalizePath(filepath)
-    
+
     map2(ggs$plots, ggs$month, ~sebms_ggsave(.x, glue("{filepath}/Sweden"), width = 6, height = 12.67, weathervar = glue("Sunhours_{year}-{.y}{tag}")))
-    
-    return(ggs$plots) 
-    
+
+    return(ggs$plots)
+
   }else { # make a figure per year
-    
-    ggs <- df %>% 
-      group_by(Year) %>% 
-      nest() %>% 
-      ungroup() %>% 
+
+    ggs <- df %>%
+      group_by(Year) %>%
+      nest() %>%
+      ungroup() %>%
       mutate(plots = map(data, sunHplot, .progress = "Create sunhour figures"))
-    
+
     #set tag
     if (is.null(tag)) {
       tag = ""
@@ -369,16 +369,16 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     }
     #set filepath
     filepath <- normalizePath(filepath)
-    
-    
+
+
     walk2(ggs$plots, ggs$Year, ~sebms_ggsave(.x, glue("{filepath}/Sweden"), width = 6, height = 12.67, weathervar = glue("Sunhours_{.y}{tag}")))
-    
-    return(ggs$plots) 
+
+    return(ggs$plots)
   }
 }
 
 # all_plots <- allyearlist %>%
-#   mutate(year = Year) %>% 
+#   mutate(year = Year) %>%
 #   group_by(Year) %>%
 #   nest() %>%
 #   mutate(plots = map(data, ~sebms_sunhour_plot(df = .x, year = .x$year %>% unique())))
@@ -402,7 +402,7 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
 #' @return a figure that shows diffeence in sunhours
 #' @export
 sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df, filepath = getwd(), tag = NULL, months = 4:9, per_month = FALSE, legends = FALSE, per_day = FALSE) {
-  
+
   if(missing(df)) {
     message("Please be pacient...")
     message("THIS CAN TAKE A MINUTE OR FIVE\n\n")
@@ -411,11 +411,11 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
   }#else{
   #df <- df# %>% sebms_sunhours_data(year = year, months = months, per_month = per_month)
   #  }
-  
+
   if (per_month) {
     #FIXME: check actual min and max for each month for years 2017:2022
     ## This makes limits specific for each month
-    jan = c(60, 200) 
+    jan = c(60, 200)
     feb = c(65, 230)
     mar = c(70, 300)
     apr = c(-80, 50)
@@ -427,9 +427,9 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     okt = c(65, 250)
     nov = c(60, 200)
     dec = c(60, 200)
-    
+
     #FIXME: The legend is way to big
-    sunDiffplot <- function(df, months) { 
+    sunDiffplot <- function(df, months) {
       ggplot(data = df) +
         geom_sf(aes(colour = sundiff), size = 0.01, show.legend = legends) +
         scale_colour_gradientn(colours = suncols(5),
@@ -445,11 +445,11 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
                              legend.position = c(0.8, 0.45)
         )
     }
-    
-    
+
+
   }else {
-    
-    sunDiffplot <- function(df) { 
+
+    sunDiffplot <- function(df) {
       ggplot(data = df) +
         geom_sf(aes(colour = sundiff), size = 0.01, show.legend = legends) +
         scale_colour_gradientn(colours = suncols(5),
@@ -465,36 +465,36 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
                              legend.position = c(0.8, 0.45)
         )
     }
-    
+
   }
-  
+
   message("\n Making plots.....\n")
-  
+
   if (per_month) { # Make figure per month
-    
-    rmonths <- df %>% st_drop_geometry() %>%  distinct(month) %>% pull(month)  
+
+    rmonths <- df %>% st_drop_geometry() %>%  distinct(month) %>% pull(month)
     if (length(months) > length(rmonths)) {
       months <- rmonths
     }
-    
-    ggs <- df %>% 
-      group_by(month) %>% 
-      nest() %>% 
-      ungroup() %>% 
+
+    ggs <- df %>%
+      group_by(month) %>%
+      nest() %>%
+      ungroup() %>%
       mutate(plots = map2(data, months, ~sunDiffplot(df = .x, months = .y), .progress = "Create sunhour diff figures"))
-    
-    
+
+
     walk2(ggs$plots, ggs$month,  ~sebms_ggsave(.x, "Sweden", width = 6, height = 12.67, weathervar = glue("SunhourDiff_{year}-{.y}")), .progress = "Saving figures as png...")
-    
+
     return(ggs$plots)
   }else { # Make figures per year
-    
-    ggs <- df %>% 
-      group_by(Year) %>% 
-      nest() %>% 
-      ungroup() %>% 
+
+    ggs <- df %>%
+      group_by(Year) %>%
+      nest() %>%
+      ungroup() %>%
       mutate(plots = map(data, sunDiffplot, .progress = "Create sunhour diff figures"))
-    
+
     #set tag
     if (is.null(tag)) {
       tag = ""
@@ -503,9 +503,9 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     }
     #set filepath
     filepath <- normalizePath(filepath)
-    
+
     walk2(ggs$plots, ggs$Year,  ~sebms_ggsave(.x, glue("{filepath}/Sweden"), width = 6, height = 12.67, weathervar = glue("SunhourDiff_{.y}{tag}")), .progress = "Saving figures as png...")
-    
+
     return(ggs$plots)
   }
 }
@@ -532,49 +532,49 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
 #'   village for that location.
 #' @export
 sebms_minmax_sunhour <- function(year = 2017:2022, df, months = 4:9, sunvar = total_sunH, per_month = FALSE, per_day = FALSE, filepath = getwd(), write = T) {
-  
+
   if(missing(df)) {
-    
-    df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day) 
+
+    df <- sebms_sunhours_data(year = year, months = months, per_month = per_month, per_day = per_day)
   }
-  
+
   if (per_month) { # Set min max sun hour per month
-    df <- df %>% 
-      group_by(Year, month) %>% 
+    df <- df %>%
+      group_by(Year, month) %>%
       mutate(max = max({{ sunvar }}),
-             min = min({{ sunvar }})) %>% 
-      ungroup() %>% 
+             min = min({{ sunvar }})) %>%
+      ungroup() %>%
       filter({{ sunvar }} == max | {{ sunvar }} == min) # Filter to keep only max and min of sunhours
   }else { # Set min-max sun hour per year
-    df <- df %>% 
-      group_by(Year) %>% 
+    df <- df %>%
+      group_by(Year) %>%
       mutate(max = max({{ sunvar }}),
-             min = min({{ sunvar }})) %>% 
-      ungroup() %>% 
+             min = min({{ sunvar }})) %>%
+      ungroup() %>%
       filter({{ sunvar }} == max | {{ sunvar }} == min) # Filter to keep only max and min of sunhours
   }
-  
+
   minmaxsun <- df %>%
     get_nearby_SunHour(sunvar = {{ sunvar }}, per_month = per_month) %>%
-    #select(Year, lon, lat, name, MaxMin = {{ sunvar }}) %>% 
-    rename(MaxMin = {{ sunvar }}) %>% 
-    relocate(MaxMin, .after = last_col()) %>% 
+    #select(Year, lon, lat, name, MaxMin = {{ sunvar }}) %>%
+    rename(MaxMin = {{ sunvar }}) %>%
+    relocate(MaxMin, .after = last_col()) %>%
     relocate(lon, lat, .before = name)
-  
+
   # Arrange data frame based on whether it is per month or year
   if (per_month) {
-    minmaxsun <- minmaxsun %>% 
+    minmaxsun <- minmaxsun %>%
       arrange(Year, month, desc(MaxMin))
   }else {
-    minmaxsun <- minmaxsun %>% 
+    minmaxsun <- minmaxsun %>%
       arrange(Year, desc(MaxMin))
   }
-  
+
   if (write) {
     filepath <- normalizePath(filepath)
-    
+
     if (length(year)>1) {
-      yearname <- paste0(min(year),"-",max(year))  
+      yearname <- paste0(min(year),"-",max(year))
     }else {
       yearname <- year
     }

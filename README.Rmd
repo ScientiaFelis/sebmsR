@@ -235,7 +235,8 @@ You can make different types of maps for species distributions
 There seems to be a problem on some Windows machines with fonts not being recognized.
 There are a number of things you can try to eliminate this.
 
-- Make sure you have the font installed then use `extrafont::font_import()` to register all fonts in R.
+- Make sure you have the font installed
+- Use `extrafont::font_import()` to register all fonts in R.
 - Use the `extrafont::loadfonts(device = "all", quiet = TRUE)` to load registered font in R
 - If you work in RStudio: Install the `ragg` package and set the Graphic device backend to **'AGG'**; `Tools > Global options > General > Graphics > Backend: AGG`
 
@@ -243,18 +244,22 @@ There are a number of things you can try to eliminate this.
 
 To further develop or change the package, please refer to instructions at <http://r-pkgs.had.co.nz/>, then fork this repo and submit a PR with the changes. 
 
-For a concrete example - to make a change with regards to how the filtering on species and year dimensions works for the species data, edit the 'R/data.R' file for example by adjusting the query used in the sebms_species_per_year function, and possibly adding a test in `test/testthat/test-sebms-various.R` that verifies expected results, then do the Ctrl+Shift+{D,T,E} steps and then use git to commit and push the changes.
+**For a concrete example:** To make a change with regards to how the filtering on species and year dimensions works for the species data.
+*First* edit the 'R/SQLqueries.R' file, for example by adjusting the query used in the `sebms_species_per_year_filtered()` function, and possibly adding a test in `test/testthat/test-sebms-various.R` that verifies expected results.
+*Then* do the `Ctrl+Shift+{D,T,E}` steps.
+*Then* use git to commit and push the changes.
 
-To change functions that retrieve data from the db, please make changes primarily in the `R/SQLqueries.R` file.
+To change functions that retrieve data from the database, please make changes primarily in the `R/SQLqueries.R` file.
 Functions related to weather figures are found in `R/weatherplots.R` and `R/soltimmar.R`
 Plotting species uses functions in `R/speciesplots.R`.
-The trim functions are found in `R/trimfunctions.R`
+The trim functions are found in `R/trimfunctions.R`.
+The distribution maps are found in `R/distribution_maps.R`
 
 Vignettes need to be updated and developed. These are located in `vignettes/sebms-intro.Rmd`.
 
 ## Credits
 
-The package bundles code and data assembled and curated by Lars Pettersson at http://dagfjarilar.lu.se
+The package is based on code and data assembled and curated by Lars Pettersson at http://dagfjarilar.lu.se
 
 ## Meta
 

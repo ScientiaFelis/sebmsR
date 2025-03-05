@@ -189,7 +189,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
 
   if (to_env) {
 
-    if(length(year) > 1) {
+    if (length(year) > 1) {
       year <- glue("{min(year)}-{max(year)}")
     }
 
@@ -358,7 +358,7 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     #set filepath
     filepath <- normalizePath(filepath)
 
-    map2(ggs$plots, ggs$month, ~sebms_ggsave(.x, glue("{filepath}/Sweden"), width = 6, height = 12.67, weathervar = glue("Sunhours_{year}-{.y}{tag}")))
+    walk2(ggs$plots, ggs$month, ~sebms_ggsave(.x, glue("{filepath}/Sweden"), width = 6, height = 12.67, weathervar = glue("Sunhours_{year}-{.y}{tag}")))
 
     return(ggs$plots)
 

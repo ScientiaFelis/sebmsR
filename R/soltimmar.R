@@ -78,9 +78,18 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
       group_by(gapvalue, lat, lon) %>%
       summarise(value = sum(value), .groups = "drop")
   } # This function iterate over days (and hour combinations if wanted) in combination with the year and month.
-  
-  allyears <- function(year, months, .f = sunHdata){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
-    map2(year, months, .f) %>% ##iterate through year plus month and send that to sunHdata via dayfunc and fix_sunhour_NAs, se above
+
+  allyears <- function(year, months){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
+    map2(year, months, .f = possibly(~sunHdata(year = .x, months = .y))) %>% ##iterate through year plus month and send that to sunHdata and fix_sunhour_NAs, se above
+      set_names(months) %>% # set the names of month to list items
+      bind_rows(.id = "month") %>% # Take the name of list items (month) and set them in a variable
+      group_by(month, gapvalue, lat, lon) %>%
+      summarise(total_sunH = sum(value),
+                .groups = "drop")
+  }
+
+  allyearsD <- function(year, months){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
+    map2(year, months, .f = ~dayfunc(year = .x, months = .y)) %>% ##iterate through year plus month and send that to dayfunc and fix_sunhour_NAs, se above
       set_names(months) %>% # set the names of month to list items
       bind_rows(.id = "month") %>% # Take the name of list items (month) and set them in a variable
       group_by(month, gapvalue, lat, lon) %>%
@@ -92,15 +101,15 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
     if (per_day) {
       # This is the function loop that download the data with the appropiate function calls loaded above.
       #FIXME: how long is the list? What determine the length, years, months? Dependent on per_month?
-      sunlist <- map(year, ~allyears(year = .x, months = months, .f = dayfunc), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
+      sunlist <- map(year, ~allyearsD(year = .x, months = months), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyearsD() function
         set_names(year) %>% # set names to Year
         bind_rows(.id = "Year")%>%
         mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
 
 
     }else {# This function summarise per month but do not use per day values.
-      
-      sunlist <- map(year, ~allyears(year = .x, months = months, .f = sunHdata), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
+
+      sunlist <- map(year, ~allyears(year = .x, months = months), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
         set_names(year) %>% # set names to Year
         bind_rows(.id = "Year")%>%
         mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
@@ -110,13 +119,13 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
 
 
     if (per_day) { # Take out data per day
-      sunlist <- map(year, ~allyears(year = .x, months = months, .f = dayfunc), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
+      sunlist <- map(year, ~allyearsD(year = .x, months = months), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyearsD() function
         set_names(year) %>% # set names to Year
         bind_rows(.id = "Year")
-      
-    }else { # Use monthly data from SMHI to summarise on
-      
-      sunlist <- map(year, ~allyears(year = .x, months = months, .f = sunHdata), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
+
+    }else { # Use monthly data and summarise per year
+
+      sunlist <- map(year, ~allyears(year = .x, months = months), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
         set_names(year) %>% # set names to Year
         bind_rows(.id = "Year")
 

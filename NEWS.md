@@ -6,6 +6,18 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.5.3
+
+* Add the possibility to save the `sebms_minmax_sunhour()` output to a file
+* Fix a bug in `sebms_sunhours_data()` where the `sunHdata()` function, inside `allyears()`, did not get the variables correctly.
+* Update the README file
+* Update the package help information
+
+# v 2.5.2
+
+* Add internal data and data recreation script
+* Fix some bugs due to new variable names in SQL query script
+
 # v 2.5.1
 
 * Add region maps to all `sebms_sites_map()` and `sebms_distribution_map()`

@@ -103,7 +103,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
       #FIXME: how long is the list? What determine the length, years, months? Dependent on per_month?
       sunlist <- map(year, ~allyearsD(year = .x, months = months), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyearsD() function
         set_names(year) %>% # set names to Year
-        bind_rows(.id = "Year")%>%
+        bind_rows(.id = "Year") %>%
         mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
 
 
@@ -111,7 +111,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
 
       sunlist <- map(year, ~allyears(year = .x, months = months), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
         set_names(year) %>% # set names to Year
-        bind_rows(.id = "Year")%>%
+        bind_rows(.id = "Year") %>%
         mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
 
     }
@@ -143,7 +143,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
   if (per_month) { #per month sunlist data
 
     lmon <- sunlist %>% distinct(month) %>% pull()
-    if(length(lmon) < length(months)) {
+    if (length(lmon) < length(months)) {
       message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n 'per_day=TRUE' MIGHT WORK.")
       months <- as.integer(lmon)
     }
@@ -166,7 +166,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
 
     lmon <- sunlist %>% distinct(month) %>% pull()
 
-    if(length(lmon) < length(months)) {
+    if (length(lmon) < length(months)) {
       message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n")
       message("IF YOU ARE MAKING A FIGURE, IT WILL BE INCORRECT, TO BLUE!\n")
       message("USE 'per_day=T', WHICH MAY SOLVE THE PROBLEM BUT TAKE LONG TIME.")
@@ -274,7 +274,7 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
   } else if(!missing(df) && per_month) {
     lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()
     months <- as.integer(lmon)
-    message(glue("DATA FRAME CONTAINS DATA FROM {length(months)} MONTHS!\n\n IF THAT DOES NOT SEEMS RIGHT 'per_day = TUE' MIGHT BE A WORK AROUND BUT TAKE LONG TIME."))
+    message(glue("DATA FRAME CONTAINS DATA FROM {length(months)} MONTHS!\n\n IF THAT DOES NOT SEEMS RIGHT 'per_day = TRUE' MIGHT BE A WORK AROUND BUT TAKE LONG TIME."))
 
   }
 

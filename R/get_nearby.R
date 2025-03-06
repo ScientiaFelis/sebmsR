@@ -1,15 +1,42 @@
 
+#' Find Nearest Locales to XY-Coordinates
+#'
+#' Find the nearest locales to the xy-coordinates. This is a help function to the
+#' get_nearby- functions.
+#'
+#' @param df data frame with coordinates
+#' @param radius the radius to search for nearby places
+#' @param top how many of the top results to save
+#' @param limited logical; if you want only the names of the resulting sites
+#' @param population_limit the smallest amount of poeple that should be in the locations
+#'
+#' @importFrom geonames GNfindNearbyPlaceName
+#' @import dplyr
+#'
+#' @returns a tibble with the names (and distance and population if 'limited = FALSE') of
+#'   the nearest locales.
+#' @noRd
+find_near <- function(df,  radius = 50, top = 1, limited = TRUE, population_limit = 0) {
+
+  lat <- df %>% select(matches("lat|Y")) %>% pull()
+  lon <- df %>% select(matches("lon|X")) %>% pull()
+  geonames::GNfindNearbyPlaceName(lat = lat , lng = lon, radius = radius, maxRows = "100", style = "MEDIUM") %>%
+    as_tibble() %>%
+    transmute(name = toponymName, distance = as.numeric(distance), population = as.numeric(population)) %>%
+    filter(population > population_limit) %>% # Filter on min population size
+    slice_min(distance, n = top) %>% # take the nearest 'top' locals
+    { if(limited) select(., name)  else select_all(.) } # select only name var if limited = TRUE, otherwise all.
+}
+
+
+
 #' Get Nearby Places to Given Coordinates
 #'
 #' Search for a city, village or municipality nearby a coordinate depending on
 #' what is available and the number of inhabitants.
 #'
 #' @param df data frame with coordinates, or sf object from e.g. [sebms_sunhours_data()]
-#' @param radius the radius to search for nearby places
-#' @param top how many of the top results to save
-#' @param limited logical; if you want only the names of the resulting sites
-#' @param population_limit the smallest amount of poeple that should be in the
-#'   locations
+#' @inheritParams find_near
 #'
 #' @importFrom geonames GNfindNearbyPlaceName
 #' @import dplyr
@@ -19,25 +46,12 @@
 #'
 #' @return a data frame with location names nearby your coordinates
 #' @export
-#' 
+#'
 get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limit = 0){
   #TODO: Make it use only Swedish locals
-  options(geonamesUsername = "sebms") 
-  
-  find_near <- possibly(function(df, radius = radius, top = top, limited = limited, pupulation_limit = population_limit) {
-    
-    lat <- df %>% select(matches("lat")) %>% pull()
-    lon <- df %>% select(matches("lon")) %>% pull()
-    geonames::GNfindNearbyPlaceName(lat = lat , lng = lon, radius = radius, maxRows = "100", style = "MEDIUM") %>%
-      as_tibble() %>%
-      transmute(name = toponymName, distance = as.numeric(distance), population = as.numeric(population)) %>%
-      filter(population > population_limit) %>% # Filter on min population size
-      slice_min(distance, n = top) %>% # take the nearest 'top' locals
-      { if(limited) select(., name)  else select_all(.) } # select only name var if limited = TRUE, otherwise all.
-  }
-  )
-  
-  if(inherits(df, "sf")) {
+  options(geonamesUsername = "sebms")
+
+  if(inherits(df, "sf")) { # If df is a sf object from another function, create a tibble with x&y coordinates
     df <- df %>%
       st_coordinates() %>%
       as_tibble() %>%
@@ -80,25 +94,12 @@ get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limi
 #'
 get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, population_limit = 0, sunvar = total_sunH, per_month = F){
   #TODO: Make it use only Swedish locals
-  options(geonamesUsername = "sebms") 
-  
-  find_near <- possibly(function(df, radius = radius, top = top, limited = limited, pupulation_limit = population_limit) {
-    
-    lat <- df %>% select(matches("lat")) %>% pull()
-    lon <- df %>% select(matches("lon")) %>% pull()
-    GNfindNearbyPlaceName(lat = lat , lng = lon, radius = radius, maxRows = "100", style = "MEDIUM") %>%
-      as_tibble() %>% 
-      transmute(name = toponymName, distance = as.numeric(distance), population = as.numeric(population)) %>%
-      filter(population > population_limit) %>%
-      slice_min(distance, n = top) %>%  
-      { if(limited) select(., name)  else select_all(.) }
-  }
-  )
-  
-  
-  if(inherits(df, "sf")) { # If 'df' is a sf object 
-    df1 <- df %>% 
-      st_coordinates() %>% # Take only XY coordinate 
+  options(geonamesUsername = "sebms")
+
+
+  if(inherits(df, "sf")) { # If 'df' is a sf object
+    df1 <- df %>%
+      st_coordinates() %>% # Take only XY coordinate
       as_tibble() %>%
       rename(lat = Y, lon = X)
     if (per_month) { # For per month data frame

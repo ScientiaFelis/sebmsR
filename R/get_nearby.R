@@ -18,8 +18,8 @@
 #' @noRd
 find_near <- function(df,  radius = 50, top = 1, limited = TRUE, population_limit = 0) {
 
-  lat <- df %>% select(matches("lat|Y")) %>% pull()
-  lon <- df %>% select(matches("lon|X")) %>% pull()
+  lat <- df %>% select(matches("lat")) %>% pull()
+  lon <- df %>% select(matches("lon")) %>% pull()
   geonames::GNfindNearbyPlaceName(lat = lat , lng = lon, radius = radius, maxRows = "100", style = "MEDIUM") %>%
     as_tibble() %>%
     transmute(name = toponymName, distance = as.numeric(distance), population = as.numeric(population)) %>%
@@ -122,7 +122,7 @@ get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, populat
     group_by(ID) %>%
     nest() %>%
     ungroup() %>%
-    mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, population_limit = population_limit), .progress = "Finding nearest location")) %>% # Find nearest per row
+    mutate(loc = map(.x = data, .f = possibly(~find_near(.x, radius = radius, top = top, limited = limited, population_limit = population_limit)), .progress = "Finding nearest location")) %>% # Find nearest per row
     unnest(loc) %>%
     unnest(data) %>%
     select(-ID)

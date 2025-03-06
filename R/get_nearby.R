@@ -63,7 +63,7 @@ get_nearby <- function(df, radius = 50, top = 1, limited = TRUE, population_limi
     group_by(ID) %>%
     nest() %>%
     ungroup() %>%
-    mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, pupulation_limit = population_limit), .progress = "Finding nearest locations")) %>%
+    mutate(loc = map(.x = data, .f = possibly(~find_near(.x, radius = radius, top = top, limited = limited, population_limit = population_limit)), .progress = "Finding nearest locations")) %>%
     unnest(loc) %>%
     unnest(data) %>%
     select(lon = matches("lon"), lat = matches("lat"), name)
@@ -122,7 +122,7 @@ get_nearby_SunHour <- function(df, radius = 50, top = 1, limited = TRUE, populat
     group_by(ID) %>%
     nest() %>%
     ungroup() %>%
-    mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, pupulation_limit = population_limit), .progress = "Finding nearest location")) %>% # Find nearest per row
+    mutate(loc = map(data, ~find_near(.x, radius = radius, top = top, limited = limited, population_limit = population_limit), .progress = "Finding nearest location")) %>% # Find nearest per row
     unnest(loc) %>%
     unnest(data) %>%
     select(-ID)

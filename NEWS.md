@@ -6,6 +6,13 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+
+# v 2.5.4
+
+* Fix some bugs
+* Created a separate function `find_near()` outsite the `get_near*()`functions so it did not need to be repeated.
+* Cleaned up some text
+
 # v 2.5.3
 
 * Add the possibility to save the `sebms_minmax_sunhour()` output to a file

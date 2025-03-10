@@ -831,25 +831,25 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
   Landskap <- paste0(str_to_lower(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
   Kommun <- paste0(str_to_lower(Kommun),collapse = "|") # Make the list of Kommun to s regex statement
   Region <- paste0(str_to_lower(Region),collapse = "|") # Make the list of Regioner to s regex statement
-  
-  county <- regID %>% 
+
+  county <- regID2 %>%
     filter(str_detect(reg_name, Län)) %>% # Filter out matching Län from a look up table
     pull(reg_uid) %>% # pull out the id-numbers
     paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
-  
-  region <- regID %>% 
-    filter(str_detect(reg_name, Landskap)) %>% 
-    pull(reg_uid) %>% 
+
+  region <- regID2 %>%
+    filter(str_detect(reg_name, Region)) %>%
+    pull(reg_uid) %>%
     paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
-  
-  municipality <- regID %>% 
-    filter(str_detect(reg_name, Kommun)) %>% 
-    pull(reg_uid) %>% 
+
+  municipality <- regID2 %>%
+    filter(str_detect(reg_name, Kommun)) %>%
+    pull(reg_uid) %>%
     paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
-  
-  part <- regID %>% 
-    filter(str_detect(reg_name, Region)) %>% 
-    pull(reg_uid) %>% 
+
+  province <- regID2 %>%
+    filter(str_detect(reg_name, Landskap)) %>%
+    pull(reg_uid) %>%
     paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
 
 
@@ -860,33 +860,33 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
   }
 
   q <-  glue("
-             WITH reg AS
-           (SELECT reg_uid AS reg_id, reg_name AS län
+             WITH cou AS
+           (SELECT reg_uid AS county_id, reg_name AS län
              FROM reg_region
              WHERE reg_uid IN ({county}) AND reg_group = 'C'),
            lsk AS
-           (SELECT reg_uid AS landskaps_id, reg_name AS landskap
+           (SELECT reg_uid AS province_id, reg_name AS landskap
              FROM reg_region
-             WHERE reg_uid IN ({region}) AND reg_group = 'P'),
+             WHERE reg_uid IN ({province}) AND reg_group = 'P'),
            mun AS
-           (SELECT reg_uid AS kommun_id, reg_name AS kommun
+           (SELECT reg_uid AS municipality_id, reg_name AS kommun
              FROM reg_region
              WHERE reg_uid IN ({municipality}) AND reg_group = 'M'),
-           bioreg AS
+           reg AS
            (SELECT reg_uid AS region_id, reg_name AS region
              FROM reg_region
-             WHERE reg_uid IN ({part}) AND reg_group = 'R')
-           
+             WHERE reg_uid IN ({region}) AND reg_group = 'R')
+
             SELECT DISTINCT
                 sit.sit_uid AS siteuid,
                 obs.obs_typ_vfcid AS verification_code,
                 EXTRACT (year FROM vis_begintime::date) AS year,
                 SUM(obs.obs_count) AS total_number,
-                reg.län,
+                cou.län,
                 lsk.landskap,
-                mun.kommun --,
-             --   bioreg.region
-          
+                mun.kommun,
+                reg.region
+
              FROM obs_observation AS obs
                 INNER JOIN vis_visit AS vis ON obs.obs_vis_visitid = vis.vis_uid
                 INNER JOIN seg_segment AS seg ON obs.obs_seg_segmentid = seg.seg_uid
@@ -894,11 +894,11 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
                 INNER JOIN spe_species AS spe ON obs.obs_spe_speciesid = spe.spe_uid
                 INNER JOIN spv_speciesvalidation AS spv ON spe.spe_uid = spv_spe_speciesid
                 INNER JOIN rer_regionrelation AS rer ON sit.sit_reg_countyid = rer.rer_reg_childid
-                --INNER JOIN reg ON rer.rer_reg_parentid = reg.reg_id
-                INNER JOIN reg ON sit.sit_reg_countyid = reg.reg_id
-                INNER JOIN lsk ON sit.sit_reg_provinceid = lsk.landskaps_id
-                INNER JOIN mun ON sit.sit_reg_municipalityid = mun.kommun_id
-               -- INNER JOIN bioreg ON reg.reg_id = bioreg.region_id
+                INNER JOIN lsk ON sit.sit_reg_provinceid     = lsk.province_id
+                INNER JOIN reg ON sit.sit_reg_regionid       = reg.region_id
+                INNER JOIN cou ON sit.sit_reg_countyid       = cou.county_id
+                INNER JOIN mun ON sit.sit_reg_municipalityid = mun.municipality_id
+               -- INNER JOIN reg ON rer.rer_reg_parentid = reg.reg_id
                 INNER JOIN typ_type AS typ on vis.vis_typ_datasourceid = typ.typ_uid
              WHERE EXTRACT (week FROM vis_begintime::date) IN {minmax}
                 AND EXTRACT(YEAR FROM vis_begintime) IN {year}
@@ -907,7 +907,7 @@ sebms_trimobs <- function(year = 2010:lubridate::year(lubridate::today()), Art =
                 {filterPattern}  -- THIS ADDS A FILTER TO THE SQL FROM THE FUNCTION
                 AND spe.spe_uid IN {Art}
             GROUP BY
-                year, siteuid, reg.reg_id, reg.län,lsk.landskaps_id, lsk.landskap, mun.kommun_id, mun.kommun, obs.obs_typ_vfcid  --bioreg.region_id, bioreg.region, 
+                year, siteuid, reg.region_id, reg.region, cou.county_id, cou.län,lsk.province_id, lsk.landskap, mun.municipality_id, mun.kommun, obs.obs_typ_vfcid
             ORDER BY
                 siteuid, year;")
 
@@ -942,54 +942,59 @@ sebms_trimSites <- function(year = 2010:lubridate::year(lubridate::today()), Lan
   Landskap <- paste0(str_to_lower(Landskap),collapse = "|") # Make the list of Landskap to s regex statement
   Kommun <- paste0(str_to_lower(Kommun),collapse = "|") # Make the list of Kommun to s regex statement
   Region <- paste0(str_to_lower(Region),collapse = "|") # Make the list of Regioner to s regex statement
-  
-  county <- regID %>% 
+
+  county <- regID2 %>%
     filter(str_detect(reg_name, Län)) %>% # Filter out matching Län from a look up table
     pull(reg_uid) %>% # pull out the id-numbers
     paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
-  
-  region <- regID %>% 
-    filter(str_detect(reg_name, Landskap)) %>% 
-    pull(reg_uid) %>% 
+
+  province <- regID2 %>%
+    filter(str_detect(reg_name, Landskap)) %>%
+    pull(reg_uid) %>%
     paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
-  
-  municipality <- regID %>% 
-    filter(str_detect(reg_name, Kommun)) %>% 
-    pull(reg_uid) %>% 
+
+  municipality <- regID2 %>%
+    filter(str_detect(reg_name, Kommun)) %>%
+    pull(reg_uid) %>%
     paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
-  
-  part <- regID %>% 
-    filter(str_detect(reg_name, Region)) %>% 
-    pull(reg_uid) %>% 
+
+  region <- regID2 %>%
+    filter(str_detect(reg_name, Region)) %>%
+    pull(reg_uid) %>%
     paste0(collapse = ',') # Make the id-numbers a vector palatable to the SQL
 
   q <- glue("
-          WITH reg AS
-           (SELECT reg_uid AS reg_id, reg_name AS län
+          WITH cou AS
+           (SELECT reg_uid AS county_id, reg_name AS län
              FROM reg_region
              WHERE reg_uid IN ({county}) AND reg_group = 'C'),
           lsk AS
-           (SELECT reg_uid AS landskaps_id, reg_name AS landskap
+           (SELECT reg_uid AS province_id, reg_name AS landskap
              FROM reg_region
              WHERE reg_uid IN ({region}) AND reg_group = 'P'),
           mun AS
-           (SELECT reg_uid AS kommun_id, reg_name AS kommun
+           (SELECT reg_uid AS municipality_id, reg_name AS kommun
              FROM reg_region
              WHERE reg_uid IN ({municipality}) AND reg_group = 'M'),
-          part AS
-           (SELECT reg_uid AS region_id, reg_name AS region
+          reg AS
+           (SELECT reg_code, reg_uid AS region_id, reg_name AS region
              FROM reg_region
-             WHERE reg_uid IN ({part}) AND reg_group = 'R')
-              
+             WHERE reg_uid IN ({region}) AND reg_group = 'R')
+
               SELECT
                 sit.sit_uid AS site,
-                reg.reg_code AS region,
-                reg.reg_uid AS regID,
+                reg.reg_code AS regionNamn,
+                reg.region_id AS regID,
                 sit.sit_reg_countyid as countyid,
                 sit.sit_reg_provinceid as provinceid
               FROM sit_site AS sit
                 INNER JOIN rer_regionrelation AS rer ON sit.sit_reg_countyid = rer.rer_reg_childid
-                INNER JOIN reg_region AS reg on rer.rer_reg_parentid = reg.reg_uid
+                INNER JOIN lsk ON sit.sit_reg_provinceid     = lsk.province_id
+                INNER JOIN reg ON sit.sit_reg_regionid       = reg.region_id
+                INNER JOIN cou ON sit.sit_reg_countyid       = cou.county_id
+                INNER JOIN mun ON sit.sit_reg_municipalityid = mun.municipality_id
+
+                --INNER JOIN reg_region AS reg on rer.rer_reg_parentid = reg.reg_uid
               WHERE
                 sit_typ_datasourceid IN {source}
                 --AND reg.reg_uid IN ({county})

@@ -1,5 +1,5 @@
 ### trimfunctions_Swedishbutterflies.R
-### 
+###
 ### Author: LP
 ### Date: 25 October 2017
 ### Modified: 2018-11-21
@@ -34,9 +34,9 @@ get_trimInfile <- function(years=2010:lubridate::year(lubridate::today())-1, Art
   trimSpecies <- sebms_trimSpecies(year = years, Art = Art, topList = topList, source = source) %>% 
     distinct(speuid, art, .keep_all = T) %>% 
     slice_head(n=topNumber)
-  
+
   spein <- function(df = data, speuid) {
-    
+
     #print(paste("Working on species with ID",speuid))
     minW <- df %>% pull(min) # first posible week of observation
     maxW <- df %>% pull(max) # last possible week of observation
@@ -44,22 +44,22 @@ get_trimInfile <- function(years=2010:lubridate::year(lubridate::today())-1, Art
     obses <- sebms_trimobs(year = years, Art = speuid, Län = Län, Landskap = Landskap, Kommun = Kommun, filterPattern = filterPattern, minmax = minW:maxW, verification = verification, source = source) %>% 
       mutate(total_number = as.numeric(total_number)) %>%
       summarise(total_number = sum(total_number, na.rm = T), .by = c(siteuid, year, län, landskap, kommun))
-    
-    visits <- sebms_trimvisits(year = years, minmax = minW:maxW, source = source) %>% 
+
+    visits <- sebms_trimvisits(year = years, minmax = minW:maxW, source = source) %>%
       mutate(visit = as.numeric(visit))
-    
+
     if(nrow(obses) > 0) { #Precondition to skip species with zero observations
-      
+
       ## TRIM infile generation (If species have been seen any year in 'year' all site with a visit get 'total_number' of 0. Non-visited sites any year gets a NA)
       obsTidy <- obses %>%
         complete(siteuid, year = seq(min(years), max(years), by = 1), fill = list(total_number = 0)) %>%
-        left_join(visits, by = c("siteuid", "year")) %>% 
+        left_join(visits, by = c("siteuid", "year")) %>%
         mutate(total_number = if_else(is.na(visit), NA, total_number),
                visit = if_else(is.na(visit), 1, visit),
         ) %>%
-        mutate(freq = 1/visit) %>% 
+        mutate(freq = 1/visit) %>%
         select(-visit)
-      
+
       ## Lars code that works now
       # obsTidyLP <- obses %>%
       #   complete(siteuid,
@@ -73,22 +73,22 @@ get_trimInfile <- function(years=2010:lubridate::year(lubridate::today())-1, Art
       #   select(-visit) %>%
       #   mutate(total_number = as.numeric(total_number)) %>%
       #   filter(year %in% years) #This is in order to avoid a wrong number of sites by counting sites monitored after the year of the report
-      
+
     }else{
       message(paste("Species with ID ",speuid," skipped, no observations!"))
     }
-    
+
     return(obsTidy)
   }
-  
-  Infile <- trimSpecies %>% 
-    group_by(speuid, art) %>% 
-    nest() %>% 
-    ungroup() %>% 
-    mutate(obslist = map2(data, speuid, possibly(~spein(df = .x, speuid = .y)), .progress = "Making trimspecies infile...")) %>% 
-    select(-data) %>% 
+
+  Infile <- trimSpecies %>%
+    group_by(speuid, art) %>%
+    nest() %>%
+    ungroup() %>%
+    mutate(obslist = map2(data, speuid, possibly(~spein(df = .x, speuid = .y)), .progress = "Making trimspecies infile...")) %>%
+    select(-data) %>%
     unnest(obslist)
-  
+
   return(Infile)
 }
 
@@ -98,21 +98,21 @@ get_trimInfile <- function(years=2010:lubridate::year(lubridate::today())-1, Art
 #' @inheritParams get_trimInfile
 #' @param infile file with site, year, total observations and reverse frequency weight (1/#visits), or an object from [get_trimInfile()]
 #' @param ... further arguments to pass to [get_trimInfile()]
-#' 
+#'
 #' @importFrom rtrim trim
 #' @import dplyr
 #' @importFrom tidyr nest
 #' @importFrom purrr map possibly set_names
 #' @importFrom lubridate year today
 #' @importFrom stringr str_detect
-#' 
-#' @return a trim file with yearly changes of each species. 
+#'
+#' @return a trim file with yearly changes of each species.
 #' @export
 get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), ...) {
   
   if(is.null(infile)) {
     arglist <- list(...)
-    
+
     if(!is.null(arglist$filterPattern)) { #If a filterpattern have been given
       fp <- arglist$filterPattern
       infile <- get_trimInfile(filterPattern = fp, years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>% 
@@ -123,33 +123,33 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
     }else{ # If there is no filterpattern
       infile <- get_trimInfile(years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
       if (nrow(infile) > 0) {
-        infile <- infile %>% 
-          select(site = siteuid, speuid, art, year, total_number, freq) %>% 
-          group_by(speuid, art) %>% 
-          nest() %>% 
+        infile <- infile %>%
+          select(site = siteuid, speuid, art, year, total_number, freq) %>%
+          group_by(speuid, art) %>%
+          nest() %>%
           ungroup()
       }
     }
   }else { # If there is a 'infile' given
-    infile <- infile %>% 
-      select(site = siteuid, speuid, art, year, total_number, freq) %>% 
-      group_by(speuid, art) %>% 
-      nest() %>% 
+    infile <- infile %>%
+      select(site = siteuid, speuid, art, year, total_number, freq) %>%
+      group_by(speuid, art) %>%
+      nest() %>%
       ungroup()
   }
-  
+
   # Make trim with set arguments into function to make it cleaner by the map() function below
   trimfun <- function(df){
     rtrim::trim(total_number ~ site + year, data = df, weights = "freq",  model = 2, serialcor = TRUE,overdisp = TRUE, changepoints = "all",autodelete = TRUE, max_iter = 1000)
   }
-  
+
   if(length(infile) != 0) {
-    
-    trimList <- map(infile$data, possibly(trimfun), .progress = "Run trimfunction...") %>% 
-      suppressWarnings() %>% 
-      # set_names(infile$speuid) %>% 
+
+    trimList <- map(infile$data, possibly(trimfun), .progress = "Run trimfunction...") %>%
+      suppressWarnings() %>%
+      # set_names(infile$speuid) %>%
       set_names(infile$art)
-    
+
     return(trimList)
   }else { # If infile is of zero length
     return(infile)
@@ -159,7 +159,7 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
 
 
 ####
-### 
+###
 
 #' Create and Save TRIM Plots
 #'
@@ -177,52 +177,52 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
 #' @importFrom glue glue
 #' @importFrom rtrim index overall
 #' @importFrom purrr map2 walk2 discard
-#' 
+#'
 #' @return figures in png format of the species trends with confidence interval
 #' @export
 get_trimPlots <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, xaxis_sep = 5, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = TRUE, print = TRUE, ...) {
-  
+
   # This creates a trimIndex file if none is provided
   if(is.null(trimIndex)) {
-    
+
     arglist <- list(...)
-    
+
     if(!is.null(arglist$filterPattern)){ # If you need a filter for the trimInfile creation
-      
+
       fp <- arglist$filterPattern
-      
-      trimIndex <- get_trimInfile(years = years, Art = Art, filterPattern = fp, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>% 
+
+      trimIndex <- get_trimInfile(years = years, Art = Art, filterPattern = fp, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
         get_trimIndex()
-      
+
     }else{ # If you want to use the defaults
-      trimIndex <- get_trimIndex(years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
+      trimIndex <- get_trimIndex(years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
     }
-  }  
-  
-  
-  
+  }
+
+
+
   trimplots <- function(df, art) {
-    #TODO make this plotting a function and run it in map per species instead. 
+    #TODO make this plotting a function and run it in map per species instead.
     if(inherits(df, 'trim')) {
-      
+
       m2 <- df
       Index <- index(m2,base = min(m2$time.id)) # Calculates the Index value
-      
+
       if(typeof(m2) == "list"){
-        
-        fname <- as.character({{ art }}) %>% 
+
+        fname <- as.character({{ art }}) %>%
           str_replace_all("/", "_") #replacing escape characters in species name
         #print(m2)
-        
+
         yAxisAdjusted <- yAxisModifier(max(Index$imputed + 1.96*Index$se_imp))
-        
+
         gcomma <- function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = FALSE) #Called later, enables commas instead of points for decimal indication
-        
-        
+
+
         indco <- overall(m2)
         indco <- as.vector(indco[[2]])
         indco <- indco[8]
-        
+
         #TODO This if else should be possible to do inside ggplot with lty and col by category
         if (indco == "Uncertain") {
           col <- sebms_trimpal[3]
@@ -237,23 +237,23 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrida
           col <- sebms_trimpal[1]
           lt <- "solid"
         }
-        
+
         # mrgn1 <- margin(0,0,80,0)
         # mrgn2 <- margin(0,0,30,0)
-        # 
+        #
         titles <- case_when(nchar(fname) < 18  ~ paste0(fname ,' ',"(", m2$nsite, " lokaler)"),
                             str_detect(fname, "_") ~ glue("{str_replace_all(fname, '_', '\n')} \n({m2$nsite} lokaler)"),
                             TRUE ~ paste0(fname ,' ',"\n(", m2$nsite, " lokaler)"))
-        
+
         if(nchar(fname) < 18) {
           mrgn <- margin(0,0,80,0)
         }else {
           mrgn <- margin(0,0,30,0)
         }
-        
+
         Encoding(fname) <- 'UTF-8'
-        
-        Index %>% 
+
+        Index %>%
           ggplot(aes(x = time,y = imputed)) +
           geom_line(linetype = paste(lt),
                     colour = paste(col),
@@ -282,7 +282,7 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrida
                 panel.grid.major.x = element_blank(),
                 panel.grid.minor = element_blank(),
                 panel.background = element_blank(), #Grid and background
-                axis.text.x = element_text(colour = "black", size = 42,  #x-axis labels colour&size 
+                axis.text.x = element_text(colour = "black", size = 42,  #x-axis labels colour&size
                                            angle = 0),
                 axis.text.y = element_text(colour = "black",
                                            size = 42, #y-axis labels colour&size
@@ -293,19 +293,19 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrida
                 axis.ticks.length = unit(4, "mm"),
                 plot.margin = margin(8, 20, 0, 0),
                 axis.line = element_line(colour = "black") #Axis colours
-          ) 
+          )
       }
     }
   }
-  
+
   trimIndex <- trimIndex %>% discard(is.null)
-  
+
   ggs <- vector("list", length = length(trimIndex))
-  spname <- names(trimIndex) %>% 
+  spname <- names(trimIndex) %>%
     str_replace_all("/", "_")
-  
+
   ggs <- map2(trimIndex, spname, ~trimplots(.x, .y), .progress = "Making trimplots...")
-  
+
   #set tag
   if (is.null(tag)) {
     tag = ""
@@ -314,11 +314,11 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrida
   }
   #set filepath
   filepath <- normalizePath(filepath)
-  
+
   if (write) {
     walk2(ggs, spname, ~ggsave(plot = .x, filename = glue("{filepath}/{.y}{tag}.png"), width = 748, height = 868, units = "px", dpi = 72), .progress = "Saving trimplots...")
   }
-  
+
   if (print) {
     print(ggs)
   }
@@ -388,22 +388,22 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
       )
     }
   }
-  
-  
-  spname <- names(trimIndex) %>% 
+
+
+  spname <- names(trimIndex) %>%
     str_replace_all("/", "_")
-  
-  imputedList <- map2(trimIndex, spname, ~trimspelist(.x, .y)) %>% 
-    list_rbind() 
-  
+
+  imputedList <- map2(trimIndex, spname, ~trimspelist(.x, .y)) %>%
+    list_rbind()
+
   # Add speuid to list
   trendList <- sebms_trimSpecies(Art = speid) %>%
     select(speuid, art) %>%
-    mutate(art = str_replace_all(art, "/", "_")) %>% 
+    mutate(art = str_replace_all(art, "/", "_")) %>%
     right_join(imputedList, by = c("art"))
-  
+
   if(indicator_layout) { # If you want indicator layout
-    
+
     sitecalc <- function(indic){
       trendList %>%
         filter(speuid %in% indic) %>%
@@ -412,19 +412,19 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
                meansite = round(mean(nsite)),
                mediansite = round(median(nsite)),
                sdsite = round(sd(nsite))
-        ) 
+        )
     }
-    
+
     imputedList <- map(indicatorlist, sitecalc) %>%
       bind_rows(.id = "indicator") %>%
       select(indicator, origin, speuid, art, year = time, index = imputed, se = se_imp, nsite, maxsite, minsite, meansite, mediansite, sdsite)
-    
+
   }else { # If NO indicator layout is wanted
-    imputedList <- trendList %>% 
+    imputedList <- trendList %>%
       select(origin, speuid, art, year = time, index = imputed, se = se_imp, converged)
   }
-  
-  
+
+
   if (write) {
     #set tag
     if (is.null(tag)) {
@@ -434,7 +434,7 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
     }
     #set filepath
     filepath <- normalizePath(filepath)
-    
+
     Year <- glue("{min(years)}-{max(years)}")
     write_csv2(imputedList, glue("{filepath}/Index_{Year}{tag}.csv"))
   }
@@ -498,22 +498,22 @@ get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrid
       )
     }
   }
-  
+
   spname <- names(trimIndex) %>%
     str_replace_all("/", "_")
-  
-  trendList <- map2(trimIndex, spname, ~trimspelist(.x, .y)) %>% 
+
+  trendList <- map2(trimIndex, spname, ~trimspelist(.x, .y)) %>%
     list_rbind()
-  
-  
-  
+
+
+
   # Add speuid to list and select variables
   trendList <- sebms_trimSpecies(Art = Art) %>%
     select(speuid, art) %>%
     right_join(trendList, by = c("art")) %>%
     select(origin, speuid, art, nsite, add, mul, p, meaning)
-  
-  
+
+
   if (write) {
     #set tag
     if (is.null(tag)) {
@@ -523,7 +523,7 @@ get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrid
     }
     #set filepath
     filepath <- normalizePath(filepath)
-    
+
     Year <- glue("{min(years)}-{max(years)}")
     #write_csv2(imputedList, glue("Index_{Year}.csv"))
     write_csv2(trendList, glue("{filepath}/Trendindex_{Year}{tag}.csv"))
@@ -556,45 +556,45 @@ get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today(
   imputedLocalList <- get_imputedList(years = years, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) 
 
   if (is.null(trimmedImputedSwedishList)) {
-    
+
     speuid <- imputedLocalList %>% distinct(speuid) %>% pull(speuid)
-    
+
     trimmedImputedSwedishList <- get_imputedList(years = years, Art = c(speuid), indicator_layout = FALSE, verification = verification, source = source)
   }
-  
+
   plotcomp <- function(df, species) {
-    
+
     swedish <- trimmedImputedSwedishList %>%
-      filter(art == {{ species }}) %>% 
+      filter(art == {{ species }}) %>%
       fill(index, se, .direction = "downup")
-    
+
     local <- imputedLocalList %>%
-      filter(art == {{ species }}) %>% 
+      filter(art == {{ species }}) %>%
       fill(index, se, .direction = "downup")
-    
-    
+
+
     fname <- as.character({{ species }}) %>%
       str_replace_all("/", "_") #replacing escape characters in species name
-    
-    
+
+
     yAxisAdjusted <- yAxisModifier(max(c(swedish$index+1.96*swedish$se,local$index+1.96*local$se)))
-    
+
     gcomma <- function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = FALSE) #Called later, enables commas instead of points for decimal indication
-    
-    imputedCombined <- swedish %>% 
+
+    imputedCombined <- swedish %>%
       full_join(local, by = c("art", "year")) %>%
       transmute(year = year, species = art, imputed_sweden = index.x, imputed_local = index.y)
-    
+
     if(nchar(fname) < 18) {
       mrgn <- margin(0,0,80,0, unit = "pt")
     }else{
       mrgn <- margin(0,0,30,0, unit = "pt")
     }
-    
+
     Encoding(fname) <- 'UTF-8'
-    
-    imputedCombined %>% 
-      ggplot(aes(x = year)) + 
+
+    imputedCombined %>%
+      ggplot(aes(x = year)) +
       geom_line(aes(y = imputed_local), linetype = "solid", colour = sebms_palette[2], linewidth = 2.8) + #interval line 1
       geom_line(aes(y = imputed_sweden), linetype = "longdash", linewidth = 1.6) + #central line #colour=rgb(155,187,89,max=255)
       # + xlim(startyear, endyear) #x-axis sectioning
@@ -625,16 +625,16 @@ get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today(
                                        angle = 0),
             axis.line = element_line(colour = "black") #Axis colours
       )
-    
-    
-  } 
-  
+
+
+  }
+
   ggs <- imputedLocalList %>%
     group_by(art) %>%
     nest() %>%
     ungroup() %>%
     mutate(plots = map2(data, art, ~plotcomp(.x, .y)))
-  
+
   if (write) {
     #set tag
     if (is.null(tag)) {
@@ -644,10 +644,10 @@ get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today(
     }
     #set filepath
     filepath <- normalizePath(filepath)
-    
+
     walk2(ggs$plots, ggs$art, ~ggsave(plot = .x, filename = glue("{filepath}/{.y}_comparison{tag}.png"), width=748, height=868, dpi = 72, units = "px"))
   }
-  
+
   if (print) {
     print(ggs$plots)
   }
@@ -689,21 +689,21 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:lubridate::year(lu
     indicatorlist <- list(indicators) %>%
       set_names(indicatorname) %>%
       append(indicatorlist)
-    
-    # indicatorlist <- map(list(indicators), ~list(.x)) %>% 
-    #   set_names(indicatorname) %>% 
-    #   list_flatten() %>% 
-    #   c(indicatorlist) %>% 
+
+    # indicatorlist <- map(list(indicators), ~list(.x)) %>%
+    #   set_names(indicatorname) %>%
+    #   list_flatten() %>%
+    #   c(indicatorlist) %>%
     #   list_flatten()
   }
-  
+
   speid <- unlist(indicatorlist, use.names = F) %>%  # 'indicatorlist' is loaded by package
     unique()
-  
+
   if(is.null(infile)) { # If no infile is given
     infile <- get_imputedList(Art = c(speid), years = years, indicator_layout = TRUE, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) 
   }
-  
+
   indata <- infile %>%
     transmute(indicator,
               origin,
@@ -718,27 +718,27 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:lubridate::year(lu
               meansite,
               mediansite,
               sdsite)
-  
-  
-  
+
+
+
   indicalc <- function(spi, indn) {
-    
+
     dat <- indata %>%
       filter(speuid %in% spi) %>%
       distinct(species, year, index, se)
-    
+
     origin <- indata %>% distinct(origin) %>% pull()
-    
+
     msi_out <- msi(dat, plotbaseyear = min(years), SEbaseyear = min(years), index_smooth = 'INDEX', lastyears = lastyear, jobname = glue("{indn}:{origin}"))
-    
-    result <- msi_out$results[1:8] %>% 
+
+    result <- msi_out$results[1:8] %>%
       left_join(indata %>% filter(indicator %in% indn) %>% select(year,
                                                                   maxsite,
                                                                   minsite,
                                                                   meansite,
                                                                   mediansite,
                                                                   sdsite) %>% distinct(), by = c("year"))
-    
+
     if (write) {
       #set tag
       if (is.null(tag)) {
@@ -748,16 +748,16 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:lubridate::year(lu
       }
       #set filepath
       filepath <- normalizePath(filepath)
-      
+
       write_csv2(file = glue("{filepath}/{indn}_indicator_in_{origin}{tag}.csv"), x = result)
       write_csv2(file = glue("{filepath}/{indn}_trends_in_{origin}{tag}.csv"), x = msi_out$trends)
     }
     return(msi_out)
   }
-  
+
   grindicators <- map2(indicatorlist, names(indicatorlist), possibly(~indicalc(.x, .y)), .progress = "Calculating Indicator Index...") %>%
     set_names(names(indicatorlist))
-  
+
   if (print) {
     return(grindicators)
   }
@@ -772,13 +772,13 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:lubridate::year(lu
 #'
 #' @inheritParams get_indicatorAnalyses
 #' @param msi_out output from [get_indicatorAnalyses()]
-#' 
+#'
 #' @import ggplot2
 #' @importFrom stringr str_replace
 #' @importFrom glue glue
 #' @importFrom rtrim index overall
 #' @importFrom purrr map2 walk2
-#' 
+#'
 #' @usage get_indicatorPlots(
 #'    msi_out = NULL,
 #'    years = 2010:2023,
@@ -821,24 +821,24 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
       col <- sebms_trimpal[1]
       lt <- "solid"
     }
-    
+
     col <- "#9BBB59"
-    
+
     # titles <- case_when(nchar(fname) < 18  ~ glue("fname ({df$nsite} lokaler)"),
     #                     str_detect(fname, "_") ~ glue("{str_replace_all(fname, '_', '\n')} \n({df$nsite} lokaler)"),
     #                     TRUE ~ glue("fname \n ({df$nsite} lokaler)"))
-    
+
     titles <- str_to_sentence(fname)
-    
+
     if(nchar(fname) < 18) {
       mrgn <- margin(0,0,80,0)
     }else {
       mrgn <- margin(0,0,30,0)
     }
-    
+
     Encoding(fname) <- 'UTF-8'
     maxlim <- max(df$results$year)
-    #Index %>% 
+    #Index %>%
     df$results %>%
       ggplot(aes(x = year)) +
       #geom_vline(xintercept = min(years), colour = "grey50") +
@@ -871,7 +871,7 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
             panel.grid.minor = element_blank(),
             panel.background = element_blank(), #Grid and background
             axis.text.x = element_text(colour = "black",
-                                       size = 28,  #x-axis labels colour&size 
+                                       size = 28,  #x-axis labels colour&size
                                        angle = 0,
                                        margin = margin(t = 20)),
             axis.text.y = element_text(colour = "black",
@@ -887,16 +887,16 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
             #axis.line = element_blank() #Axis colours
             axis.line.y = element_line(colour = "grey50"),
             axis.line.x = element_blank()#Axis colours
-      ) 
+      )
   }
   #}
   # }
   ggs <- vector("list", length = length(msi_out))
   spname <- names(msi_out)
   ggs <- map2(msi_out, spname, ~trimplots(.x, .y))
-  
+
   #ggs <- imap(msi_out, trimplots) # The imap(df) is the same as map2(df, names(df)) above. It take the msi_out as first argument and the names(msi_out) as second and feed that into the function
-  
+
   if(write) {
     #set tag
     if (is.null(tag)) {
@@ -906,9 +906,9 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
     }
     #set filepath
     filepath <- normalizePath(filepath)
-    
+
     walk2(ggs, spname, ~ggsave(plot = .x, filename = glue("{filepath}/{.y}-Indicatorplot{tag}.png"), width = 748, height = 868, units = "px", dpi = 72), .progress = "Saving trimplots...")
-  } 
+  }
   if (print) {
     ggs
   }

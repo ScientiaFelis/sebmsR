@@ -9,6 +9,7 @@ get_trimIndex(
   years = 2010:lubridate::year(lubridate::today()) - 1,
   Art = 1:200,
   Län = ".",
+  Region = ".",
   Landskap = ".",
   Kommun = ".",
   verification = c(109, 110, 111),
@@ -24,6 +25,9 @@ get_trimIndex(
 \item{Art}{the species of interest}
 
 \item{Län}{character or regular expression; which county you want the data from}
+
+\item{Region}{character or reg ex; which region do you want. Possible values are:
+'SGot', 'OGot', 'VGotSve', 'OSve', 'NSveNor', 'NNor'.}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 

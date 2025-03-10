@@ -15,8 +15,7 @@ get_nearby(df, radius = 50, top = 1, limited = TRUE, population_limit = 0)
 
 \item{limited}{logical; if you want only the names of the resulting sites}
 
-\item{population_limit}{the smallest amount of poeple that should be in the
-locations}
+\item{population_limit}{the smallest amount of poeple that should be in the locations}
 }
 \value{
 a data frame with location names nearby your coordinates

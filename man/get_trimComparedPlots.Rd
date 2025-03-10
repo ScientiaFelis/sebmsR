@@ -8,6 +8,7 @@ get_trimComparedPlots(
   years = 2010:lubridate::year(lubridate::today()) - 1,
   Art = 1:200,
   Län = ".",
+  Region = ".",
   Landskap = ".",
   Kommun = ".",
   filepath = getwd(),

@@ -23,8 +23,7 @@ get_nearby_SunHour(
 
 \item{limited}{logical; if you want only the names of the resulting sites}
 
-\item{population_limit}{the smallest amount of poeple that should be in the
-locations}
+\item{population_limit}{the smallest amount of poeple that should be in the locations}
 
 \item{sunvar}{variable with sun hour data, can be `total_sunH` or `sundiff`}
 

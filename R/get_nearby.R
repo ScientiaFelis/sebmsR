@@ -36,7 +36,10 @@ find_near <- function(df,  radius = 50, top = 1, limited = TRUE, population_limi
 #' what is available and the number of inhabitants.
 #'
 #' @param df data frame with coordinates, or sf object from e.g. [sebms_sunhours_data()]
-#' @inheritParams find_near
+#' @param radius the radius to search for nearby places
+#' @param top how many of the top results to save
+#' @param limited logical; if you want only the names of the resulting sites
+#' @param population_limit the smallest amount of poeple that should be in the locations
 #'
 #' @importFrom geonames GNfindNearbyPlaceName
 #' @import dplyr

@@ -379,7 +379,7 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
       if (all(Län == ".",Landskap == ".",Kommun == ".")) {
         origin = "Sweden" # If no region was selected use Sweden
       }else {
-        origin <- glue("{Län}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
+        origin <- glue("{Län}{Region}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
       }
 
       bind_cols(#spe_uid = speuid,
@@ -487,14 +487,14 @@ get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrid
 
     if(inherits(df, 'trim')) {
 
-      if (all(Län == ".",Landskap == ".",Kommun == ".")) {
+      if (all(Län == ".", Region == ".", Landskap == ".",Kommun == ".")) {
         origin = "Sweden" # If no region was selected use Sweden
       }else {
-        origin <- glue("{Län}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
+        origin <- glue("{Län}{Region}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
       }
 
       bind_cols(#spe_uid = speuid,
-        art = as.character({{ art }}) %>% str_replace_all("/", "_"),
+        art = as.character( {{ art }} ) %>% str_replace_all("/", "_"),
         origin = as.character(origin),
         overall(df)$slope,
         nsite = df$nsite

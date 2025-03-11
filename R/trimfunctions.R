@@ -502,10 +502,14 @@ get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrid
     }
   }
 
+
+  trimIndex <- trimIndex %>% discard(is.null)
+
+  trendList <- vector("list", length = length(trimIndex))
   spname <- names(trimIndex) %>%
     str_replace_all("/", "_")
 
-  trendList <- map2(trimIndex, spname, ~trimspelist(.x, .y)) %>%
+  trendList <- map2(trimIndex, spname, possibly(~trimspelist(.x, .y))) %>%
     list_rbind()
 
 

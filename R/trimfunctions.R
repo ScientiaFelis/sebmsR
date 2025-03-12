@@ -1009,6 +1009,16 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
                        expand = expansion(mult = c(0, .08))) +
     scale_fill_manual(values = labcol) +
     scale_alpha_manual(values = alphas) +
+    labs(x = glue("Procentuell förändring av abundans {min(years)}:{max(years)}"),
+         y = "Antal arter",
+         fill = NULL, alpha = NULL) +
+    theme_bw() +
+    theme(panel.background = element_rect(colour = "grey90", linewidth = 1),
+          panel.grid = element_blank(),
+          plot.margin = margin(.5, 2, .5, .5, "cm"),
+          legend.position = "inside",
+          legend.position.inside = c(0.7,0.85),
+          axis.text.x = element_text(size = rel (1.1)))
     # scale_fill_manual(values = cols.map$vals,
     #                  breaks = trendIndex$changeCat %>% unique(),
     #                  labels = c("minskande (P<0.05)",
@@ -1026,16 +1036,6 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
     #                              "ökande (P<0.05)")
     #                    ) +
     #    coord_cartesian(expand = F, xlim = c(-0.5,48), ylim = c(0, 75)) +
-    labs(x = glue("Procentuell förändring av abundans {min(years)}:{max(years)}"),
-         y = "Antal arter",
-         fill = NULL, alpha = NULL) +
-    theme_bw() +
-    theme(panel.background = element_rect(colour = "grey90", linewidth = 1),
-          panel.grid = element_blank(),
-          legend.position = "inside",
-          legend.position.inside = c(0.7,0.85),
-          plot.margin = margin(.5, 2, .5, .5, "cm"),
-          axis.text.x = element_text(size = rel (1.1)))
 
 
   ## Logistic percent change plot
@@ -1060,9 +1060,9 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
     theme_bw() +
     theme(panel.background = element_rect(colour = "grey90", linewidth = 1),
           panel.grid = element_blank(),
+          plot.margin = margin(.5, 2, .5, .5, "cm"),
           legend.position = "inside",
           legend.position.inside = c(0.6,0.85),
-          plot.margin = margin(.5, 2, .5, .5, "cm"),
           axis.text.x = element_text(size = rel (1.1)))
 
   ggs <- list(ggt, ggtL)

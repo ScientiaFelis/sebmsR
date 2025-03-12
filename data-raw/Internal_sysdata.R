@@ -2,33 +2,54 @@
 
 
 ## DISTRIBUTION MAP DATA
-SE <- st_read("data-raw/Internal_data_rawfiles/hiresborder/high_res_Sverige_SWEREF99TM.shp") %>% 
-  select(NAME_ENGLI) %>% 
+SE <- st_read("data-raw/Internal_data_rawfiles/hiresborder/high_res_Sverige_SWEREF99TM.shp") %>%
+  select(NAME_ENGLI) %>%
   st_transform(4326)
 
-SweLandGrid <- st_read("data-raw/Internal_data_rawfiles/grids_for_sebmsr/SweLandGrid.shp") %>% 
+SweLandGrid <- st_read("data-raw/Internal_data_rawfiles/grids_for_sebmsr/SweLandGrid.shp") %>%
   st_set_crs(3021)
 
 ## Counties, regions, municipalities etc.
 #FIXME: try st_simplify() on the regions to make borders more straight.
 Counties <- st_read("data-raw/Internal_data_rawfiles/hiresborder/highres_lan_SWEREF99TM.shp") %>%
-  st_transform(4326) %>% 
-  select(ID_1, NAME_1, TYPE_1)
+  st_transform(4326) %>%
+  select(ID_1, NAME_1, TYPE_1) %>%
+  group_by(ID_1, NAME_1, TYPE_1) %>%
+  nest() %>%
+  ungroup() %>%
+  mutate(simp = map(data, possibly(~st_simplify(.x, dTolerance = 5000)))) %>%
+  unnest(simp) %>%
+  select(-data) %>%
+  st_as_sf()
 
 Bioreg <- st_read("data-raw/Internal_data_rawfiles/hiresborder/biogeografiska_regioner_SWEREF99TM_clean.shp") %>%
   st_transform(4326)
 
 Regions <- st_read("data-raw/Internal_data_rawfiles/hiresborder/highres_regioner_SWEREF99TM.shp") %>%
   st_transform(4326) %>%
-  select(RegNr = Region, RegionName) %>% 
+  select(RegNr = Region, RegionName) %>%
   st_simplify(preserveTopology = F, dTolerance = 5000)
 
 Kommuner <- st_read("data-raw/Internal_data_rawfiles/hiresborder/highres_kommuner_SWEREF99TM_clean.shp") %>%
-  st_transform(4326) %>% 
-  select(ID_1, ID_2, NAME_2, TYPE_2)
+  st_transform(4326) %>%
+  select(ID_1, ID_2, NAME_2, TYPE_2) %>%
+  group_by(ID_1, ID_2, NAME_2, TYPE_2) %>%
+  nest() %>%
+  ungroup() %>%
+  mutate(simp = map(data, possibly(~st_simplify(.x, dTolerance = 5000)))) %>%
+  unnest(simp) %>%
+  select(-data) %>%
+  st_as_sf()
 
 Landskapen <- st_read("data-raw/Internal_data_rawfiles/hiresborder/biogeografiska_landskap_SWEREF99TM_clean.shp") %>%
-  st_transform(4326)
+  st_transform(4326) %>%
+  group_by(reg_uid, reg_name, reg_code) %>%
+  nest() %>%
+  ungroup() %>%
+  mutate(simp = map(data, possibly(~st_simplify(.x, dTolerance = 5000)))) %>%
+  unnest(simp) %>%
+  select(-data) %>%
+  st_as_sf()
 
 # Create the raw Centrum points
 st_centroid(Regions) %>% # Make a Centrumpoint file for each type of locale, and manually fill in the zoom

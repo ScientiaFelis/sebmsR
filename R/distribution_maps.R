@@ -353,7 +353,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 
   # Picking out the borders
   #Län <- paste0(Län, collapse = "|")
-  if (Län != ".") {
+  if(Län != ".") {
     border <- Counties %>%
       filter(str_detect(NAME_1, Län)) #Filter out the right borders
 

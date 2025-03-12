@@ -1020,6 +1020,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
           plot.margin = margin(.5, 2, .5, .5, "cm"),
           legend.position = "inside",
           legend.position.inside = c(0.7,0.85),
+          legend.key = element_rect(fill = NA, color = NA),
           axis.text.x = element_text(size = rel (1.1)))
     # scale_fill_manual(values = cols.map$vals,
     #                  breaks = trendIndex$changeCat %>% unique(),
@@ -1065,6 +1066,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
           plot.margin = margin(.5, 2, .5, .5, "cm"),
           legend.position = "inside",
           legend.position.inside = c(0.6,0.85),
+          legend.key = element_rect(fill = NA, color = NA),
           axis.text.x = element_text(size = rel (1.1)))
 
   ggs <- list(ggt, ggtL)

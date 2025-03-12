@@ -316,10 +316,11 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #' @importFrom mapview mapshot2
 #' @import webshot2
 #' @import ggplot2
-#' @importFrom sf st_intersection st_as_sf st_transform st_coordinates
+#' @importFrom sf st_intersection st_as_sf st_set_crs st_transform st_coordinates
 #' @import dplyr
 #' @importFrom lubridate year today
 #' @importFrom tidyr nest
+#' @importFrom stringr str_detect
 #' @importFrom purrr walk2 map2
 #' @importFrom glue glue
 #' @returns one or two png files with a map of the chosen area with points or transects
@@ -456,14 +457,12 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 
   #TODO: Optional: region2: smalare linje 0,66 mm röd #CE2D30, 60% opacity, longdash
 
-  # Function to create the map
-
   # Add automatic zoom level if not set
   if (is.null(zoomlevel)) {
     zoomlevel = CPK$zoom
   }
 
-
+  # Function to create the map
   locplot <- function(data, sittyp) {
     lpl <- leaflet(data) %>%
       setView(lng = CPK$X, lat = CPK$Y, zoom = zoomlevel) %>% # Set center and zoom
@@ -528,7 +527,6 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 
     return(lpl)
   }
-
 
 
   #set tag

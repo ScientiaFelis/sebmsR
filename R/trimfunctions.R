@@ -920,3 +920,167 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
     ggs
   }
 }
+
+
+
+#' Change of Species Abundance
+#'
+#' Creates a figure of percent change in species abundances as a histogram with five
+#' change categories.
+#'
+#' @inheritParams get_trendIndex
+#' @param trendIndex optional, output from [get_trendIndex()]
+#' @param trimIndex optional, a trim index object from [get_trimindex()], ignored if
+#'   trendIndex is given
+#'
+#' @import dplyr
+#' @importFrom forcats fct_relevel
+#' @import ggplot2
+#'
+#' @returns Two histograms of abundance change in percent, on a linear scale and on a log
+#'   scale. Saved as a png-files, printed or both.
+#' @export
+#'
+get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE, print = TRUE, indicators = FALSE) {
+
+
+  ## ----------------------------------------------------------------------------- ##
+  ## This figure is inspired by Edwards et al., (2025).
+  ## They used gam model to estimate growth rates etc to base the groups on.
+  ## Percent changes are ((abund[2]/abund[1])-1)*100
+
+
+  # Collin B. Edwards et al.  , Rapid butterfly declines across the United States during the 21st century.Science387,1090-1094(2025).DOI:10.1126/science.adp4671
+  ## ------------------------------------------------------------------------------- ##
+  if(is.null(trendIndex)) {
+
+    trendIndex <- get_trendIndex(trimIndex = trimIndex, years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source, indicators = indicators, write = write)
+
+  }
+
+  trendChange <- trendIndex %>%
+    mutate(trend = mul - 1,
+           nrY = length(years),
+           lefY = mul^nrY,
+           change = (lefY - 1)*100,
+           logchange = log10(abs(change))*sign(change),
+           sig = if_else(p<=0.05, TRUE, FALSE),
+           changeCat = case_when(sig & change > 0 ~ "Ökande (P<0.05)",
+                                 sig & change < 0 ~ "Minskande (P<0.05)",
+                                 !sig & change > 10 ~ "Möjlig ökning",
+                                 !sig & change < -10 ~ "Möjlig minskning",
+                                 #!sig && between(change, > -10, <10) ~ "Little change",
+                                 .default = "Begränsad förändring"),
+           changeCat = fct_relevel(changeCat, c("Minskande (P<0.05)", "Möjlig minskning", "Begränsad förändring", "Möjlig ökning","Ökande (P<0.05)"))
+    ) %>%
+    filter(change < 500)
+
+  #  labcol <- c("#6387B7", "#A9B9D3", "#A9B4AE", "#F6B2A7", "#EF6E69")
+  labcol <- c("#EF6F6A", "#EF6F6A", "#AAB5AF", "#6388B5","#6388B5")
+  alphas <- c(1, .3, 1, 0.3, 1)
+
+  # cols.map = data.frame(category = c("declining",
+  #                                    "possibly declining",
+  #                                    "low confidence",
+  #                                    "possibly increasing",
+  #                                    "increasing"),
+  #                       vals = c("#EF6F6A", "#EF6F6A", "#AAB5AF", "#6388B5","#6388B5"))
+  # alphas.map = data.frame(category = c("declining",
+  #                                      "possibly declining",
+  #                                      "low confidence",
+  #                                      "possibly increasing",
+  #                                      "increasing"),
+  #                         vals = c(1, .3, 1, 0.3, 1))
+
+
+  ## Linear percent change plot
+
+  ggt <- trendChange %>%
+    ggplot(aes(change, fill = changeCat, alpha = changeCat)) +
+    geom_histogram(colour = "black") +
+    geom_vline(xintercept = median(trendChange$change),
+               linetype = 2,
+               linewidth = 1.1,
+               colour = "black",
+               alpha = 1) +
+    scale_x_continuous(breaks = c(-100, -50, 0, 100, 200, 400),
+                       labels = scales::percent_format(scale = 1)) +
+    scale_y_continuous(breaks = seq(0, trendChange %>% count() %>% pull(), 2),
+                       expand = expansion(mult = c(0, .08))) +
+    scale_fill_manual(values = labcol) +
+    scale_alpha_manual(values = alphas) +
+    # scale_fill_manual(values = cols.map$vals,
+    #                  breaks = trendIndex$changeCat %>% unique(),
+    #                  labels = c("minskande (P<0.05)",
+    #                  "möjlig minskning",
+    #                  "liten förändring",
+    #                  "möjlig ökning",
+    #                  "ökande (P<0.05)")
+    #                   ) +
+    # scale_alpha_manual(values = alphas.map$vals,
+    #                    breaks = trendIndex$changeCat %>% unique(),
+    #                    labels = c("minskande (P<0.05)",
+    #                              "möjlig minskning",
+    #                              "liten förändring",
+    #                              "möjlig ökning",
+    #                              "ökande (P<0.05)")
+    #                    ) +
+    #    coord_cartesian(expand = F, xlim = c(-0.5,48), ylim = c(0, 75)) +
+    labs(x = glue("Procentuell förändring av abundans {min(years)}:{max(years)}"),
+         y = "Antal arter",
+         fill = NULL, alpha = NULL) +
+    theme_bw() +
+    theme(panel.background = element_rect(colour = "grey90", linewidth = 1),
+          panel.grid = element_blank(),
+          legend.position = "inside",
+          legend.position.inside = c(0.7,0.85),
+          plot.margin = margin(.5, 2, .5, .5, "cm"),
+          axis.text.x = element_text(size = rel (1.1)))
+
+
+  ## Logistic percent change plot
+
+  ggtL <- trendChange %>%
+    ggplot(aes(logchange, fill = changeCat, alpha = changeCat)) +
+    geom_histogram(colour = "black") +
+    geom_vline(xintercept = log10(abs(median(trendChange$change)))*sign(median(trendChange$change)),
+               linetype = 2,
+               linewidth = 1.1,
+               colour = "black",
+               alpha = 1) +
+    scale_x_continuous(breaks = c(-2,-1,0,1,2,3),
+                       labels = c("-100%","-10%","0","10%","100%","1000%")) +
+    scale_y_continuous(breaks = seq(0, trendChange %>% count() %>% pull(), 2),
+                       expand = expansion(mult = c(0, .08))) +
+    scale_fill_manual(values = labcol) +
+    scale_alpha_manual(values = alphas) +
+    labs(x = glue("Procentuell förändring av abundans {min(years)}:{max(years)}"),
+         y = "Antal arter",
+         fill = NULL, alpha = NULL) +
+    theme_bw() +
+    theme(panel.background = element_rect(colour = "grey90", linewidth = 1),
+          panel.grid = element_blank(),
+          legend.position = "inside",
+          legend.position.inside = c(0.6,0.85),
+          plot.margin = margin(.5, 2, .5, .5, "cm"),
+          axis.text.x = element_text(size = rel (1.1)))
+
+  ggs <- list(ggt, ggtL)
+
+  if (write) {
+    #set tag
+    if (is.null(tag)) {
+      tag = ""
+    }else {
+      tag = glue("{tag}")
+    }
+    #set filepath
+    filepath <- normalizePath(filepath)
+
+    walk2(ggs, list("Percent", "LogPercent"), ~ggsave(plot = .x, filename = glue("{filepath}/SpeciesChange_{.y}{tag}.png"), width = 22, height = 14, units = "cm", dpi = 300), .progress = "Writing figures to png...")
+  }
+
+  if (print) {
+    print(ggs)
+  }
+}

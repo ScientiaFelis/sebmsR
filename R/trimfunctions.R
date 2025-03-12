@@ -935,20 +935,20 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
 #'   both
 #' @export
 #'
-get_trendHistogram <- function(trendindex = NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE, print = TRUE, indicators = FALSE) {
+get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE, print = TRUE, indicators = FALSE) {
 
 
-  ## ---------------------------##
+  ## ----------------------------------------------------------------------------- ##
   ## This figure is inspired by Edwards et al., (2025).
   ## They used gam model to estimate growth rates etc to base the groups on.
   ## Percent changes are ((abund[2]/abund[1])-1)*100
 
 
   # Collin B. Edwards et al.  , Rapid butterfly declines across the United States during the 21st century.Science387,1090-1094(2025).DOI:10.1126/science.adp4671
-  ##---------------------------##
+  ## ------------------------------------------------------------------------------- ##
   if(is.null(trendindex)) {
 
-    trendindex <- get_trendIndex(years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source, indicators = indicators, write = write)
+    trendindex <- get_trendIndex(trimIndex = trimindex, years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source, indicators = indicators, write = write)
 
   }
   #

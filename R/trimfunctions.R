@@ -997,6 +997,10 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
 
   ## Linear percent change plot
 
+  medx = median(trendChange$change)+15
+  medy = (trendChange %>% count(changeCat) %>% pull() %>% max())/2
+  medlab = glue("Median: {median(trendChange$change) %>% round()}%")
+
   ggt <- trendChange %>%
     ggplot(aes(change, fill = changeCat, alpha = changeCat)) +
     geom_histogram(colour = "black") +
@@ -1005,6 +1009,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
                linewidth = 1.1,
                colour = "black",
                alpha = 1) +
+    annotate("text", x = medx, y = medy, label = medlab, hjust = 0) +
     scale_x_continuous(breaks = c(-100, -50, 0, 100, 200, 400),
                        labels = scales::percent_format(scale = 1)) +
     scale_y_continuous(breaks = seq(0, trendChange %>% count() %>% pull(), 2),
@@ -1042,6 +1047,9 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
 
 
   ## Logistic percent change plot
+  lmedx = log10(abs(median(trendChange$change)+5))*sign(median(trendChange$change))
+  medy = (trendChange %>% count(changeCat) %>% pull() %>% max())/2
+  lmedlab = glue("Median: {median(trendChange$change) %>% round()}%")
 
   ggtL <- trendChange %>%
     ggplot(aes(logchange, fill = changeCat, alpha = changeCat)) +
@@ -1051,6 +1059,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
                linewidth = 1.1,
                colour = "black",
                alpha = 1) +
+    annotate("text", x = lmedx, y = medy, label = lmedlab, hjust = 0) +
     scale_x_continuous(breaks = c(-2,-1,0,1,2,3),
                        labels = c("-100%","-10%","0","10%","100%","1000%")) +
     scale_y_continuous(breaks = seq(0, trendChange %>% count() %>% pull(), 2),
@@ -1065,7 +1074,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
           panel.grid = element_blank(),
           plot.margin = margin(.5, 2, .5, .5, "cm"),
           legend.position = "inside",
-          legend.position.inside = c(0.6,0.85),
+          legend.position.inside = c(0.7,0.85),
           legend.key = element_rect(fill = NA, color = NA),
           axis.text.x = element_text(size = rel (1.1)))
 

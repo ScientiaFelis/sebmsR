@@ -932,6 +932,7 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
 #' @param trendIndex optional, output from [get_trendIndex()]
 #' @param trimIndex optional, a trim index object from [get_trimindex()], ignored if
 #'   trendIndex is given
+#' @param excludeSP vector of species id to exclude from the histogram calculations
 #'
 #' @import dplyr
 #' @importFrom forcats fct_relevel

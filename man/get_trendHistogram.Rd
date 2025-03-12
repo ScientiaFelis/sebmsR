@@ -19,7 +19,8 @@ get_trendHistogram(
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
   write = FALSE,
   print = TRUE,
-  indicators = FALSE
+  indicators = FALSE,
+  excludeSP = c(2, 4, 15, 20, 21, 39, 41, 56, 84, 127)
 )
 }
 \arguments{
@@ -50,6 +51,8 @@ default to 109.}
 
 \item{indicators}{logical; if TRUE use the indicators as species selection,
 this override `Art`}
+
+\item{excludeSP}{vector of species id to exclude from the histogram calculations}
 }
 \value{
 Two histograms of abundance change in percent, on a linear scale and on a log

@@ -183,7 +183,7 @@ get_trimIndex <- function(infile=NULL, years = 2010:lubridate::year(lubridate::t
 #'
 #' @return figures in png format of the species trends with confidence interval
 #' @export
-get_trimPlots <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, xaxis_sep = 5, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = TRUE, print = TRUE, ...) {
+get_trimPlots <- function(trimIndex = NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, xaxis_sep = 5, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = TRUE, print = TRUE, ...) {
 
   # This creates a trimIndex file if none is provided
   if(is.null(trimIndex)) {

@@ -313,7 +313,7 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrida
   if (is.null(tag)) {
     tag = ""
   }else {
-    tag = glue("_{tag}")
+    tag = glue("{tag}")
   }
   #set filepath
   filepath <- normalizePath(filepath)
@@ -433,7 +433,7 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
     if (is.null(tag)) {
       tag = ""
     }else {
-      tag = glue("_{tag}")
+      tag = glue("{tag}")
     }
     #set filepath
     filepath <- normalizePath(filepath)
@@ -526,7 +526,7 @@ get_trendIndex <- function(trimIndex = NULL, years = 2010:lubridate::year(lubrid
     if (is.null(tag)) {
       tag = ""
     }else {
-      tag = glue("_{tag}")
+      tag = glue("{tag}")
     }
     #set filepath
     filepath <- normalizePath(filepath)
@@ -647,7 +647,7 @@ get_trimComparedPlots <- function(years = 2010:lubridate::year(lubridate::today(
     if (is.null(tag)) {
       tag = ""
     }else {
-      tag = glue("_{tag}")
+      tag = glue("{tag}")
     }
     #set filepath
     filepath <- normalizePath(filepath)
@@ -751,7 +751,7 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:lubridate::year(lu
       if (is.null(tag)) {
         tag = ""
       }else {
-        tag = glue("_{tag}")
+        tag = glue("{tag}")
       }
       #set filepath
       filepath <- normalizePath(filepath)
@@ -909,7 +909,7 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
     if (is.null(tag)) {
       tag = ""
     }else {
-      tag = glue("_{tag}")
+      tag = glue("{tag}")
     }
     #set filepath
     filepath <- normalizePath(filepath)

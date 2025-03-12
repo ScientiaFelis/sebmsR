@@ -142,7 +142,7 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
   if (is.null(tag)) {
     tag = ""
   }else {
-    tag = glue("_{tag}")
+    tag = glue("{tag}")
   }
   res <- list(p1 = p1, p2 = p2) # list with the two plots
   name <- list(glue("Above-median_{year}{tag}"), glue("Below-median_{year}{tag}"))
@@ -281,7 +281,7 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
   if (is.null(tag)) {
     tag = ""
   }else {
-    tag = glue("_{tag}")
+    tag = glue("{tag}")
   }
   yearname <- paste0(year,tag, collapse = "-")
   

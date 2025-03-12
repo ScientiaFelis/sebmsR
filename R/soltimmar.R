@@ -353,7 +353,7 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     if (is.null(tag)) {
       tag = ""
     }else {
-      tag = glue("_{tag}")
+      tag = glue("{tag}")
     }
     #set filepath
     filepath <- normalizePath(filepath)
@@ -374,7 +374,7 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     if (is.null(tag)) {
       tag = ""
     }else {
-      tag = glue("_{tag}")
+      tag = glue("{tag}")
     }
     #set filepath
     filepath <- normalizePath(filepath)
@@ -508,7 +508,7 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     if (is.null(tag)) {
       tag = ""
     }else {
-      tag = glue("_{tag}")
+      tag = glue("{tag}")
     }
     #set filepath
     filepath <- normalizePath(filepath)

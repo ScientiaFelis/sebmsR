@@ -112,7 +112,7 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
   if (is.null(tag)) {
     tag = ""
   }else {
-    tag = glue("_{tag}")
+    tag = glue("{tag}")
   }
   #set filepath
   filepath <- normalizePath(filepath)
@@ -275,7 +275,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
     if (is.null(tag)) {
       tag = ""
     }else {
-      tag = glue("_{tag}")
+      tag = glue("{tag}")
     }
     #set filepath
     filepath <- normalizePath(filepath)
@@ -353,7 +353,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 
   # Picking out the borders
   #Län <- paste0(Län, collapse = "|")
-  if(Län != ".") {
+  if (!str_detect(Län, "[.]")) {
     border <- Counties %>%
       filter(str_detect(NAME_1, Län)) #Filter out the right borders
 
@@ -370,7 +370,6 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
       }
 
     }
-
 
     Region <- Län # to use when setting name for the saved png
 
@@ -533,7 +532,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
   if (is.null(tag)) {
     tag = ""
   }else {
-    tag = glue("_{tag}")
+    tag = glue("{tag}")
   }
   #set filepath
   filepath <- normalizePath(filepath)

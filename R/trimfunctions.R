@@ -376,7 +376,7 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:lubridate::year(lubri
 
     if(inherits(df, 'trim')) {
 
-      if (all(Län == ".",Landskap == ".",Kommun == ".")) {
+      if (all(Län == ".", Region == ".", Landskap == ".", Kommun == ".")) {
         origin = "Sweden" # If no region was selected use Sweden
       }else {
         origin <- glue("{Län}{Region}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin

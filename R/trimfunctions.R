@@ -999,7 +999,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
                linewidth = 1.1,
                colour = "black",
                alpha = 1) +
-    scale_x_continuous(breaks = c(-95, -50, 0, 100, 200, 400),
+    scale_x_continuous(breaks = c(-100, -50, 0, 100, 200, 400),
                        labels = scales::percent_format(scale = 1)) +
     scale_y_continuous(breaks = seq(0, trendChange %>% count() %>% pull(), 2),
                        expand = expansion(mult = c(0, .08))) +
@@ -1044,8 +1044,8 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
                linewidth = 1.1,
                colour = "black",
                alpha = 1) +
-    scale_x_continuous(breaks = c(-1.98,-1,0,1,2,3),
-                       labels = c("-95%","-10%","0","10%","100%","1000%")) +
+    scale_x_continuous(breaks = c(-2,-1,0,1,2,3),
+                       labels = c("-100%","-10%","0","10%","100%","1000%")) +
     scale_y_continuous(breaks = seq(0, trendChange %>% count() %>% pull(), 2),
                        expand = expansion(mult = c(0, .08))) +
     scale_fill_manual(values = labcol) +

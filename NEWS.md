@@ -6,6 +6,11 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.6.1
+
+* Add argument to `get_trendHistogram()` to list species not ot be included.
+* Fix some bugs
+* Change internal data with simplified borders for more regions
 
 # v 2.6.0
 

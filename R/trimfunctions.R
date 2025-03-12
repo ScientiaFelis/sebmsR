@@ -925,14 +925,16 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
 #' change categories.
 #'
 #' @inheritParams get_trendIndex
-#' @param trendindex optional, output from `get_trendIndex()`
+#' @param trendIndex optional, output from [get_trendIndex()]
+#' @param trimIndex optional, a trim index object from [get_trimindex()], ignored if
+#'   trendIndex is given
 #'
 #' @import dplyr
 #' @importFrom forcats fct_relevel
 #' @import ggplot2
 #'
-#' @returns a histogram of abundance change in percent. Saved as a png-file, printed or
-#'   both
+#' @returns Two histograms of abundance change in percent, on a linear scale and on a log
+#'   scale. Saved as a png-files, printed or both.
 #' @export
 #'
 get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE, print = TRUE, indicators = FALSE) {

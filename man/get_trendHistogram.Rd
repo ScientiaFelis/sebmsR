@@ -5,10 +5,12 @@
 \title{Change of Species Abundance}
 \usage{
 get_trendHistogram(
-  trendindex = NULL,
+  trendIndex = NULL,
+  trimIndex = NULL,
   years = 2010:lubridate::year(lubridate::today()) - 1,
   Art = 1:200,
   Län = ".",
+  Region = ".",
   Landskap = ".",
   Kommun = ".",
   filepath = getwd(),
@@ -21,13 +23,19 @@ get_trendHistogram(
 )
 }
 \arguments{
-\item{trendindex}{optional, output from `get_trendIndex()`}
+\item{trendIndex}{optional, output from [get_trendIndex()]}
+
+\item{trimIndex}{optional, a trim index object from [get_trimindex()], ignored if
+trendIndex is given}
 
 \item{years}{the year span of interest, set as 'firstyear:lastyear'.}
 
 \item{Art}{the species of interest}
 
 \item{Län}{character or regular expression; which county you want the data from}
+
+\item{Region}{character or reg ex; which region do you want. Possible values are:
+'SGot', 'OGot', 'VGotSve', 'OSve', 'NSveNor', 'NNor'.}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 
@@ -44,8 +52,8 @@ default to 109.}
 this override `Art`}
 }
 \value{
-a histogram of abundance change in percent. Saved as a png-file, printed or
-  both
+Two histograms of abundance change in percent, on a linear scale and on a log
+  scale. Saved as a png-files, printed or both.
 }
 \description{
 Creates a figure of percent change in species abundances as a histogram with five

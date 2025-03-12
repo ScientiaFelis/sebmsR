@@ -948,19 +948,13 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
 
   # Collin B. Edwards et al.  , Rapid butterfly declines across the United States during the 21st century.Science387,1090-1094(2025).DOI:10.1126/science.adp4671
   ## ------------------------------------------------------------------------------- ##
-  if(is.null(trendindex)) {
+  if(is.null(trendIndex)) {
 
-    trendindex <- get_trendIndex(trimIndex = trimindex, years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source, indicators = indicators, write = write)
+    trendIndex <- get_trendIndex(trimIndex = trimIndex, years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source, indicators = indicators, write = write)
 
   }
-  #
-  #   binlabs <- c("-100%", "-90%", "-80%", "-70%", "-60%", "-50%", "-40%", "-30%", "-20%", "-10%", "0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%", "110%", "120%", "130%", "140%", "150%", "160%", "170%", "180%", "190%", "200%", "210%", "220%", "230%", "240%", "250%", "260%", "270%", "280%", "290%", "300%", "310%", "320%", "330%", "340%", "350%")
-  #
-  #   binbreak <- binlabs %>%
-  #     str_remove("%") %>%
-  #     as.numeric()
 
-  trendChange <- trendindex %>%
+  trendChange <- trendIndex %>%
     mutate(trend = mul - 1,
            nrY = length(years),
            lefY = mul^nrY,

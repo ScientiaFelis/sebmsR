@@ -7,6 +7,11 @@ For more fine-grained list of changes or to report a bug, consult
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
 
+# v 2.6.0
+
+* Add new function `get_trendHistogram()` that make a histogram over distribution of number of species percentage change over a number of years, in groups from Increasing to Declining.
+
+
 # v 2.5.5
 
 * Add `Region`in trimfunctions

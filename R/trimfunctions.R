@@ -958,7 +958,7 @@ get_trendHistogram <- function(trendindex = NULL, years = 2010:lubridate::year(l
   #     str_remove("%") %>%
   #     as.numeric()
 
-  trendIndex <- trendInd %>%
+  trendChange <- trendindex %>%
     mutate(trend = mul - 1,
            nrY = length(years),
            lefY = mul^nrY,
@@ -1048,17 +1048,17 @@ get_trendHistogram <- function(trendindex = NULL, years = 2010:lubridate::year(l
 
   ## Linear percent change plot
 
-  ggt <- trendIndex %>%
+  ggt <- trendChange %>%
     ggplot(aes(change, fill = changeCat, alpha = changeCat)) +
     geom_histogram(colour = "black") +
-    geom_vline(xintercept = median(trendIndex$change),
+    geom_vline(xintercept = median(trendChange$change),
                linetype = 2,
                linewidth = 1.1,
                colour = "black",
                alpha = 1) +
     scale_x_continuous(breaks = c(-95, -50, 0, 100, 200, 400),
                        labels = scales::percent_format(scale = 1)) +
-    scale_y_continuous(breaks = seq(0, trendIndex %>% count() %>% pull(), 2),
+    scale_y_continuous(breaks = seq(0, trendChange %>% count() %>% pull(), 2),
                        expand = expansion(mult = c(0, .08))) +
     scale_fill_manual(values = labcol) +
     scale_alpha_manual(values = alphas) +
@@ -1093,17 +1093,17 @@ get_trendHistogram <- function(trendindex = NULL, years = 2010:lubridate::year(l
 
   ## Logistic percent change plot
 
-  ggtL <-trendIndex %>%
+  ggtL <- trendChange %>%
     ggplot(aes(logchange, fill = changeCat, alpha = changeCat)) +
     geom_histogram(colour = "black") +
-    geom_vline(xintercept = log10(abs(median(trendIndex$change)))*sign(median(trendIndex$change)),
+    geom_vline(xintercept = log10(abs(median(trendChange$change)))*sign(median(trendChange$change)),
                linetype = 2,
                linewidth = 1.1,
                colour = "black",
                alpha = 1) +
     scale_x_continuous(breaks = c(-1.98,-1,0,1,2,3),
                        labels = c("-95%","-10%","0","10%","100%","1000%")) +
-    scale_y_continuous(breaks = seq(0, trendIndex %>% count() %>% pull(), 2),
+    scale_y_continuous(breaks = seq(0, trendChange %>% count() %>% pull(), 2),
                        expand = expansion(mult = c(0, .08))) +
     scale_fill_manual(values = labcol) +
     scale_alpha_manual(values = alphas) +

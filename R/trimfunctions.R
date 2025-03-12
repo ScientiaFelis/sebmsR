@@ -941,7 +941,7 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
 #'   scale. Saved as a png-files, printed or both.
 #' @export
 #'
-get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE, print = TRUE, indicators = FALSE) {
+get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE, print = TRUE, indicators = FALSE, excludeSP = c(2,4,15,20,21,39,41,56,84,127)) {
 
 
   ## ----------------------------------------------------------------------------- ##
@@ -959,6 +959,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
   }
 
   trendChange <- trendIndex %>%
+    filter(!speuid %in% excludeSP) %>%
     mutate(trend = mul - 1,
            nrY = length(years),
            lefY = mul^nrY,

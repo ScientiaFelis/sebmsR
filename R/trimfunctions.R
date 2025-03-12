@@ -916,3 +916,224 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:lubridate::year(lubr
     ggs
   }
 }
+
+
+
+#' Change of Species Abundance
+#'
+#' Creates a figure of percent change in species abundances as a histogram with five
+#' change categories.
+#'
+#' @inheritParams get_trendIndex
+#' @param trendindex optional, output from `get_trendIndex()`
+#'
+#' @import dplyr
+#' @importFrom forcats fct_relevel
+#' @import ggplot2
+#'
+#' @returns a histogram of abundance change in percent. Saved as a png-file, printed or
+#'   both
+#' @export
+#'
+get_trendHistogram <- function(trendindex = NULL, years = 2010:lubridate::year(lubridate::today())-1, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE, print = TRUE, indicators = FALSE) {
+
+
+  ## ---------------------------##
+  ## This figure is inspired by Edwards et al., (2025).
+  ## They used gam model to estimate growth rates etc to base the groups on.
+  ## Percent changes are ((abund[2]/abund[1])-1)*100
+
+
+  # Collin B. Edwards et al.  , Rapid butterfly declines across the United States during the 21st century.Science387,1090-1094(2025).DOI:10.1126/science.adp4671
+  ##---------------------------##
+  if(is.null(trendindex)) {
+
+    trendindex <- get_trendIndex(years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source, indicators = indicators, write = write)
+
+  }
+  #
+  #   binlabs <- c("-100%", "-90%", "-80%", "-70%", "-60%", "-50%", "-40%", "-30%", "-20%", "-10%", "0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%", "110%", "120%", "130%", "140%", "150%", "160%", "170%", "180%", "190%", "200%", "210%", "220%", "230%", "240%", "250%", "260%", "270%", "280%", "290%", "300%", "310%", "320%", "330%", "340%", "350%")
+  #
+  #   binbreak <- binlabs %>%
+  #     str_remove("%") %>%
+  #     as.numeric()
+
+  trendIndex <- trendInd %>%
+    mutate(trend = mul - 1,
+           nrY = length(years),
+           lefY = mul^nrY,
+           change = (lefY - 1)*100,
+           logchange = log10(abs(change))*sign(change),
+           sig = if_else(p<=0.05, TRUE, FALSE),
+           #bin =   cut_width(change,  width = 10, center = 0),
+           # bin = case_when(change <= -100 ~ "-100%",
+           #                 between(change, -99,-85) ~ "-90",
+           #                 between(change, -85,-75) ~ "-80",
+           #                 between(change, -75,-65) ~ "-70",
+           #                 between(change, -65,-55) ~ "-60",
+           #                 between(change, -55,-45) ~ "-50",
+           #                 between(change, -45,-35) ~ "-40",
+           #                 between(change, -35,-25) ~ "-30",
+           #                 between(change, -25,15) ~ "-20",
+           #                 between(change, -15,-5) ~ "-10",
+           #                 between(change, -5,5) ~ "0",
+           #                 between(change, 5,15) ~ "10",
+           #                 between(change, 15,25) ~ "20",
+           #                 between(change, 25,35) ~ "30",
+           #                 between(change, 35,45) ~ "40",
+           #                 between(change, 45,55) ~ "50",
+           #                 between(change, 55,65) ~ "60",
+           #                 between(change, 65,75) ~ "70",
+           #                 between(change, 75,85) ~ "80",
+           #                 between(change, 85,95) ~ "90",
+           #                 between(change, 95,105) ~ "100",
+           #                 between(change, 105,115) ~ "110",
+           #                 between(change, 115,125) ~ "120",
+           #                 between(change, 125,135) ~ "130",
+           #                 between(change, 135,145) ~ "140",
+           #                 between(change, 145,155) ~ "150",
+           #                 between(change, 155,165) ~ "160",
+           #                 between(change, 165,175) ~ "170",
+           #                 between(change, 175,185) ~ "180",
+           #                 between(change, 185,195) ~ "190",
+           #                 between(change, 195,205) ~ "200",
+           #                 between(change, 205,215) ~ "210",
+           #                 between(change, 215,225) ~ "220",
+           #                 between(change, 225,235) ~ "230",
+           #                 between(change, 235,245) ~ "240",
+           #                 between(change, 245,255) ~ "250",
+           #                 between(change, 255,265) ~ "260",
+           #                 between(change, 265,275) ~ "270",
+           #                 between(change, 275,285) ~ "280",
+           #                 between(change, 285,295) ~ "290",
+           #                 between(change, 295,305) ~ "300",
+           #                 between(change, 305,315) ~ "310",
+           #                 between(change, 315,325) ~ "320",
+           #                 between(change, 325,335) ~ "330",
+           #                 between(change, 335,345) ~ "340",
+           #                 TRUE ~ "350"),
+           changeCat = case_when(sig & change > 0 ~ "Ökande (P<0.05",
+                                 sig & change < 0 ~ "Minskande (P<0.05",
+                                 !sig & change > 10 ~ "Möjlig ökning",
+                                 !sig & change < -10 ~ "Möjlig minskning",
+                                 #!sig && between(change, > -10, <10) ~ "Little change",
+                                 .default = "Liten förändring"),
+           changeCat = fct_relevel(changeCat, c("Minskande (P<0.05", "Möjlig minskning", "Liten förändring", "Möjlig ökning","Ökande (P<0.05"))
+    ) %>%
+    filter(change < 500)
+  #add_count(changeCat, name = "nrSp") %>%
+  #distinct(changeCat, nrSp, bin, change) %>%
+  # full_join(tibble(bin = as.factor(binbreak))) %>%
+  #mutate(nrSp = replace_na(nrSp, 0),
+  #       bin = fct_reorder(bin, as.numeric(bin)),
+  #      changeCat = replace_na(changeCat, "Little change"))
+
+  #  labcol <- c("#6387B7", "#A9B9D3", "#A9B4AE", "#F6B2A7", "#EF6E69")
+  labcol <- c("#EF6F6A", "#EF6F6A", "#AAB5AF", "#6388B5","#6388B5")
+  alphas <- c(1, .3, 1, 0.3, 1)
+
+  # cols.map = data.frame(category = c("declining",
+  #                                    "possibly declining",
+  #                                    "low confidence",
+  #                                    "possibly increasing",
+  #                                    "increasing"),
+  #                       vals = c("#EF6F6A", "#EF6F6A", "#AAB5AF", "#6388B5","#6388B5"))
+  # alphas.map = data.frame(category = c("declining",
+  #                                      "possibly declining",
+  #                                      "low confidence",
+  #                                      "possibly increasing",
+  #                                      "increasing"),
+  #                         vals = c(1, .3, 1, 0.3, 1))
+
+
+  ## Linear percent change plot
+
+  ggt <- trendIndex %>%
+    ggplot(aes(change, fill = changeCat, alpha = changeCat)) +
+    geom_histogram(colour = "black") +
+    geom_vline(xintercept = median(trendIndex$change),
+               linetype = 2,
+               linewidth = 1.1,
+               colour = "black",
+               alpha = 1) +
+    scale_x_continuous(breaks = c(-95, -50, 0, 100, 200, 400),
+                       labels = scales::percent_format(scale = 1)) +
+    scale_y_continuous(breaks = seq(0, trendIndex %>% count() %>% pull(), 2),
+                       expand = expansion(mult = c(0, .08))) +
+    scale_fill_manual(values = labcol) +
+    scale_alpha_manual(values = alphas) +
+    # scale_fill_manual(values = cols.map$vals,
+    #                  breaks = trendIndex$changeCat %>% unique(),
+    #                  labels = c("minskande (P<0.05)",
+    #                  "möjlig minskning",
+    #                  "liten förändring",
+    #                  "möjlig ökning",
+    #                  "ökande (P<0.05)")
+    #                   ) +
+    # scale_alpha_manual(values = alphas.map$vals,
+    #                    breaks = trendIndex$changeCat %>% unique(),
+    #                    labels = c("minskande (P<0.05)",
+    #                              "möjlig minskning",
+    #                              "liten förändring",
+    #                              "möjlig ökning",
+    #                              "ökande (P<0.05)")
+    #                    ) +
+    #    coord_cartesian(expand = F, xlim = c(-0.5,48), ylim = c(0, 75)) +
+    labs(x = glue("Procentuell förändring av abundans {min(years)}:{max(years)}"),
+         y = "Antal arter",
+         fill = NULL, alpha = NULL) +
+    theme_bw() +
+    theme(panel.background = element_rect(colour = "grey90", linewidth = 1),
+          panel.grid = element_blank(),
+          legend.position = "inside",
+          legend.position.inside = c(0.7,0.85),
+          plot.margin = margin(.5, 2, .5, .5, "cm"),
+          axis.text.x = element_text(size = rel (1.1)))
+
+
+  ## Logistic percent change plot
+
+  ggtL <-trendIndex %>%
+    ggplot(aes(logchange, fill = changeCat, alpha = changeCat)) +
+    geom_histogram(colour = "black") +
+    geom_vline(xintercept = log10(abs(median(trendIndex$change)))*sign(median(trendIndex$change)),
+               linetype = 2,
+               linewidth = 1.1,
+               colour = "black",
+               alpha = 1) +
+    scale_x_continuous(breaks = c(-1.98,-1,0,1,2,3),
+                       labels = c("-95%","-10%","0","10%","100%","1000%")) +
+    scale_y_continuous(breaks = seq(0, trendIndex %>% count() %>% pull(), 2),
+                       expand = expansion(mult = c(0, .08))) +
+    scale_fill_manual(values = labcol) +
+    scale_alpha_manual(values = alphas) +
+    labs(x = glue("Procentuell förändring av abundans {min(years)}:{max(years)}"),
+         y = "Antal arter",
+         fill = NULL, alpha = NULL) +
+    theme_bw() +
+    theme(panel.background = element_rect(colour = "grey90", linewidth = 1),
+          panel.grid = element_blank(),
+          legend.position = "inside",
+          legend.position.inside = c(0.6,0.85),
+          plot.margin = margin(.5, 2, .5, .5, "cm"),
+          axis.text.x = element_text(size = rel (1.1)))
+
+  ggs <- list(ggt, ggtL)
+
+  if (write) {
+    #set tag
+    if (is.null(tag)) {
+      tag = ""
+    }else {
+      tag = glue("{tag}")
+    }
+    #set filepath
+    filepath <- normalizePath(filepath)
+
+    walk2(ggs, list("Percent", "LogPercent"), ~ggsave(plot = .x, filename = glue("{filepath}/SpeciesChange_{.y}{tag}.png"), width = 22, height = 14, units = "cm", dpi = 300), .progress = "Writing figures to png...")
+  }
+
+  if (print) {
+    print(ggs)
+  }
+}

@@ -6,6 +6,12 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.6.2
+
+* Change the tag to not include '_' before it by default
+* Fix bug where Region was missing from name
+* Add text with median value to `get_trendHistogram()` plot
+
 # v 2.6.1
 
 * Add argument to `get_trendHistogram()` to list species not ot be included.

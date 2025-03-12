@@ -7,6 +7,10 @@ For more fine-grained list of changes or to report a bug, consult
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
 
+# v 2.5.5
+
+* Add `Region`in trimfunctions
+
 # v 2.5.4
 
 * Fix some bugs

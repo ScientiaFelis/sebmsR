@@ -80,7 +80,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
   } # This function iterate over days (and hour combinations if wanted) in combination with the year and month.
 
   allyears <- function(year, months){ # This functions iterate over year and month (not in all combinations) and sum sunhours per location.
-    map2(year, months, .f = possibly(~sunHdata(year = .x, months = .y))) %>% ##iterate through year plus month and send that to sunHdata and fix_sunhour_NAs, se above
+    map2(year, months, .f = ~sunHdata(year = .x, months = .y)) %>% ##iterate through year plus month and send that to sunHdata and fix_sunhour_NAs, se above
       set_names(months) %>% # set the names of month to list items
       bind_rows(.id = "month") %>% # Take the name of list items (month) and set them in a variable
       group_by(month, gapvalue, lat, lon) %>%
@@ -97,6 +97,16 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
                 .groups = "drop")
   }
 
+  comballyearday <- function(year, months){
+    tryCatch(
+      allyears(year = year, months = months),
+      error = function(ex){
+        warning("Months did fail...", ex)
+        allyearsD(year = year, months = months)
+        }
+      )
+  }
+
   if (per_month) { #This runs two different versions of the functions. Summarise per month or per year.
     if (per_day) {
       # This is the function loop that download the data with the appropiate function calls loaded above.
@@ -109,7 +119,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
 
     }else {# This function summarise per month but do not use per day values.
 
-      sunlist <- map(year, ~allyears(year = .x, months = months), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
+      sunlist <- map(year, ~comballyearday(year = .x, months = months), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
         set_names(year) %>% # set names to Year
         bind_rows(.id = "Year") %>%
         mutate(total_sunH = total_sunH / 60) # Convert minutes to hours
@@ -125,7 +135,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
 
     }else { # Use monthly data and summarise per year
 
-      sunlist <- map(year, ~allyears(year = .x, months = months), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
+      sunlist <- map(year, ~comballyearday(year = .x, months = months), .progress = "Loading sun-hours") %>%  # This iterates over all years given and send each one to allyears() function
         set_names(year) %>% # set names to Year
         bind_rows(.id = "Year")
 
@@ -134,7 +144,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
 
   if (length(months) < 6 && per_month == FALSE) {
     message("IF YOU ARE MAKING A FIGURE, IT IS OPTIMIZED FOR THE SUNHOURS OVER 6 SUMMER MONTH\n")
-    message("USE 'per_month = TRUE' TO GET VALUES PER MONTH")
+    message("USE 'per_month = TRUE' TO GET VALUES PER MONTH.\n")
   }
 
 
@@ -144,7 +154,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
 
     lmon <- sunlist %>% distinct(month) %>% pull()
     if (length(lmon) < length(months)) {
-      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n 'per_day=TRUE' MIGHT WORK.")
+      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n 'per_day=TRUE' MIGHT WORK.\n")
       months <- as.integer(lmon)
     }
 
@@ -169,7 +179,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
     if (length(lmon) < length(months)) {
       message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n")
       message("IF YOU ARE MAKING A FIGURE, IT WILL BE INCORRECT, TO BLUE!\n")
-      message("USE 'per_day=T', WHICH MAY SOLVE THE PROBLEM BUT TAKE LONG TIME.")
+      message("USE 'per_day=T', WHICH MAY SOLVE THE PROBLEM BUT TAKE LONG TIME\n.")
     }
 
     sunlist <- sunlist %>%  # intersects with Sweden sf object to cut out only Sweden from area.

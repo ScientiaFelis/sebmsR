@@ -27,20 +27,20 @@
 #' @return Two png figures with the abundance data for each species. One for species count
 #'   below the median for that year and one for species above median.
 #' @export
-#' 
-sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), print = FALSE) {
-  
-  sp <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
-    filter(!speuid %in% c(131,132,133,139,135)) %>% 
+#'
+sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), print = FALSE) {
+
+  sp <- sebms_species_count_filtered(year = year, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
+    filter(!speuid %in% c(131,132,133,139,135)) %>%
     group_by(art) %>%
     summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
-  
+
   # Split data on the median to get to pngs that can be inserted in the report
   s1 <- sp %>%
     filter(count >= median(count))
   s2 <- sp %>%
     filter(count < median(count), !str_detect(art, "[Nn]oll"))
-  
+
   # Modify theme
   theme_sebms2 <- function() {
     theme_sebms_species() +
@@ -173,16 +173,16 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Landskap =
 #' @return A png figure with the number of individuals found each of the
 #'   comparing years per week,
 #' @export
-#' 
-sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), print = FALSE) {
-  
+#'
+sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), print = FALSE) {
+
   if (length(year) > 2) {
     return(cat("More than two year in interval.\n\nGIVE ONLY TWO YEARS TO COMPARE!")
     )
     stop()
   }
-  
-  df <- sebms_species_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
+
+  df <- sebms_species_count_filtered(year = year, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
     mutate(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
     filter(datum > ymd(glue("{year}-04-01")), datum < ymd(glue("{year}-09-30"))) %>% 
     #filter(!speuid %in% c(131,133,135)) %>% 
@@ -315,10 +315,10 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Land
 #'
 #' @return A png per species showing the number of individuals per week.
 #' @export
-#' 
-sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Landskap = ".", Kommun = ".", plotname = FALSE, filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), print = FALSE) {
-  
-  df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>% 
+#'
+sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", plotname = FALSE, filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), print = FALSE) {
+
+  df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
     filter(!str_detect(art, "[Nn]oll"), speuid != 132) %>%
     mutate(antal = as.double(antal)) %>% 
     group_by(art, vecka = isoweek(datum)) %>%
@@ -480,14 +480,14 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", L
 #'   species, for both slingor and transects. It also shows the mean number of
 #'   species per site type.
 #' @export
-#' 
-sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), print = FALSE) {
-  
+#'
+sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), print = FALSE) {
+
   b <- seq(1, 65, by = 5) # make the start of species number groups
   l <- paste0(b, "-", b + 4) # This maes the group intervals
-  
-  df <- sebms_species_site_count_filtered(year = year, Län = Län, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>% 
-    group_by(situid, sitetype) %>% 
+
+  df <- sebms_species_site_count_filtered(year = year, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
+    group_by(situid, sitetype) %>%
     mutate(speuid = case_when(speuid == 131 ~ if_else(any(speuid %in% c(57,58)),NA_integer_, 131),
                               speuid == 132 ~ if_else(any(speuid %in% c(72,73,74)),NA_integer_, 132),
                               speuid == 133 ~ if_else(any(speuid %in% c(24,25)),NA_integer_, 133),

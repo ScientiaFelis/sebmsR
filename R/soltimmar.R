@@ -284,7 +284,7 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
   } else if(!missing(df) && per_month) {
     lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()
     months <- as.integer(lmon)
-    message(glue("DATA FRAME CONTAINS DATA FROM {length(months)} MONTHS!\n\n IF THAT DOES NOT SEEMS RIGHT 'per_day = TRUE' MIGHT BE A WORK AROUND BUT TAKE LONG TIME."))
+    message(glue("DATA FRAME CONTAINS DATA FROM {length(months)} MONTHS!\n\n IF THAT DOES NOT SEEMS RIGHT 'per_day = TRUE' MIGHT BE A WORK AROUND BUT TAKE LONG TIME.\n"))
 
   }
 
@@ -349,7 +349,7 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     lmon <- df %>% st_drop_geometry() %>% distinct(month) %>% pull()
 
     if(length(lmon) < length(months)) {
-      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n'per_day = TUE' MIGHT BE A WORK AROUND BUT TAKE LONG TIME.")
+      message("DATA FROM ONE OR SEVERAL MONTHS MISSING!\n\n'per_day = TUE' MIGHT BE A WORK AROUND BUT TAKE LONG TIME.\n")
       months <- as.integer(lmon)
     }
 
@@ -368,7 +368,7 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     #set filepath
     filepath <- normalizePath(filepath)
 
-    walk2(ggs$plots, ggs$month, ~sebms_ggsave(.x, glue("{filepath}/Sweden"), width = 6, height = 12.67, weathervar = glue("Sunhours_{year}-{.y}{tag}")))
+    walk2(ggs$plots, ggs$month, ~sebms_ggsave(.x, glue("{filepath}/Sweden"), width = 6, height = 12.67, weathervar = glue("Sunhours_{year}-{.y}{tag}")), .progress = "Saving sundiff pngs...")
 
     return(ggs$plots)
 
@@ -390,7 +390,7 @@ sebms_sunhour_plot <- function(year = lubridate::year(lubridate::today())-1, df,
     filepath <- normalizePath(filepath)
 
 
-    walk2(ggs$plots, ggs$Year, ~sebms_ggsave(.x, glue("{filepath}/Sweden"), width = 6, height = 12.67, weathervar = glue("Sunhours_{.y}{tag}")))
+    walk2(ggs$plots, ggs$Year, ~sebms_ggsave(.x, glue("{filepath}/Sweden"), width = 6, height = 12.67, weathervar = glue("Sunhours_{.y}{tag}")), .progress = "Saving sundiff pngs...")
 
     return(ggs$plots)
   }

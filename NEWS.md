@@ -6,6 +6,12 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.6.3
+
+* Change `sebms_sunhours_data()` to switch to the *per day* data collection if a month fail.
+* Add `Region` argument to the species plots and their SQL-query functions.
+
+
 # v 2.6.2
 
 * Change the tag to not include '_' before it by default

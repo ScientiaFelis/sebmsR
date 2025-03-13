@@ -7,6 +7,7 @@
 sebms_species_site_count_filtered(
   year = 2021,
   Län = ".",
+  Region = ".",
   Landskap = ".",
   Kommun = ".",
   verification = c(109, 110, 111),
@@ -17,6 +18,9 @@ sebms_species_site_count_filtered(
 \item{year}{year or years to use for plot}
 
 \item{Län}{character or regular expression; which county you want the data from}
+
+\item{Region}{character or reg ex; which region do you want. Possible values are:
+'SGot', 'OGot', 'VGotSve', 'OSve', 'NSveNor', 'NNor'.}
 
 \item{Landskap}{character or reg ex; which region you want the data from}
 

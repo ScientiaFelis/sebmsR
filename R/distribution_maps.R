@@ -14,8 +14,6 @@
 #' @importFrom glue glue
 #'
 #' @inheritParams sebms_abundance_per_species_plot
-#' @param Region character or reg ex; which region do you want. Possible values are:
-#'   'SGot', 'OGot', 'VGotSve', 'OSve', 'NSveNor', 'NNor'.
 #' @param occ_sp SpatialPoints with occurrence data
 #' @param width the plot width, default 12 inches
 #' @param height the plot height, default 18 inches

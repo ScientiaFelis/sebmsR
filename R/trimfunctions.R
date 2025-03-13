@@ -16,9 +16,6 @@
 #' @inheritParams sebms_abundance_per_species_plot
 #' @param years the year span of interest, set as 'firstyear:lastyear'.
 #' @param Art the species of interest
-#' @param Region character or reg ex; which region do you want. Possible values are:
-#'   'SGot', 'OGot', 'VGotSve', 'OSve', 'NSveNor', 'NNor'.
-
 #' @param filterPattern a regex pattern to filter SQL query
 #' @param topList logical; whether the top list of species should be used
 #' @param topNumber the number of top most observed species

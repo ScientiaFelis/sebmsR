@@ -5,6 +5,8 @@
 #'
 #' @param year year or years to use for plot
 #' @param Län character or regular expression; which county you want the data from
+#' @param Region character or reg ex; which region do you want. Possible values are:
+#'   'SGot', 'OGot', 'VGotSve', 'OSve', 'NSveNor', 'NNor'.
 #' @param Landskap character or reg ex; which region you want the data from
 #' @param Kommun character or reg ex; which municipality you want the data from
 #' @param filepath a path to a folder where the plot file should be saved

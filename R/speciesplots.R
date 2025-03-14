@@ -176,7 +176,7 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Region = "
 #'   comparing years per week,
 #' @export
 #'
-sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), print = FALSE) {
+sebms_abundance_year_compare_plot <- function(year = 2021:2022, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), print = FALSE) {
 
   if (length(year) > 2) {
     return(cat("More than two year in interval.\n\nGIVE ONLY TWO YEARS TO COMPARE!")
@@ -184,7 +184,7 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Län = ".", Regi
     stop()
   }
 
-  df <- sebms_species_count_filtered(year = year, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
+  df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
     mutate(year = as.factor(year(datum)), vecka = isoweek(datum)) %>%
     filter(datum > ymd(glue("{year}-04-01")), datum < ymd(glue("{year}-09-30"))) %>%
     #filter(!speuid %in% c(131,133,135)) %>%

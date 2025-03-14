@@ -546,11 +546,11 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Region = "
   # If value fall above a certain threshold it is set at a certain maxlimit
 
   maxlim <-  case_when(max(df$site_count) <= 7 ~ 10,
-                       between(max(df$site_count), 8,19) ~ 20,
-                       between(max(df$site_count), 20,28) ~ 30,
-                       between(max(df$site_count), 29,47) ~ 50,
-                       between(max(df$site_count), 48,95) ~ 100,
-                       between(max(df$site_count), 96,190) ~ 200,
+                       between(max(df$site_count), 8,15) ~ 20,
+                       between(max(df$site_count), 16,28) ~ 40,
+                       between(max(df$site_count), 29,40) ~ 50,
+                       between(max(df$site_count), 41,90) ~ 100,
+                       between(max(df$site_count), 91,190) ~ 200,
                        between(max(df$site_count), 191,275) ~ 300,
                        between(max(df$site_count), 276,475) ~ 500,
                        between(max(df$site_count), 476,750) ~ 800,
@@ -574,8 +574,8 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Region = "
 
   # This makes the steps between labels correct based on max value of count.
   steps <- case_when(max(df$site_count) < 10 ~ 1,
-                     between(max(df$site_count), 9,19) ~ 2,
-                     between(max(df$site_count), 20,47) ~ 5,
+                     between(max(df$site_count), 9,15) ~ 2,
+                     between(max(df$site_count), 16,47) ~ 5,
                      between(max(df$site_count), 48,95) ~ 10,
                      between(max(df$site_count), 96,190) ~ 20,
                      between(max(df$site_count), 191,475) ~ 50,
@@ -593,19 +593,22 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Region = "
                   pull(interval) %>%
                   length()) /2 +0.5 # Produce the correct number of tick marks
 
+  tri_y <- max(df$site_count) * 1.1  #maxlim-(steps*1.8)
+  text_y <- max(df$site_count) * 1.165 #maxlim-steps*1.4
+
   p <- df  %>%
     mutate(interval = fct_reorder(interval, sortorder)) %>%
     arrange(sortorder) %>%
     ggplot(aes(x = interval, y = site_count)) +
     geom_col(aes(fill = forcats::fct_rev(sitetype)),
              position = position_dodge(preserve = "single"), width = 0.7) + # make the bars of the site types beside each other for each group.
-    stat_summary(aes(x = l[findInterval(medel+0.2, b)], y = maxlim-(steps*1.8), colour = sitetype, fill = sitetype),
+    stat_summary(aes(x = l[findInterval(medel+0.2, b)], y = tri_y, colour = sitetype, fill = sitetype),
                  position = position_dodge2(width = 1.1),
                  fun = "mean",
                  geom = "point",
                  size = 5,
                  shape = 25) + # This creates the triangles at the right place on the x- and y-axis.
-    geom_text(aes(x = l[findInterval(medel+0.2, b)], y = maxlim-steps*1.4, label = format(round(medel, 1), nsmall = 1)),
+    geom_text(aes(x = l[findInterval(medel+0.2, b)], y = text_y, label = format(round(medel, 1), nsmall = 1)),
               data = lab,
               position = position_dodge2(width = 1.4),
               fontface = "plain",

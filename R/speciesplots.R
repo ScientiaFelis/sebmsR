@@ -593,19 +593,22 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Region = "
                   pull(interval) %>%
                   length()) /2 +0.5 # Produce the correct number of tick marks
 
+  tri_y <- max(df$site_count) * 1.1  #maxlim-(steps*1.8)
+  text_y <- max(df$site_count) * 1.16 #maxlim-steps*1.4
+
   p <- df  %>%
     mutate(interval = fct_reorder(interval, sortorder)) %>%
     arrange(sortorder) %>%
     ggplot(aes(x = interval, y = site_count)) +
     geom_col(aes(fill = forcats::fct_rev(sitetype)),
              position = position_dodge(preserve = "single"), width = 0.7) + # make the bars of the site types beside each other for each group.
-    stat_summary(aes(x = l[findInterval(medel+0.2, b)], y = maxlim-(steps*1.8), colour = sitetype, fill = sitetype),
+    stat_summary(aes(x = l[findInterval(medel+0.2, b)], y = tri_y, colour = sitetype, fill = sitetype),
                  position = position_dodge2(width = 1.1),
                  fun = "mean",
                  geom = "point",
                  size = 5,
                  shape = 25) + # This creates the triangles at the right place on the x- and y-axis.
-    geom_text(aes(x = l[findInterval(medel+0.2, b)], y = maxlim-steps*1.4, label = format(round(medel, 1), nsmall = 1)),
+    geom_text(aes(x = l[findInterval(medel+0.2, b)], y = text_y, label = format(round(medel, 1), nsmall = 1)),
               data = lab,
               position = position_dodge2(width = 1.4),
               fontface = "plain",

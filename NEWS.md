@@ -6,6 +6,13 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.6.4
+
+* Add `Art`argument to `sebms_abundance_year_compare_plot()`
+* Fix placement of triangles and text for mean in `sebms_species_per_sitetype_plot()`
+* Fix naming of png-files for species plots.
+
+
 # v 2.6.3
 
 * Change `sebms_sunhours_data()` to switch to the *per day* data collection if a month fail.

@@ -141,13 +141,21 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Region = "
     theme_sebms2()
 
   # Make correct file name for png.
+
+  if (all(Län == ".", Region == ".", Landskap == ".",Kommun == ".")) {
+    origin = "Sweden" # If no region was selected use Sweden
+  }else {
+    origin <- glue("{Län}{Region}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
+  }
+
   if (is.null(tag)) {
     tag = ""
-  }else {
-    tag = glue("{tag}")
+
   }
+  yearname <- glue("{origin}_{year}{tag}")
+
   res <- list(p1 = p1, p2 = p2) # list with the two plots
-  name <- list(glue("Above-median_{year}{tag}"), glue("Below-median_{year}{tag}"))
+  name <- list(glue("Above-median_{yearname}"), glue("Below-median_{yearname}"))
 
   # fix filepath
   filepath <- normalizePath(filepath)
@@ -280,12 +288,20 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Art = 1:200, Lä
           plot.tag.position = c(0.05,0.075)
     )
 
+  if (all(Län == ".", Region == ".", Landskap == ".",Kommun == ".")) {
+    origin = "Sweden" # If no region was selected use Sweden
+  }else {
+    origin <- glue("{Län}{Region}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
+  }
+
   if (is.null(tag)) {
     tag = ""
-  }else {
-    tag = glue("{tag}")
+
   }
-  yearname <- paste0(year,tag, collapse = "-")
+  yearname <- paste0(year, collapse = "-")
+  yearname <- glue("{origin}_{yearname}{tag}")
+
+
 
   # fix filepath
   filepath <- normalizePath(filepath)
@@ -446,12 +462,17 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", R
     yearname <- year
   }
 
+   if (all(Län == ".", Region == ".", Landskap == ".",Kommun == ".")) {
+        origin = "Sweden" # If no region was selected use Sweden
+      }else {
+        origin <- glue("{Län}{Region}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
+      }
+
   if (is.null(tag)) {
     tag = ""
-    yearname <- paste0(yearname, tag)
-  }else {
-    yearname <-  paste0(yearname,tag)
+
   }
+  yearname <- glue("{origin}_{yearname}{tag}")
 
 
   # fix filepath
@@ -638,12 +659,18 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Region = "
     yearname <- year
   }
 
+   if (all(Län == ".", Region == ".", Landskap == ".",Kommun == ".")) {
+        origin = "Sweden" # If no region was selected use Sweden
+      }else {
+        origin <- glue("{Län}{Region}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
+      }
+
   if (is.null(tag)) {
     tag = ""
-    yearname <- paste0(yearname, tag)
-  }else {
-    yearname <-  paste0(yearname,tag)
+
   }
+  yearname <- glue("{origin}_{yearname}{tag}")
+
    # fix filepath
   filepath <- normalizePath(filepath)
   filepath <- glue("{filepath}/Species_per_site")

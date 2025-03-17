@@ -197,7 +197,8 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Art = 1:200, Lä
     filter(datum > ymd(glue("{year}-04-01")), datum < ymd(glue("{year}-09-30"))) %>%
     #filter(!speuid %in% c(131,133,135)) %>%
     group_by(year, vecka) %>%
-    summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
+    summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop") %>%
+    complete(year, vecka, fill = list(count = 0))
 
 
   # This makes a label that have a row of weeks and then a row of months in text

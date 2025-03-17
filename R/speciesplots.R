@@ -177,8 +177,11 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Region = "
 #'
 #' @importFrom plyr round_any
 #' @import dplyr
+#' @importFrom tidyr complete
 #' @import ggplot2
 #' @importFrom lubridate month weeks ymd
+#' @importFrom glue glue
+#' @importFrom stringr str_remove_all str_replace_all
 #'
 #' @return A png figure with the number of individuals found each of the
 #'   comparing years per week,

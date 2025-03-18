@@ -6,7 +6,7 @@
 \usage{
 get_trendIndex(
   trimIndex = NULL,
-  years = 2010:lubridate::year(lubridate::today()) - 1,
+  years = 2010:(lubridate::year(lubridate::today()) - 1),
   Art = 1:200,
   Län = ".",
   Region = ".",

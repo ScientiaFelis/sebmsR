@@ -7,7 +7,8 @@
 get_trendHistogram(
   trendIndex = NULL,
   trimIndex = NULL,
-  years = 2010:lubridate::year(lubridate::today()) - 1,
+  years = 2010:(lubridate::year(lubridate::today()) - 1),
+  logscale = FALSE,
   Art = 1:200,
   Län = ".",
   Region = ".",
@@ -30,6 +31,9 @@ get_trendHistogram(
 trendIndex is given}
 
 \item{years}{the year span of interest, set as 'firstyear:lastyear'.}
+
+\item{logscale}{logical; if the figure should have a log10 x-axis or not, default
+`FALSE`.}
 
 \item{Art}{the species of interest}
 
@@ -55,8 +59,8 @@ this override `Art`}
 \item{excludeSP}{vector of species id to exclude from the histogram calculations}
 }
 \value{
-Two histograms of abundance change in percent, on a linear scale and on a log
-  scale. Saved as a png-files, printed or both.
+Histograms of abundance change in percent, on a linear scale or on a log
+  scale. Saved as a png-file, printed or both.
 }
 \description{
 Creates a figure of percent change in species abundances as a histogram with five

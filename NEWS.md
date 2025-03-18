@@ -6,6 +6,12 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.6.5
+
+* Fix issue with non-existing combinations of year and week in `sebms_abundance_year_compare_plot()`, completed and set to 0
+* Fix `get_Infile()` to include `region` and fill in values of `län`, `region`, `landskap`, and `kommun` per site id instead of the `NA`
+
+
 # v 2.6.4
 
 * Add `Art`argument to `sebms_abundance_year_compare_plot()`

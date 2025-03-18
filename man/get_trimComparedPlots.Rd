@@ -5,7 +5,7 @@
 \title{Create and Save Local TRIM Plots with National TRIM Reference}
 \usage{
 get_trimComparedPlots(
-  years = 2010:lubridate::year(lubridate::today()) - 1,
+  years = 2010:(lubridate::year(lubridate::today()) - 1),
   Art = 1:200,
   Län = ".",
   Region = ".",

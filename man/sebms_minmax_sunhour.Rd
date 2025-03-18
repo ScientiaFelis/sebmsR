@@ -12,7 +12,7 @@ sebms_minmax_sunhour(
   per_month = FALSE,
   per_day = FALSE,
   filepath = getwd(),
-  write = T
+  write = TRUE
 )
 }
 \arguments{

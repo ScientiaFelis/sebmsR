@@ -5,7 +5,7 @@
 \title{Create an Object with Species Number per Year and Site with Visit Frequency}
 \usage{
 get_trimInfile(
-  years = 2010:lubridate::year(lubridate::today()) - 1,
+  years = 2010:(lubridate::year(lubridate::today()) - 1),
   Art = 1:200,
   Län = ".",
   Region = ".",

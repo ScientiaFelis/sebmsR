@@ -933,7 +933,9 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:(lubridate::year(lub
 #' @param trimIndex optional, a trim index object from [get_trimindex()], ignored if
 #'   trendIndex is given
 #' @param logscale logical; if the figure should have a log10 x-axis or not, default
-#'   `FALSE`.
+#'   `FALSE`
+#' @param legend_english logical; whether the legend and axis should be in Engliash,
+#'   default to `FALSE`
 #' @param excludeSP vector of species id to exclude from the histogram calculations
 #'
 #' @import dplyr

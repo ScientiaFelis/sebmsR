@@ -43,7 +43,7 @@ get_trimInfile <- function(years=2010:lubridate::year(lubridate::today())-1, Art
 
     obses <- sebms_trimobs(year = years, Art = speuid, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, filterPattern = filterPattern, minmax = minW:maxW, verification = verification, source = source) %>%
       mutate(total_number = as.numeric(total_number)) %>%
-      summarise(total_number = sum(total_number, na.rm = T), .by = c(siteuid, year, län, landskap, kommun))
+      summarise(total_number = sum(total_number, na.rm = T), .by = c(siteuid, year, län, region, landskap, kommun))
 
     visits <- sebms_trimvisits(year = years, minmax = minW:maxW, source = source) %>%
       mutate(visit = as.numeric(visit))
@@ -87,7 +87,9 @@ get_trimInfile <- function(years=2010:lubridate::year(lubridate::today())-1, Art
     ungroup() %>%
     mutate(obslist = map2(data, speuid, possibly(~spein(df = .x, speuid = .y)), .progress = "Making trimspecies infile...")) %>%
     select(-data) %>%
-    unnest(obslist)
+    unnest(obslist) %>%
+    group_by(siteuid) %>%
+    fill(c(län, region, landskap, kommun), .direction = "downup")
 
   return(Infile)
 }
@@ -699,7 +701,8 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:lubridate::year(lu
     #   list_flatten() %>%
     #   c(indicatorlist) %>%
     #   list_flatten()
-  }
+
+  } # Otherwise use original indicatorlist
 
   speid <- unlist(indicatorlist, use.names = F) %>%  # 'indicatorlist' is loaded by package
     unique()
@@ -1024,23 +1027,23 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
           legend.position.inside = c(0.7,0.85),
           legend.key = element_rect(fill = NA, color = NA),
           axis.text.x = element_text(size = rel (1.1)))
-    # scale_fill_manual(values = cols.map$vals,
-    #                  breaks = trendIndex$changeCat %>% unique(),
-    #                  labels = c("minskande (P<0.05)",
-    #                  "möjlig minskning",
-    #                  "liten förändring",
-    #                  "möjlig ökning",
-    #                  "ökande (P<0.05)")
-    #                   ) +
-    # scale_alpha_manual(values = alphas.map$vals,
-    #                    breaks = trendIndex$changeCat %>% unique(),
-    #                    labels = c("minskande (P<0.05)",
-    #                              "möjlig minskning",
-    #                              "liten förändring",
-    #                              "möjlig ökning",
-    #                              "ökande (P<0.05)")
-    #                    ) +
-    #    coord_cartesian(expand = F, xlim = c(-0.5,48), ylim = c(0, 75)) +
+  # scale_fill_manual(values = cols.map$vals,
+  #                  breaks = trendIndex$changeCat %>% unique(),
+  #                  labels = c("minskande (P<0.05)",
+  #                  "möjlig minskning",
+  #                  "liten förändring",
+  #                  "möjlig ökning",
+  #                  "ökande (P<0.05)")
+  #                   ) +
+  # scale_alpha_manual(values = alphas.map$vals,
+  #                    breaks = trendIndex$changeCat %>% unique(),
+  #                    labels = c("minskande (P<0.05)",
+  #                              "möjlig minskning",
+  #                              "liten förändring",
+  #                              "möjlig ökning",
+  #                              "ökande (P<0.05)")
+  #                    ) +
+  #    coord_cartesian(expand = F, xlim = c(-0.5,48), ylim = c(0, 75)) +
 
 
   ## Logistic percent change plot

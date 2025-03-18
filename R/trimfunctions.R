@@ -932,17 +932,19 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:(lubridate::year(lub
 #' @param trendIndex optional, output from [get_trendIndex()]
 #' @param trimIndex optional, a trim index object from [get_trimindex()], ignored if
 #'   trendIndex is given
+#' @param logscale logical; if the figure should have a log10 x-axis or not, default
+#'   `FALSE`.
 #' @param excludeSP vector of species id to exclude from the histogram calculations
 #'
 #' @import dplyr
 #' @importFrom forcats fct_relevel
 #' @import ggplot2
 #'
-#' @returns Two histograms of abundance change in percent, on a linear scale and on a log
-#'   scale. Saved as a png-files, printed or both.
+#' @returns Histograms of abundance change in percent, on a linear scale or on a log
+#'   scale. Saved as a png-file, printed or both.
 #' @export
 #'
-get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE, print = TRUE, indicators = FALSE, excludeSP = c(2,4,15,20,21,39,41,56,84,127)) {
+get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), logscale = FALSE, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE, print = TRUE, indicators = FALSE, excludeSP = c(2,4,15,20,21,39,41,56,84,127)) {
 
 
   ## ----------------------------------------------------------------------------- ##
@@ -994,14 +996,48 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
   #                                      "increasing"),
   #                         vals = c(1, .3, 1, 0.3, 1))
 
+if (logscale) {
+  ## Logistic percent change plot
+  lmedx = log10(abs(median(trendChange$change)+5))*sign(median(trendChange$change))
+  medy = (trendChange %>% count(changeCat) %>% pull() %>% max())/2
+  lmedlab = glue("Median: {median(trendChange$change) %>% round()}%")
 
+  ggs <- trendChange %>%
+    ggplot(aes(logchange, fill = changeCat, alpha = changeCat)) +
+    geom_histogram(colour = "black") +
+    geom_vline(xintercept = log10(abs(median(trendChange$change)))*sign(median(trendChange$change)),
+               linetype = 2,
+               linewidth = 1.1,
+               colour = "black",
+               alpha = 1) +
+    annotate("text", x = lmedx, y = medy, label = lmedlab, hjust = 0) +
+    scale_x_continuous(breaks = c(-2,-1,0,1,2,3),
+                       labels = c("-100%","-10%","0","10%","100%","1000%")) +
+    scale_y_continuous(breaks = seq(0, trendChange %>% count() %>% pull(), 2),
+                       expand = expansion(mult = c(0, .08))) +
+    scale_fill_manual(values = labcol) +
+    scale_alpha_manual(values = alphas) +
+    labs(x = glue("Procentuell förändring av abundans {min(years)}:{max(years)}"),
+         y = "Antal arter",
+         fill = NULL, alpha = NULL) +
+    theme_bw() +
+    theme(panel.background = element_rect(colour = "grey90", linewidth = 1),
+          panel.grid = element_blank(),
+          plot.margin = margin(.5, 2, .5, .5, "cm"),
+          legend.position = "inside",
+          legend.position.inside = c(0.7,0.85),
+          legend.key = element_rect(fill = NA, color = NA),
+          axis.text.x = element_text(size = rel (1.1)))
+
+  name = "logscale"
+} else{
   ## Linear percent change plot
 
   medx = median(trendChange$change)+15
   medy = (trendChange %>% count(changeCat) %>% pull() %>% max())/2
   medlab = glue("Median: {median(trendChange$change) %>% round()}%")
 
-  ggt <- trendChange %>%
+  ggs <- trendChange %>%
     ggplot(aes(change, fill = changeCat, alpha = changeCat)) +
     geom_histogram(colour = "black") +
     geom_vline(xintercept = median(trendChange$change),
@@ -1044,41 +1080,9 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
   #                              "ökande (P<0.05)")
   #                    ) +
   #    coord_cartesian(expand = F, xlim = c(-0.5,48), ylim = c(0, 75)) +
+name = "linear"
+}
 
-
-  ## Logistic percent change plot
-  lmedx = log10(abs(median(trendChange$change)+5))*sign(median(trendChange$change))
-  medy = (trendChange %>% count(changeCat) %>% pull() %>% max())/2
-  lmedlab = glue("Median: {median(trendChange$change) %>% round()}%")
-
-  ggtL <- trendChange %>%
-    ggplot(aes(logchange, fill = changeCat, alpha = changeCat)) +
-    geom_histogram(colour = "black") +
-    geom_vline(xintercept = log10(abs(median(trendChange$change)))*sign(median(trendChange$change)),
-               linetype = 2,
-               linewidth = 1.1,
-               colour = "black",
-               alpha = 1) +
-    annotate("text", x = lmedx, y = medy, label = lmedlab, hjust = 0) +
-    scale_x_continuous(breaks = c(-2,-1,0,1,2,3),
-                       labels = c("-100%","-10%","0","10%","100%","1000%")) +
-    scale_y_continuous(breaks = seq(0, trendChange %>% count() %>% pull(), 2),
-                       expand = expansion(mult = c(0, .08))) +
-    scale_fill_manual(values = labcol) +
-    scale_alpha_manual(values = alphas) +
-    labs(x = glue("Procentuell förändring av abundans {min(years)}:{max(years)}"),
-         y = "Antal arter",
-         fill = NULL, alpha = NULL) +
-    theme_bw() +
-    theme(panel.background = element_rect(colour = "grey90", linewidth = 1),
-          panel.grid = element_blank(),
-          plot.margin = margin(.5, 2, .5, .5, "cm"),
-          legend.position = "inside",
-          legend.position.inside = c(0.7,0.85),
-          legend.key = element_rect(fill = NA, color = NA),
-          axis.text.x = element_text(size = rel (1.1)))
-
-  ggs <- list(ggt, ggtL)
 
   if (write) {
     #set tag
@@ -1090,7 +1094,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
     #set filepath
     filepath <- normalizePath(filepath)
 
-    walk2(ggs, list("Percent", "LogPercent"), ~ggsave(plot = .x, filename = glue("{filepath}/SpeciesChange_{.y}{tag}.png"), width = 22, height = 14, units = "cm", dpi = 300), .progress = "Writing figures to png...")
+    ggsave(plot = ggs, filename = glue("{filepath}/SpeciesChange_{name}{tag}.png"), width = 22, height = 14, units = "cm", dpi = 300)
   }
 
   if (print) {

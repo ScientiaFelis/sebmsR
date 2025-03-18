@@ -550,7 +550,7 @@ sebms_sundiff_plot <- function(year = lubridate::year(lubridate::today())-1, df,
 #'   diff from mean at that location. It also gives the name of the nearest city or
 #'   village for that location.
 #' @export
-sebms_minmax_sunhour <- function(year = 2017:2022, df, months = 4:9, sunvar = total_sunH, per_month = FALSE, per_day = FALSE, filepath = getwd(), write = T) {
+sebms_minmax_sunhour <- function(year = 2017:2022, df, months = 4:9, sunvar = total_sunH, per_month = FALSE, per_day = FALSE, filepath = getwd(), write = TRUE) {
 
   if(missing(df)) {
 

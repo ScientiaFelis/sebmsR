@@ -325,7 +325,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #'   marked.
 #' @export
 
-sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showsite = T, showgrid = F, gridtype = "10", onemap = F, print = FALSE, write = TRUE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
+sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showsite = TRUE, showgrid = FALSE, gridtype = "10", onemap = FALSE, print = FALSE, write = TRUE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
 
   message("Make sure to be on Lund university network or LU VPN to get the map to work!")
 
@@ -369,10 +369,11 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 
     }
 
-    Region <- Län # to use when setting name for the saved png
-
     CPK <- centerPL %>%
       filter(str_detect(LNNAMN, Län)) # This loads in the center point and automatic zoom level.
+
+    Region <- Län # to use when setting name for the saved png
+
 
   }
 
@@ -399,6 +400,8 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
     CPK <- centerPR %>%
       filter(str_detect(RegionName, Region)) # This loads in the center point and automatic zoom level.
 
+    Region <- Region
+
   }
 
   if (Kommun != ".") {
@@ -419,10 +422,11 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 
     }
 
-    Region <- Kommun
-
     CPK <- centerPK %>%
       filter(str_detect(KnNamn, Kommun))
+
+    Region <- Kommun
+
   }
 
   if (Landskap != ".") {
@@ -443,10 +447,11 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 
     }
 
-    Region <- Landskap
-
     CPK <- centerPLsk %>%
       filter(str_detect(reg_name, Landskap))
+
+    Region <- Landskap
+
   }
 
 

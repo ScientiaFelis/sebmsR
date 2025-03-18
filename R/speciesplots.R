@@ -141,13 +141,21 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Region = "
     theme_sebms2()
 
   # Make correct file name for png.
+
+  if (all(Län == ".", Region == ".", Landskap == ".",Kommun == ".")) {
+    origin = "Sweden" # If no region was selected use Sweden
+  }else {
+    origin <- glue("{Län}{Region}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
+  }
+
   if (is.null(tag)) {
     tag = ""
-  }else {
-    tag = glue("{tag}")
+
   }
+  yearname <- glue("{origin}_{year}{tag}")
+
   res <- list(p1 = p1, p2 = p2) # list with the two plots
-  name <- list(glue("Above-median_{year}{tag}"), glue("Below-median_{year}{tag}"))
+  name <- list(glue("Above-median_{yearname}"), glue("Below-median_{yearname}"))
 
   # fix filepath
   filepath <- normalizePath(filepath)
@@ -169,8 +177,11 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Region = "
 #'
 #' @importFrom plyr round_any
 #' @import dplyr
+#' @importFrom tidyr complete
 #' @import ggplot2
 #' @importFrom lubridate month weeks ymd
+#' @importFrom glue glue
+#' @importFrom stringr str_remove_all str_replace_all
 #'
 #' @return A png figure with the number of individuals found each of the
 #'   comparing years per week,
@@ -189,7 +200,8 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Art = 1:200, Lä
     filter(datum > ymd(glue("{year}-04-01")), datum < ymd(glue("{year}-09-30"))) %>%
     #filter(!speuid %in% c(131,133,135)) %>%
     group_by(year, vecka) %>%
-    summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
+    summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop") %>%
+    complete(year, vecka, fill = list(count = 0))
 
 
   # This makes a label that have a row of weeks and then a row of months in text
@@ -280,12 +292,20 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Art = 1:200, Lä
           plot.tag.position = c(0.05,0.075)
     )
 
+  if (all(Län == ".", Region == ".", Landskap == ".",Kommun == ".")) {
+    origin = "Sweden" # If no region was selected use Sweden
+  }else {
+    origin <- glue("{Län}{Region}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
+  }
+
   if (is.null(tag)) {
     tag = ""
-  }else {
-    tag = glue("{tag}")
+
   }
-  yearname <- paste0(year,tag, collapse = "-")
+  yearname <- paste0(year, collapse = "-")
+  yearname <- glue("{origin}_{yearname}{tag}")
+
+
 
   # fix filepath
   filepath <- normalizePath(filepath)
@@ -446,12 +466,17 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", R
     yearname <- year
   }
 
+   if (all(Län == ".", Region == ".", Landskap == ".",Kommun == ".")) {
+        origin = "Sweden" # If no region was selected use Sweden
+      }else {
+        origin <- glue("{Län}{Region}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
+      }
+
   if (is.null(tag)) {
     tag = ""
-    yearname <- paste0(yearname, tag)
-  }else {
-    yearname <-  paste0(yearname,tag)
+
   }
+  yearname <- glue("{origin}_{yearname}{tag}")
 
 
   # fix filepath
@@ -546,11 +571,11 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Region = "
   # If value fall above a certain threshold it is set at a certain maxlimit
 
   maxlim <-  case_when(max(df$site_count) <= 7 ~ 10,
-                       between(max(df$site_count), 8,19) ~ 20,
-                       between(max(df$site_count), 20,28) ~ 30,
-                       between(max(df$site_count), 29,47) ~ 50,
-                       between(max(df$site_count), 48,95) ~ 100,
-                       between(max(df$site_count), 96,190) ~ 200,
+                       between(max(df$site_count), 8,15) ~ 20,
+                       between(max(df$site_count), 16,28) ~ 40,
+                       between(max(df$site_count), 29,40) ~ 50,
+                       between(max(df$site_count), 41,90) ~ 100,
+                       between(max(df$site_count), 91,190) ~ 200,
                        between(max(df$site_count), 191,275) ~ 300,
                        between(max(df$site_count), 276,475) ~ 500,
                        between(max(df$site_count), 476,750) ~ 800,
@@ -574,8 +599,8 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Region = "
 
   # This makes the steps between labels correct based on max value of count.
   steps <- case_when(max(df$site_count) < 10 ~ 1,
-                     between(max(df$site_count), 9,19) ~ 2,
-                     between(max(df$site_count), 20,47) ~ 5,
+                     between(max(df$site_count), 9,15) ~ 2,
+                     between(max(df$site_count), 16,47) ~ 5,
                      between(max(df$site_count), 48,95) ~ 10,
                      between(max(df$site_count), 96,190) ~ 20,
                      between(max(df$site_count), 191,475) ~ 50,
@@ -594,7 +619,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Region = "
                   length()) /2 +0.5 # Produce the correct number of tick marks
 
   tri_y <- max(df$site_count) * 1.1  #maxlim-(steps*1.8)
-  text_y <- max(df$site_count) * 1.16 #maxlim-steps*1.4
+  text_y <- max(df$site_count) * 1.165 #maxlim-steps*1.4
 
   p <- df  %>%
     mutate(interval = fct_reorder(interval, sortorder)) %>%
@@ -638,12 +663,18 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Region = "
     yearname <- year
   }
 
+   if (all(Län == ".", Region == ".", Landskap == ".",Kommun == ".")) {
+        origin = "Sweden" # If no region was selected use Sweden
+      }else {
+        origin <- glue("{Län}{Region}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
+      }
+
   if (is.null(tag)) {
     tag = ""
-    yearname <- paste0(yearname, tag)
-  }else {
-    yearname <-  paste0(yearname,tag)
+
   }
+  yearname <- glue("{origin}_{yearname}{tag}")
+
    # fix filepath
   filepath <- normalizePath(filepath)
   filepath <- glue("{filepath}/Species_per_site")

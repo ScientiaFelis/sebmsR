@@ -6,6 +6,7 @@
 \usage{
 sebms_abundance_year_compare_plot(
   year = 2021:2022,
+  Art = 1:200,
   Län = ".",
   Region = ".",
   Landskap = ".",

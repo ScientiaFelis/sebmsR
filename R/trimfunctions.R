@@ -933,7 +933,9 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:(lubridate::year(lub
 #' @param trimIndex optional, a trim index object from [get_trimindex()], ignored if
 #'   trendIndex is given
 #' @param logscale logical; if the figure should have a log10 x-axis or not, default
-#'   `FALSE`.
+#'   `FALSE`
+#' @param legend_english logical; whether the legend and axis should be in Engliash,
+#'   default to `FALSE`
 #' @param excludeSP vector of species id to exclude from the histogram calculations
 #'
 #' @import dplyr
@@ -944,7 +946,7 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:(lubridate::year(lub
 #'   scale. Saved as a png-file, printed or both.
 #' @export
 #'
-get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), logscale = FALSE, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE, print = TRUE, indicators = FALSE, excludeSP = c(2,4,15,20,21,39,41,56,84,127)) {
+get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), logscale = FALSE, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), legend_english = FALSE, write = FALSE, print = TRUE, indicators = FALSE, excludeSP = c(2,4,15,20,21,39,41,56,84,127)) {
 
 
   ## ----------------------------------------------------------------------------- ##
@@ -968,21 +970,41 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
            lefY = mul^nrY,
            change = (lefY - 1)*100,
            logchange = log10(abs(change))*sign(change),
-           sig = if_else(p<=0.05, TRUE, FALSE),
-           changeCat = case_when(sig & change > 0 ~ "Ökande (P<0.05)",
-                                 sig & change < 0 ~ "Minskande (P<0.05)",
-                                 !sig & change > 10 ~ "Möjlig ökning",
-                                 !sig & change < -10 ~ "Möjlig minskning",
-                                 #!sig && between(change, > -10, <10) ~ "Little change",
-                                 .default = "Begränsad förändring"),
-           changeCat = fct_relevel(changeCat, c("Minskande (P<0.05)", "Möjlig minskning", "Begränsad förändring", "Möjlig ökning","Ökande (P<0.05)"))
-    ) %>%
+           sig = if_else(p<=0.05, TRUE, FALSE)) %>%
     filter(change < 500)
 
   #  labcol <- c("#6387B7", "#A9B9D3", "#A9B4AE", "#F6B2A7", "#EF6E69")
   labcol <- c("#EF6F6A", "#EF6F6A", "#AAB5AF", "#6388B5","#6388B5")
   alphas <- c(1, .3, 1, 0.3, 1)
 
+  if (legend_english) {
+    trendChange <- trendChange %>%
+      mutate(changeCat = case_when(sig & change > 0 ~ "Increasing (P<0.05)",
+                                   sig & change < 0 ~ "Declining (P<0.05)",
+                                   !sig & change > 10 ~ "Possible increase",
+                                   !sig & change < -10 ~ "Possible decline",
+                                   #!sig && between(change, > -10, <10) ~ "Little change",
+                                   .default = "Limited change"),
+             changeCat = fct_relevel(changeCat, c("Declining (P<0.05)", "Possible decline", "Limited change", "Possible increase","Increasing (P<0.05)"))
+      )
+
+    xlab <- "Percentage change of abundans "
+    ylab <- "Number of species"
+
+    } else {
+    trendChange <- trendChange %>%
+      mutate(changeCat = case_when(sig & change > 0 ~ "Ökande (P<0.05)",
+                                   sig & change < 0 ~ "Minskande (P<0.05)",
+                                   !sig & change > 10 ~ "Möjlig ökning",
+                                   !sig & change < -10 ~ "Möjlig minskning",
+                                   #!sig && between(change, > -10, <10) ~ "Little change",
+                                   .default = "Begränsad förändring"),
+             changeCat = fct_relevel(changeCat, c("Minskande (P<0.05)", "Möjlig minskning", "Begränsad förändring", "Möjlig ökning","Ökande (P<0.05)"))
+      )
+
+    xlab <- "Procentuell förändring av abundans "
+    ylab <- "Antal arter"
+  }
   # cols.map = data.frame(category = c("declining",
   #                                    "possibly declining",
   #                                    "low confidence",
@@ -996,92 +1018,92 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
   #                                      "increasing"),
   #                         vals = c(1, .3, 1, 0.3, 1))
 
-if (logscale) {
-  ## Logistic percent change plot
-  lmedx = log10(abs(median(trendChange$change)+5))*sign(median(trendChange$change))
-  medy = (trendChange %>% count(changeCat) %>% pull() %>% max())/2
-  lmedlab = glue("Median: {median(trendChange$change) %>% round()}%")
+  if (logscale) {
+    ## Logistic percent change plot
+    lmedx = log10(abs(median(trendChange$change)+5))*sign(median(trendChange$change))
+    medy = (trendChange %>% count(changeCat) %>% pull() %>% max())/2
+    lmedlab = glue("Median: {median(trendChange$change) %>% round()}%")
 
-  ggs <- trendChange %>%
-    ggplot(aes(logchange, fill = changeCat, alpha = changeCat)) +
-    geom_histogram(colour = "black") +
-    geom_vline(xintercept = log10(abs(median(trendChange$change)))*sign(median(trendChange$change)),
-               linetype = 2,
-               linewidth = 1.1,
-               colour = "black",
-               alpha = 1) +
-    annotate("text", x = lmedx, y = medy, label = lmedlab, hjust = 0) +
-    scale_x_continuous(breaks = c(-2,-1,0,1,2,3),
-                       labels = c("-100%","-10%","0","10%","100%","1000%")) +
-    scale_y_continuous(breaks = seq(0, trendChange %>% count() %>% pull(), 2),
-                       expand = expansion(mult = c(0, .08))) +
-    scale_fill_manual(values = labcol) +
-    scale_alpha_manual(values = alphas) +
-    labs(x = glue("Procentuell förändring av abundans {min(years)}:{max(years)}"),
-         y = "Antal arter",
-         fill = NULL, alpha = NULL) +
-    theme_bw() +
-    theme(panel.background = element_rect(colour = "grey90", linewidth = 1),
-          panel.grid = element_blank(),
-          plot.margin = margin(.5, 2, .5, .5, "cm"),
-          legend.position = "inside",
-          legend.position.inside = c(0.7,0.85),
-          legend.key = element_rect(fill = NA, color = NA),
-          axis.text.x = element_text(size = rel (1.1)))
+    ggs <- trendChange %>%
+      ggplot(aes(logchange, fill = changeCat, alpha = changeCat)) +
+      geom_histogram(colour = "black") +
+      geom_vline(xintercept = log10(abs(median(trendChange$change)))*sign(median(trendChange$change)),
+                 linetype = 2,
+                 linewidth = 1.1,
+                 colour = "black",
+                 alpha = 1) +
+      annotate("text", x = lmedx, y = medy, label = lmedlab, hjust = 0) +
+      scale_x_continuous(breaks = c(-2,-1,0,1,2,3),
+                         labels = c("-100%","-10%","0","10%","100%","1000%")) +
+      scale_y_continuous(breaks = seq(0, trendChange %>% count() %>% pull(), 2),
+                         expand = expansion(mult = c(0, .08))) +
+      scale_fill_manual(values = labcol) +
+      scale_alpha_manual(values = alphas) +
+      labs(x = glue("{xlab}{min(years)}:{max(years)}"),
+           y = glue("{ylab}"),
+           fill = NULL, alpha = NULL) +
+      theme_bw() +
+      theme(panel.background = element_rect(colour = "grey90", linewidth = 1),
+            panel.grid = element_blank(),
+            plot.margin = margin(.5, 2, .5, .5, "cm"),
+            legend.position = "inside",
+            legend.position.inside = c(0.7,0.85),
+            legend.key = element_rect(fill = NA, color = NA),
+            axis.text.x = element_text(size = rel (1.1)))
 
-  name = "logscale"
-} else{
-  ## Linear percent change plot
+    name = "logscale"
+  } else{
+    ## Linear percent change plot
 
-  medx = median(trendChange$change)+15
-  medy = (trendChange %>% count(changeCat) %>% pull() %>% max())/2
-  medlab = glue("Median: {median(trendChange$change) %>% round()}%")
+    medx = median(trendChange$change)+15
+    medy = (trendChange %>% count(changeCat) %>% pull() %>% max())/2
+    medlab = glue("Median: {median(trendChange$change) %>% round()}%")
 
-  ggs <- trendChange %>%
-    ggplot(aes(change, fill = changeCat, alpha = changeCat)) +
-    geom_histogram(colour = "black") +
-    geom_vline(xintercept = median(trendChange$change),
-               linetype = 2,
-               linewidth = 1.1,
-               colour = "black",
-               alpha = 1) +
-    annotate("text", x = medx, y = medy, label = medlab, hjust = 0) +
-    scale_x_continuous(breaks = c(-100, -50, 0, 100, 200, 400),
-                       labels = scales::percent_format(scale = 1)) +
-    scale_y_continuous(breaks = seq(0, trendChange %>% count() %>% pull(), 2),
-                       expand = expansion(mult = c(0, .08))) +
-    scale_fill_manual(values = labcol) +
-    scale_alpha_manual(values = alphas) +
-    labs(x = glue("Procentuell förändring av abundans {min(years)}:{max(years)}"),
-         y = "Antal arter",
-         fill = NULL, alpha = NULL) +
-    theme_bw() +
-    theme(panel.background = element_rect(colour = "grey90", linewidth = 1),
-          panel.grid = element_blank(),
-          plot.margin = margin(.5, 2, .5, .5, "cm"),
-          legend.position = "inside",
-          legend.position.inside = c(0.7,0.85),
-          legend.key = element_rect(fill = NA, color = NA),
-          axis.text.x = element_text(size = rel (1.1)))
-  # scale_fill_manual(values = cols.map$vals,
-  #                  breaks = trendIndex$changeCat %>% unique(),
-  #                  labels = c("minskande (P<0.05)",
-  #                  "möjlig minskning",
-  #                  "liten förändring",
-  #                  "möjlig ökning",
-  #                  "ökande (P<0.05)")
-  #                   ) +
-  # scale_alpha_manual(values = alphas.map$vals,
-  #                    breaks = trendIndex$changeCat %>% unique(),
-  #                    labels = c("minskande (P<0.05)",
-  #                              "möjlig minskning",
-  #                              "liten förändring",
-  #                              "möjlig ökning",
-  #                              "ökande (P<0.05)")
-  #                    ) +
-  #    coord_cartesian(expand = F, xlim = c(-0.5,48), ylim = c(0, 75)) +
-name = "linear"
-}
+    ggs <- trendChange %>%
+      ggplot(aes(change, fill = changeCat, alpha = changeCat)) +
+      geom_histogram(colour = "black") +
+      geom_vline(xintercept = median(trendChange$change),
+                 linetype = 2,
+                 linewidth = 1.1,
+                 colour = "black",
+                 alpha = 1) +
+      annotate("text", x = medx, y = medy, label = medlab, hjust = 0) +
+      scale_x_continuous(breaks = c(-100, -50, 0, 100, 200, 400),
+                         labels = scales::percent_format(scale = 1)) +
+      scale_y_continuous(breaks = seq(0, trendChange %>% count() %>% pull(), 2),
+                         expand = expansion(mult = c(0, .08))) +
+      scale_fill_manual(values = labcol) +
+      scale_alpha_manual(values = alphas) +
+      labs(x = glue("{xlab}{min(years)}:{max(years)}"),
+           y = glue("{ylab}"),
+           fill = NULL, alpha = NULL) +
+      theme_bw() +
+      theme(panel.background = element_rect(colour = "grey90", linewidth = 1),
+            panel.grid = element_blank(),
+            plot.margin = margin(.5, 2, .5, .5, "cm"),
+            legend.position = "inside",
+            legend.position.inside = c(0.7,0.85),
+            legend.key = element_rect(fill = NA, color = NA),
+            axis.text.x = element_text(size = rel (1.1)))
+    # scale_fill_manual(values = cols.map$vals,
+    #                  breaks = trendIndex$changeCat %>% unique(),
+    #                  labels = c("minskande (P<0.05)",
+    #                  "möjlig minskning",
+    #                  "liten förändring",
+    #                  "möjlig ökning",
+    #                  "ökande (P<0.05)")
+    #                   ) +
+    # scale_alpha_manual(values = alphas.map$vals,
+    #                    breaks = trendIndex$changeCat %>% unique(),
+    #                    labels = c("minskande (P<0.05)",
+    #                              "möjlig minskning",
+    #                              "liten förändring",
+    #                              "möjlig ökning",
+    #                              "ökande (P<0.05)")
+    #                    ) +
+    #    coord_cartesian(expand = F, xlim = c(-0.5,48), ylim = c(0, 75)) +
+    name = "linear"
+  }
 
 
   if (write) {

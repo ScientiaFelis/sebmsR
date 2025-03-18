@@ -325,7 +325,7 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
 #'   marked.
 #' @export
 
-sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showsite = T, showgrid = F, gridtype = "10", onemap = F, print = FALSE, write = TRUE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
+sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, active_site_cutoff = NULL, width = 12, height = 18, zoomlevel = NULL, maptype = "both", showsite = TRUE, showgrid = FALSE, gridtype = "10", onemap = FALSE, print = FALSE, write = TRUE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
 
   message("Make sure to be on Lund university network or LU VPN to get the map to work!")
 

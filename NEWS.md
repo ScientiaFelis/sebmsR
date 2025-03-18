@@ -6,6 +6,13 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.6.6
+
+* Add option to choose Swedish or English text in legen and axis in `get_trendHistogram()`
+* Add option to choos log or linear scale on x-axis in `get_trendHistogram()`. No longer produce both figures siimultaneously.
+* Bug fixes
+
+
 # v 2.6.5
 
 * Fix issue with non-existing combinations of year and week in `sebms_abundance_year_compare_plot()`, completed and set to 0

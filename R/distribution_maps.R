@@ -369,10 +369,11 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 
     }
 
-    Region <- Län # to use when setting name for the saved png
-
     CPK <- centerPL %>%
       filter(str_detect(LNNAMN, Län)) # This loads in the center point and automatic zoom level.
+
+    Region <- Län # to use when setting name for the saved png
+
 
   }
 
@@ -399,6 +400,8 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
     CPK <- centerPR %>%
       filter(str_detect(RegionName, Region)) # This loads in the center point and automatic zoom level.
 
+    Region <- Region
+
   }
 
   if (Kommun != ".") {
@@ -419,10 +422,11 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 
     }
 
-    Region <- Kommun
-
     CPK <- centerPK %>%
       filter(str_detect(KnNamn, Kommun))
+
+    Region <- Kommun
+
   }
 
   if (Landskap != ".") {
@@ -443,10 +447,11 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 
     }
 
-    Region <- Landskap
-
     CPK <- centerPLsk %>%
       filter(str_detect(reg_name, Landskap))
+
+    Region <- Landskap
+
   }
 
 

@@ -1036,7 +1036,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
                          expand = expansion(mult = c(0, .08))) +
       scale_fill_manual(values = labcol) +
       scale_alpha_manual(values = alphas) +
-      labs(x = glue("{xlab}{min(years)}:{max(years)}"),
+      labs(x = glue("{xlab}{min(years)}-{max(years)}"),
            y = glue("{ylab}"),
            fill = NULL, alpha = NULL) +
       theme_bw() +
@@ -1071,7 +1071,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
                          expand = expansion(mult = c(0, .08))) +
       scale_fill_manual(values = labcol) +
       scale_alpha_manual(values = alphas) +
-      labs(x = glue("{xlab}{min(years)}:{max(years)}"),
+      labs(x = glue("{xlab}{min(years)}-{max(years)}"),
            y = glue("{ylab}"),
            fill = NULL, alpha = NULL) +
       theme_bw() +

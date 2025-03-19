@@ -961,7 +961,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
   }
 
   trendChange <- trendIndex %>%
-    filter(!is.na(speuid), !speuid %in% c(135, 131, 132, 133, 139)) %>%
+    filter(!is.na(speuid), !speuid %in% c(131:135, 139, 180, 181)) %>%
     mutate(trend = mul - 1,
            nrY = length(years),
            lefY = mul^nrY,
@@ -1023,7 +1023,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
 
     ggs <- trendChange %>%
       ggplot(aes(logchange, fill = changeCat, alpha = changeCat)) +
-      geom_histogram(colour = "black") +
+      geom_histogram(colour = "black", binwidth = 0.2) +
       geom_vline(xintercept = log10(abs(median(trendChange$change)))*sign(median(trendChange$change)),
                  linetype = 2,
                  linewidth = 1.1,
@@ -1058,7 +1058,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
 
     ggs <- trendChange %>%
       ggplot(aes(change, fill = changeCat, alpha = changeCat)) +
-      geom_histogram(colour = "black") +
+      geom_histogram(colour = "black", binwidth = 20) +
       geom_vline(xintercept = median(trendChange$change),
                  linetype = 2,
                  linewidth = 1.1,

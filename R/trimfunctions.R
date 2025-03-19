@@ -89,7 +89,8 @@ get_trimInfile <- function(years=2010:(lubridate::year(lubridate::today())-1), A
     select(-data) %>%
     unnest(obslist) %>%
     group_by(siteuid) %>%
-    fill(c(län, region, landskap, kommun), .direction = "downup")
+    fill(c(län, region, landskap, kommun), .direction = "downup") %>%
+    ungroup()
 
   return(Infile)
 }

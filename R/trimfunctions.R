@@ -961,7 +961,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
   }
 
   trendChange <- trendIndex %>%
-    filter(!is.na(speuid)) %>%
+    filter(!is.na(speuid), !speuid %in% c(135, 131, 132, 133, 139)) %>%
     mutate(trend = mul - 1,
            nrY = length(years),
            lefY = mul^nrY,

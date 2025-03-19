@@ -117,27 +117,24 @@ get_trimIndex <- function(infile=NULL, years = 2010:(lubridate::year(lubridate::
 
     if(!is.null(arglist$filterPattern)) { #If a filterpattern have been given
       fp <- arglist$filterPattern
-      infile <- get_trimInfile(filterPattern = fp, years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
-        select(siteuid, year, total_number, freq) %>%
-        group_by(speuid) %>%
-        nest() %>%
-        ungroup()
+      infile <- get_trimInfile(filterPattern = fp, years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
+
     }else{ # If there is no filterpattern
       infile <- get_trimInfile(years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
-      if (nrow(infile) > 0) {
-        infile <- infile %>%
-          select(site = siteuid, speuid, art, year, total_number, freq) %>%
-          group_by(speuid, art) %>%
-          nest() %>%
-          ungroup()
-      }
+
     }
-  }else { # If there is a 'infile' given
+  }
+
+  if (nrow(infile) > 0) { # check if there is an infile with data created
+
     infile <- infile %>%
       select(site = siteuid, speuid, art, year, total_number, freq) %>%
       group_by(speuid, art) %>%
       nest() %>%
       ungroup()
+  }else {
+    warning("trimInfile with no data!", immediate. = TRUE)
+    stop()
   }
 
   # Make trim with set arguments into function to make it cleaner by the map() function below
@@ -991,7 +988,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
     xlab <- "Percentage change of abundans "
     ylab <- "Number of species"
 
-    } else {
+  } else {
     trendChange <- trendChange %>%
       mutate(changeCat = case_when(sig & change > 0 ~ "Ökande (P<0.05)",
                                    sig & change < 0 ~ "Minskande (P<0.05)",

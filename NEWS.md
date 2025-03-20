@@ -6,6 +6,18 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.6.7
+
+* Simplify and comment some code
+* Fix some axis names with year ranges separated with '-' instead of ':'
+* Fix a missing weather station in normal precipitation data
+* Remove the `excludeSP`sargument in `get_trendHistogram()`
+* Remove species complex from trendIndex file in `get_trendHistogram()`
+* Set bindwidth in `get_trendHistogram()`
+* Fix missing names of Län, Region, Landskap, and Kommun in `get_trimInfile()`
+* Ungroup output in `get_trimInfile()`
+
+
 # v 2.6.6
 
 * Add option to choose Swedish or English text in legen and axis in `get_trendHistogram()`

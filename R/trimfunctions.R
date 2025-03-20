@@ -35,6 +35,7 @@ get_trimInfile <- function(years=2010:(lubridate::year(lubridate::today())-1), A
     distinct(speuid, art, .keep_all = T) %>%
     slice_head(n=topNumber)
 
+  # The species observation and visit freq function
   spein <- function(df = data, speuid) {
 
     #print(paste("Working on species with ID",speuid))
@@ -89,7 +90,8 @@ get_trimInfile <- function(years=2010:(lubridate::year(lubridate::today())-1), A
     select(-data) %>%
     unnest(obslist) %>%
     group_by(siteuid) %>%
-    fill(c(län, region, landskap, kommun), .direction = "downup")
+    fill(c(län, region, landskap, kommun), .direction = "downup") %>%
+    ungroup()
 
   return(Infile)
 }
@@ -933,7 +935,6 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:(lubridate::year(lub
 #'   `FALSE`
 #' @param legend_english logical; whether the legend and axis should be in Engliash,
 #'   default to `FALSE`
-#' @param excludeSP vector of species id to exclude from the histogram calculations
 #'
 #' @import dplyr
 #' @importFrom forcats fct_relevel
@@ -943,7 +944,7 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:(lubridate::year(lub
 #'   scale. Saved as a png-file, printed or both.
 #' @export
 #'
-get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), logscale = FALSE, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), legend_english = FALSE, write = FALSE, print = TRUE, indicators = FALSE, excludeSP = c(2,4,15,20,21,39,41,56,84,127)) {
+get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), logscale = FALSE, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), legend_english = FALSE, write = FALSE, print = TRUE, indicators = FALSE) {
 
 
   ## ----------------------------------------------------------------------------- ##
@@ -961,12 +962,12 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
   }
 
   trendChange <- trendIndex %>%
-    filter(!is.na(speuid), !speuid %in% excludeSP) %>%
+    filter(!is.na(speuid), !speuid %in% c(131:135, 139, 180, 181)) %>%
     mutate(trend = mul - 1,
            nrY = length(years),
-           lefY = mul^nrY,
-           change = (lefY - 1)*100,
-           logchange = log10(abs(change))*sign(change),
+           leftY = mul^nrY, #
+           change = (leftY - 1)*100, # Calculate change in percent over all years
+           logchange = log10(abs(change))*sign(change), # Calculating the change in log10 scale
            sig = if_else(p<=0.05, TRUE, FALSE)) %>%
     filter(change < 500)
 
@@ -974,8 +975,8 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
   labcol <- c("#EF6F6A", "#EF6F6A", "#AAB5AF", "#6388B5","#6388B5")
   alphas <- c(1, .3, 1, 0.3, 1)
 
-  if (legend_english) {
-    trendChange <- trendChange %>%
+  if (legend_english) { # Setting legends and axis in English or...
+    trendChange <- trendChange %>% #Set the categories acording to if the mul is significant and what how big the change is.
       mutate(changeCat = case_when(sig & change > 0 ~ "Increasing (P<0.05)",
                                    sig & change < 0 ~ "Declining (P<0.05)",
                                    !sig & change > 10 ~ "Possible increase",
@@ -988,8 +989,8 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
     xlab <- "Percentage change of abundans "
     ylab <- "Number of species"
 
-  } else {
-    trendChange <- trendChange %>%
+  } else { # Swedish
+    trendChange <- trendChange %>% #Set the categories acording to if the mul is significant and what how big the change is.
       mutate(changeCat = case_when(sig & change > 0 ~ "Ökande (P<0.05)",
                                    sig & change < 0 ~ "Minskande (P<0.05)",
                                    !sig & change > 10 ~ "Möjlig ökning",
@@ -1015,7 +1016,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
   #                                      "increasing"),
   #                         vals = c(1, .3, 1, 0.3, 1))
 
-  if (logscale) {
+  if (logscale) { #Setting ths x-axis scale in log10 or...
     ## Logistic percent change plot
     lmedx = log10(abs(median(trendChange$change)+5))*sign(median(trendChange$change))
     medy = (trendChange %>% count(changeCat) %>% pull() %>% max())/2
@@ -1023,7 +1024,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
 
     ggs <- trendChange %>%
       ggplot(aes(logchange, fill = changeCat, alpha = changeCat)) +
-      geom_histogram(colour = "black") +
+      geom_histogram(colour = "black", binwidth = 0.2) +
       geom_vline(xintercept = log10(abs(median(trendChange$change)))*sign(median(trendChange$change)),
                  linetype = 2,
                  linewidth = 1.1,
@@ -1049,7 +1050,8 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
             axis.text.x = element_text(size = rel (1.1)))
 
     name = "logscale"
-  } else{
+
+  } else{ # linear
     ## Linear percent change plot
 
     medx = median(trendChange$change)+15
@@ -1058,7 +1060,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
 
     ggs <- trendChange %>%
       ggplot(aes(change, fill = changeCat, alpha = changeCat)) +
-      geom_histogram(colour = "black") +
+      geom_histogram(colour = "black", binwidth = 20) +
       geom_vline(xintercept = median(trendChange$change),
                  linetype = 2,
                  linewidth = 1.1,

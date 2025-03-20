@@ -115,12 +115,12 @@ Day <- list(day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", 
 
 # Normal temp and precipitation
 # This is to create the internal normal temperature and precipitation
-norm_temp <-   read_xlsx("data-raw/Internal_data_rawfiles/smhi/Normal-temp-1991-2020.xlsx", sheet = 2, skip = 3) %>%
+norm_temp <- readxl::read_xlsx("data-raw/Internal_data_rawfiles/smhi/Normal-temp-1991-2020.xlsx", sheet = 2, skip = 3) %>%
   select(name = Station, id = Klimatnr, latitud = Latitud, longitud = Longitud, jan:dec) %>%
   pivot_longer(cols = jan:dec, names_to = "month", values_to = "temp") %>%
   mutate(monthnr = month(mdy(paste0(month,"01/22"))), period = "1") %>%
   filter(monthnr %in% 4:9)
-norm_precip <-   read_xlsx("data-raw/Internal_data_rawfiles/smhi/Normal-nbd-1991-2020.xlsx", sheet = 2, skip = 3) %>%
+norm_precip <- readxl:: read_xlsx("data-raw/Internal_data_rawfiles/smhi/Normal-nbd-1991-2020.xlsx", sheet = 2, skip = 3) %>%
   select(name = Station, id = Klimatnr, latitud = Latitud, longitud = Longitud, jan:dec) %>%
   pivot_longer(cols = jan:dec, names_to = "month", values_to = "nb") %>%
   mutate(monthnr = month(mdy(paste0(month,"01/22"))), period = "1") %>%

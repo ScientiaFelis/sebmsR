@@ -12,14 +12,14 @@
 sebms_default_station <- function(tempstat = TRUE) {
 
   if(tempstat){ # This change stations slightly depending on if it is precipitation or temperature that is used.
-    my_place <- c("Stock.*Obs.*len$|^Lund$|Visby.*Flyg|Umeå.*Flyg")
+    my_place <- c("Stock.*Obs.*len|^Lund$|Visby.*Flyg|Umeå.*Flyg")
     stations <- jsonlite::fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>%
       filter(str_detect(name, my_place)) %>%
       select(name, id, latitude, longitude) %>%
       mutate(id = str_squish(id))
 
   }else{ # Stations for precipitation
-    my_place <- c("Stock.*Observ.*len$|^Lund$|Visby$|Umeå-Röbäck")
+    my_place <- c("Stock.*Observ.*len|^Lund$|Visby$|Umeå-Röbäck")
     stations <- jsonlite::fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>%
       filter(str_detect(name, my_place)) %>%
       select(name, id, latitude, longitude) %>%

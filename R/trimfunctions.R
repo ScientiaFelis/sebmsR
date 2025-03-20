@@ -35,6 +35,7 @@ get_trimInfile <- function(years=2010:(lubridate::year(lubridate::today())-1), A
     distinct(speuid, art, .keep_all = T) %>%
     slice_head(n=topNumber)
 
+  # The species observation and visit freq function
   spein <- function(df = data, speuid) {
 
     #print(paste("Working on species with ID",speuid))
@@ -964,9 +965,9 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
     filter(!is.na(speuid), !speuid %in% c(131:135, 139, 180, 181)) %>%
     mutate(trend = mul - 1,
            nrY = length(years),
-           lefY = mul^nrY,
-           change = (lefY - 1)*100,
-           logchange = log10(abs(change))*sign(change),
+           leftY = mul^nrY, #
+           change = (leftY - 1)*100, # Calculate change in percent over all years
+           logchange = log10(abs(change))*sign(change), # Calculating the change in log10 scale
            sig = if_else(p<=0.05, TRUE, FALSE)) %>%
     filter(change < 500)
 
@@ -974,8 +975,8 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
   labcol <- c("#EF6F6A", "#EF6F6A", "#AAB5AF", "#6388B5","#6388B5")
   alphas <- c(1, .3, 1, 0.3, 1)
 
-  if (legend_english) {
-    trendChange <- trendChange %>%
+  if (legend_english) { # Setting legends and axis in English or...
+    trendChange <- trendChange %>% #Set the categories acording to if the mul is significant and what how big the change is.
       mutate(changeCat = case_when(sig & change > 0 ~ "Increasing (P<0.05)",
                                    sig & change < 0 ~ "Declining (P<0.05)",
                                    !sig & change > 10 ~ "Possible increase",
@@ -988,8 +989,8 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
     xlab <- "Percentage change of abundans "
     ylab <- "Number of species"
 
-  } else {
-    trendChange <- trendChange %>%
+  } else { # Swedish
+    trendChange <- trendChange %>% #Set the categories acording to if the mul is significant and what how big the change is.
       mutate(changeCat = case_when(sig & change > 0 ~ "Ökande (P<0.05)",
                                    sig & change < 0 ~ "Minskande (P<0.05)",
                                    !sig & change > 10 ~ "Möjlig ökning",
@@ -1015,7 +1016,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
   #                                      "increasing"),
   #                         vals = c(1, .3, 1, 0.3, 1))
 
-  if (logscale) {
+  if (logscale) { #Setting ths x-axis scale in log10 or...
     ## Logistic percent change plot
     lmedx = log10(abs(median(trendChange$change)+5))*sign(median(trendChange$change))
     medy = (trendChange %>% count(changeCat) %>% pull() %>% max())/2
@@ -1049,7 +1050,8 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
             axis.text.x = element_text(size = rel (1.1)))
 
     name = "logscale"
-  } else{
+
+  } else{ # linear
     ## Linear percent change plot
 
     medx = median(trendChange$change)+15

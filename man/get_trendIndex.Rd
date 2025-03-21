@@ -17,8 +17,7 @@ get_trendIndex(
   indicators = TRUE,
   verification = c(109, 110, 111),
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
-  write = FALSE,
-  ...
+  write = FALSE
 )
 }
 \arguments{
@@ -46,8 +45,6 @@ default to 109.}
 \item{source}{the data sources}
 
 \item{write}{logical; if index should be written to csv}
-
-\item{...}{extra filter parameters passed to the [trimInfile()] function}
 }
 \value{
 trendindex per species with the number of sites used

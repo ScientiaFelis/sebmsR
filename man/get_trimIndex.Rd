@@ -13,8 +13,7 @@ get_trimIndex(
   Landskap = ".",
   Kommun = ".",
   verification = c(109, 110, 111),
-  source = c(54, 55, 56, 63, 64, 66, 67, 84),
-  ...
+  source = c(54, 55, 56, 63, 64, 66, 67, 84)
 )
 }
 \arguments{
@@ -37,8 +36,6 @@ get_trimIndex(
 default to 109.}
 
 \item{source}{the data sources}
-
-\item{...}{further arguments to pass to [get_trimInfile()]}
 }
 \value{
 a trim file with yearly changes of each species.

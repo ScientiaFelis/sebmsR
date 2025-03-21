@@ -101,7 +101,7 @@ get_trimInfile <- function(years=2010:(lubridate::year(lubridate::today())-1), A
 #'
 #' @inheritParams get_trimInfile
 #' @param infile file with site, year, total observations and reverse frequency weight (1/#visits), or an object from [get_trimInfile()]
-#' @param ... further arguments to pass to [get_trimInfile()]
+# @param ... further arguments to pass to [get_trimInfile()]
 #'
 #' @importFrom rtrim trim
 #' @import dplyr
@@ -112,19 +112,19 @@ get_trimInfile <- function(years=2010:(lubridate::year(lubridate::today())-1), A
 #'
 #' @return a trim file with yearly changes of each species.
 #' @export
-get_trimIndex <- function(infile=NULL, years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), ...) {
+get_trimIndex <- function(infile=NULL, years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
 
   if(is.null(infile)) {
-    arglist <- list(...)
-
-    if(!is.null(arglist$filterPattern)) { #If a filterpattern have been given
-      fp <- arglist$filterPattern
-      infile <- get_trimInfile(filterPattern = fp, years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
-
-    }else{ # If there is no filterpattern
+    # arglist <- list(...)
+    #
+    # if(!is.null(arglist$filterPattern)) { #If a filterpattern have been given
+    #   fp <- arglist$filterPattern
+    #   infile <- get_trimInfile(filterPattern = fp, years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
+    #
+    # }else{ # If there is no filterpattern
       infile <- get_trimInfile(years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
 
-    }
+    #}
   }
 
   if (nrow(infile) > 0) { # check if there is an infile with data created
@@ -181,23 +181,23 @@ get_trimIndex <- function(infile=NULL, years = 2010:(lubridate::year(lubridate::
 #'
 #' @return figures in png format of the species trends with confidence interval
 #' @export
-get_trimPlots <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, xaxis_sep = 5, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = TRUE, print = TRUE, ...) {
+get_trimPlots <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, xaxis_sep = 5, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = TRUE, print = TRUE) {
 
   # This creates a trimIndex file if none is provided
   if(is.null(trimIndex)) {
-
-    arglist <- list(...)
-
-    if(!is.null(arglist$filterPattern)){ # If you need a filter for the trimInfile creation
-
-      fp <- arglist$filterPattern
-
-      trimIndex <- get_trimInfile(years = years, Art = Art, filterPattern = fp, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
-        get_trimIndex()
-
-    }else{ # If you want to use the defaults
+  #
+  #   arglist <- list(...)
+  #
+  #   if(!is.null(arglist$filterPattern)){ # If you need a filter for the trimInfile creation
+  #
+  #     fp <- arglist$filterPattern
+  #
+  #     trimIndex <- get_trimInfile(years = years, Art = Art, filterPattern = fp, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
+  #       get_trimIndex()
+  #
+  #   }else{ # If you want to use the defaults
       trimIndex <- get_trimIndex(years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
-    }
+#    }
   }
 
 
@@ -344,7 +344,7 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubrid
 #'
 #' @return a data frame with trim indices per species
 #' @export
-get_imputedList <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, indicator_layout = FALSE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE, ...) {
+get_imputedList <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, indicator_layout = FALSE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE) {
 
   if (indicator_layout) {
     speid <- unlist(indicatorlist, use.names = F) %>%  # 'indicatorlist' is loaded by package
@@ -354,19 +354,19 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubr
   }
 
   if(is.null(trimIndex)) { # If there is no trimIndex
-
-    arglist <- list(...)
-    if(!is.null(arglist$filterPattern)) { # If you have used filterPattern
-
-      fp <- arglist$filterPattern
-      infiletrimIndex = get_trimInfile(years = years, filterPattern = fp, verification = verification, source = source) %>%
-        get_trimIndex()
-
-    }else { # If no filterPattern is used in ...
+#
+#     arglist <- list(...)
+#     if(!is.null(arglist$filterPattern)) { # If you have used filterPattern
+#
+#       fp <- arglist$filterPattern
+#       infiletrimIndex = get_trimInfile(years = years, filterPattern = fp, verification = verification, source = source) %>%
+#         get_trimIndex()
+#
+#      }else { # If no filterPattern is used in ...
 
       trimIndex <- get_trimInfile(years = years, Art = speid, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
         get_trimIndex(years = years)
-    }
+    #}
 
   } # If there were a trimIndex file supplied, use that
 
@@ -462,7 +462,7 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubr
 #'
 #' @return trendindex per species with the number of sites used
 #' @export
-get_trendIndex <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, indicators = TRUE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE, ...) {
+get_trendIndex <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, indicators = TRUE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE) {
 
   if(is.null(trimIndex)) { # If there is no trimIndex
 

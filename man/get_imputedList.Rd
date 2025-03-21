@@ -17,8 +17,7 @@ get_imputedList(
   indicator_layout = FALSE,
   verification = c(109, 110, 111),
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
-  write = FALSE,
-  ...
+  write = FALSE
 )
 }
 \arguments{

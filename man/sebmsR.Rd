@@ -96,6 +96,37 @@ project.
   }
 }
 
+\section{Trim Index functions}{
+
+
+ \tabular{ll}{
+
+ \code{\link{get_trimInfile}} get the data frame for making the trim index. \cr
+
+ \code{\link{get_trimIndex}} get indices for species through time. \cr
+
+ \code{\link{get_trimPlots}} produce a figure with the trend and CI through
+ given years. \cr
+
+ \code{\link{get_imputedList}} get a list of imputed indices. \cr
+
+ \code{\link{get_trimComparedPlots}} produce a figure with the trends for
+ Sweden and a chosen region for given years. \cr
+
+ \code{\link{get_indicatorAnalyses}} get the indices for a group of
+ indicator species. Defaults to '20 most common', 'Grassland',
+  'Forest', Agricultural'. It is possible to make own indices. \cr
+
+ \code{\link{get_indicatorPlots}} produce a figure with the trend and CI
+ for the indicator species groups through given years. \cr
+
+ \code{\link{get_trendHistogram}} creates a figure of percent change in species
+ abundances as a histogram with five change categories. \cr
+
+ ------------------------------------------------------------------------\cr
+  }
+}
+
 \section{Data retrieval functions}{
 
 
@@ -129,34 +160,6 @@ project.
 
  ------------------------------------------------------------------------\cr
  }
-}
-
-\section{Trim Index functions}{
-
-
- \tabular{ll}{
-
- \code{\link{get_trimInfile}} get the data frame for making the trim index. \cr
-
- \code{\link{get_trimIndex}} get indices for species through time. \cr
-
- \code{\link{get_trimPlots}} produce a figure with the trend and CI through
- given years. \cr
-
- \code{\link{get_imputedList}} get a list of imputed indices. \cr
-
- \code{\link{get_trimComparedPlots}} produce a figure with the trends for
- Sweden and a chosen region for given years. \cr
-
- \code{\link{get_indicatorAnalyses}} get the indices for a group of
- indicator species. Defaults to '20 most common', 'Grassland',
-  'Forest', Agricultural'. It is possible to make own indices. \cr
-
- \code{\link{get_indicatorPlots}} produce a figure with the trend and CI
- for the indicator species groups through given years. \cr
-
- ------------------------------------------------------------------------\cr
-  }
 }
 
 \section{Miscellaneous functions}{

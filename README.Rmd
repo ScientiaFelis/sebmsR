@@ -8,9 +8,9 @@ output:
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-![](https://img.shields.io/github/r-package/v/scientiafelis/sebmsr?style=plastic&logo=R&logoColor=%276DC3&label=sebmsR&labelColor=green) ![](https://img.shields.io/github/license/scientiafelis/sebmsr?label=Licence&labelColor=blue)
+![](https://img.shields.io/github/r-package/v/scientiafelis/sebmsr?style=plastic&logo=R&logoColor=%276DC3&label=sebmsR&labelColor=green) ![](https://img.shields.io/github/license/scientiafelis/sebmsr?label=Licence&labelColor=blue&style=plastic)
 ![](https://img.shields.io/github/issues/scientiafelis/sebmsr?style=plastic&logo=github) ![](https://img.shields.io/github/commits-since/scientiafelis/sebmsr/latest?sort=date&style=plastic&logo=git&logoColor=%F05032)
-![](https://img.shields.io/github/repo-size/scientiafelis/sebmsr)
+![](https://img.shields.io/github/repo-size/scientiafelis/sebmsr?style=plastic)
 
 
 ```{r, echo = FALSE}

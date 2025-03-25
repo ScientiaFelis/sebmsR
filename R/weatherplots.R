@@ -12,18 +12,24 @@
 sebms_default_station <- function(tempstat = TRUE) {
 
   if(tempstat){ # This change stations slightly depending on if it is precipitation or temperature that is used.
-    my_place <- c("Stock.*Obs.*len|^Lund$|Visby.*Flyg|Umeå.*Flyg")
+    #my_place <- c("Stock.*Obs.*len|^Lund$|Visby.*Flyg|Umeå.*Flyg")
+    my_place <- c("Stockholm|Lund|Visby|Umeå")
     stations <- jsonlite::fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>%
-      filter(str_detect(name, my_place)) %>%
+      #filter(str_detect(name, my_place)) %>%
+      filter(id %in% c(53430, 98230, 140480, 78400)) %>%
       select(name, id, latitude, longitude) %>%
-      mutate(id = str_squish(id))
+      mutate(id = str_squish(id),
+             name = str_extract(name, my_place))
 
   }else{ # Stations for precipitation
-    my_place <- c("Stock.*Observ.*len|^Lund$|Visby$|Umeå-Röbäck")
+    #my_place <- c("Stock.*Observ.*len|^Lund$|Visby$|Umeå-Röbäck")
+    my_place <- c("Stockholm|Lund|Visby|Umeå")
     stations <- jsonlite::fromJSON("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22.json")$station %>%
-      filter(str_detect(name, my_place)) %>%
+      #filter(str_detect(name, my_place)) %>%
+      filter(id %in% c(53430, 98230, 140490, 78390)) %>%
       select(name, id, latitude, longitude) %>%
-      mutate(id = str_squish(id))
+      mutate(id = str_squish(id),
+             name = str_extract(name, my_place))
   }
 
   return(stations)
@@ -51,7 +57,9 @@ sebms_user_station <- function(my_place) {
     # arrange(desc(updated)) %>%
     # slice(1) %>%
     select(name, id, latitude, longitude) %>%
-    mutate(id = str_squish(id))
+    mutate(id = str_squish(id),
+           #name = str_replace(name, "-", " "),
+           name = str_extract(name, my_place))
 
   return(stations)
 }

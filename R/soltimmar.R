@@ -217,8 +217,7 @@ sebms_sunhours_data <- function(year = lubridate::year(lubridate::today())-1, mo
 #'
 #' @inheritParams sebms_sunhours_data
 #' @import dplyr
-#' @importFrom purrr map set_names
-#' @noRd
+#' @export
 sebms_sunmean_data <- function(year = 2018:2022, months = 4:9, per_month = FALSE) {
 
   if (per_month) {

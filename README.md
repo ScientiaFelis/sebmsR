@@ -1,7 +1,11 @@
-[![Build
-Status](https://scientiafelis/sebmsr.svg?branch=master)](https://scientiafelis/sebmsr)
-
+<!--[![Build Status](https://scientiafelis/sebmsr.svg?branch=master)](https://scientiafelis/sebmsr)-->
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
+![](https://img.shields.io/github/r-package/v/scientiafelis/sebmsr?style=plastic&logo=R&logoColor=%276DC3&label=sebmsR&labelColor=green)
+![](https://img.shields.io/github/license/scientiafelis/sebmsr?label=Licence&labelColor=blue)
+![](https://img.shields.io/github/issues/scientiafelis/sebmsr?style=plastic&logo=github)
+![](https://img.shields.io/github/commits-since/scientiafelis/sebmsr/latest?sort=date&style=plastic&logo=git&logoColor=%F05032)
+![](https://img.shields.io/github/repo-size/scientiafelis/sebmsr)
 
 `sebmsR` is an R package for SeBMS - the Swedish Butterfly Monitoring
 Scheme - offering tools for accessing data, making plots and a Shiny
@@ -11,9 +15,9 @@ app.
 
 The package is currently under re-development and a few functions do not
 work well, e.g. the Shiny app. The functions related to weather data, as
-well as the functions that create species abundance plots and the index
-plot and indicator plot functions work well and produce pngs ready to
-use in reports.
+well as the functions that create species abundance plots and the trim
+functions and their plot as well as the distributions maps work well and
+produce pngs ready to use in reports.
 
 ## Installing from github
 
@@ -226,6 +230,8 @@ To get the figures for **species index and indicator index** run:
 - **`get_trimComparedPlots()`** creats a figure that compares the Sweden
   index of a species with the index for a set *Län*, *Landskap*, or
   *Kommun*.
+- **`get_trendHistogram()`** creates a figure of percent change in
+  species abundances as a histogram with five change categories.
 
 ### Maps
 

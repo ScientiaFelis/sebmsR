@@ -343,7 +343,7 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubrid
 #'
 #' @return a data frame with trim indices per species
 #' @export
-get_imputedList <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, indicator_layout = FALSE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE) {
+get_imputedList <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, indicator_layout = FALSE, indicators = NULL, indicatorname = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE) {
 
 
   if(is.null(trimIndex)) { # If there is no trimIndex
@@ -407,6 +407,18 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubr
                mediansite = round(median(nsite)),
                sdsite = round(sd(nsite))
         )
+    }
+    if(!is.null(indicators)) { # If a new indicator is added
+      # If no new name is added
+      cat("Making new indicator from your species...")
+      if(is.null(indicatorname)) {
+        cat("Setting name to new indicator to 'NewInd'")
+        indicatorname <- "NewInd"
+      }
+      # Add the new indicator as a list item to 'indicatorlist'
+      indicatorlist <- list(indicators) %>%
+        set_names(indicatorname) %>%
+        append(indicatorlist)
     }
 
     imputedList <- map(indicatorlist, sitecalc) %>%
@@ -699,7 +711,7 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:(lubridate::year(l
     unique()
 
   if(is.null(infile)) { # If no infile is given
-    infile <- get_imputedList(Art = c(speid), years = years, indicator_layout = TRUE, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
+    infile <- get_imputedList(Art = c(speid), years = years, indicator_layout = TRUE, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source, indicators = indicators, indicatorname = indicatorname)
   }
 
   indata <- infile %>%

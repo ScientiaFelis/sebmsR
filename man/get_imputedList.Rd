@@ -45,8 +45,6 @@ default to 109.}
 \item{source}{the data sources}
 
 \item{write}{logical; if index should be written to csv}
-
-\item{...}{extra filter parameters passed to the [trimInfile()] function}
 }
 \value{
 a data frame with trim indices per species

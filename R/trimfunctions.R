@@ -122,7 +122,7 @@ get_trimIndex <- function(infile=NULL, years = 2010:(lubridate::year(lubridate::
     #   infile <- get_trimInfile(filterPattern = fp, years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
     #
     # }else{ # If there is no filterpattern
-      infile <- get_trimInfile(years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
+    infile <- get_trimInfile(years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
 
     #}
   }
@@ -185,19 +185,19 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubrid
 
   # This creates a trimIndex file if none is provided
   if(is.null(trimIndex)) {
-  #
-  #   arglist <- list(...)
-  #
-  #   if(!is.null(arglist$filterPattern)){ # If you need a filter for the trimInfile creation
-  #
-  #     fp <- arglist$filterPattern
-  #
-  #     trimIndex <- get_trimInfile(years = years, Art = Art, filterPattern = fp, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
-  #       get_trimIndex()
-  #
-  #   }else{ # If you want to use the defaults
-      trimIndex <- get_trimIndex(years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
-#    }
+    #
+    #   arglist <- list(...)
+    #
+    #   if(!is.null(arglist$filterPattern)){ # If you need a filter for the trimInfile creation
+    #
+    #     fp <- arglist$filterPattern
+    #
+    #     trimIndex <- get_trimInfile(years = years, Art = Art, filterPattern = fp, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
+    #       get_trimIndex()
+    #
+    #   }else{ # If you want to use the defaults
+    trimIndex <- get_trimIndex(years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
+    #    }
   }
 
 
@@ -334,8 +334,7 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubrid
 #' @param indicator_layout logical; whether to use the indicator species and add
 #'   nr of sites statistics. If TRUE this overrides `Art`
 #' @param write logical; if index should be written to csv
-#' @param ... extra filter parameters passed to the [trimInfile()] function
-#'
+# @param ... extra filter parameters passed to the [trimInfile()] function
 #' @importFrom lubridate year today
 #' @importFrom dplyr bind_rows bind_cols select
 #' @importFrom stringr str_replace_all
@@ -346,26 +345,20 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubrid
 #' @export
 get_imputedList <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, indicator_layout = FALSE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE) {
 
-  if (indicator_layout) {
-    speid <- unlist(indicatorlist, use.names = F) %>%  # 'indicatorlist' is loaded by package
-      unique()
-  }else {
-    speid <- Art
-  }
 
   if(is.null(trimIndex)) { # If there is no trimIndex
-#
-#     arglist <- list(...)
-#     if(!is.null(arglist$filterPattern)) { # If you have used filterPattern
-#
-#       fp <- arglist$filterPattern
-#       infiletrimIndex = get_trimInfile(years = years, filterPattern = fp, verification = verification, source = source) %>%
-#         get_trimIndex()
-#
-#      }else { # If no filterPattern is used in ...
+    #
+    #     arglist <- list(...)
+    #     if(!is.null(arglist$filterPattern)) { # If you have used filterPattern
+    #
+    #       fp <- arglist$filterPattern
+    #       infiletrimIndex = get_trimInfile(years = years, filterPattern = fp, verification = verification, source = source) %>%
+    #         get_trimIndex()
+    #
+    #      }else { # If no filterPattern is used in ...
 
-      trimIndex <- get_trimInfile(years = years, Art = speid, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
-        get_trimIndex(years = years)
+    trimIndex <- get_trimInfile(years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
+      get_trimIndex(years = years)
     #}
 
   } # If there were a trimIndex file supplied, use that
@@ -398,7 +391,7 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubr
     list_rbind()
 
   # Add speuid to list
-  trendList <- sebms_trimSpecies(Art = speid) %>%
+  trendList <- sebms_trimSpecies(Art = Art) %>%
     select(speuid, art) %>%
     mutate(art = str_replace_all(art, "/", "_")) %>%
     right_join(imputedList, by = c("art"))
@@ -666,12 +659,11 @@ get_trimComparedPlots <- function(years = 2010:(lubridate::year(lubridate::today
 #'   TRUE)]
 #' @param write logical; if you want to write result to csv files, default TRUE.
 #' @param print logical; if you want to print result to output, default FALSE
+#' @param lastyear number of years to do a trend comparison with
 #' @param indicators optional; you can add a concatenated list of indicator
 #'   species uids for a new indicator
 #' @param indicatorname the name of the new indicator. If indicators is given
 #'   but without setting name the indicator will be named 'NewInd'
-#' @param lastyear number of years to do a trend comparison with
-#'
 #' @importFrom BRCindicators msi
 #' @import dplyr
 #' @importFrom glue glue
@@ -733,17 +725,22 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:(lubridate::year(l
       filter(speuid %in% spi) %>%
       distinct(species, year, index, se)
 
-    origin <- indata %>% distinct(origin) %>% pull()
+    origin <- indata %>%
+      distinct(origin) %>%
+      pull()
 
-    msi_out <- msi(dat, plotbaseyear = min(years), SEbaseyear = min(years), index_smooth = 'INDEX', lastyears = lastyear, jobname = glue("{indn}:{origin}"))
+    msi_out <- msi(dat,
+                   plotbaseyear = min(years), SEbaseyear = min(years),
+                   index_smooth = 'INDEX',
+                   lastyears = lastyear,
+                   jobname = glue("{indn}:{origin}"))
 
     result <- msi_out$results[1:8] %>%
-      left_join(indata %>% filter(indicator %in% indn) %>% select(year,
-                                                                  maxsite,
-                                                                  minsite,
-                                                                  meansite,
-                                                                  mediansite,
-                                                                  sdsite) %>% distinct(), by = c("year"))
+      left_join(indata %>%
+                  filter(indicator %in% indn) %>%
+                  select(year,maxsite,minsite,meansite,mediansite,sdsite) %>%
+                  distinct(),
+                by = c("year"))
 
     if (write) {
       #set tag

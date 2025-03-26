@@ -6,6 +6,14 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.6.8
+
+* Removed the ellipsis argument (`...`) from functions. This will be more correctly implemented in later versions.
+* Fix mean symbol placement in `sebms_species_per_sitetype()`
+* Update package help with function `get_trendHistogram()`
+* Update README
+* Export the `sebms_sunmean_data()`function
+
 # v 2.6.7
 
 * Simplify and comment some code

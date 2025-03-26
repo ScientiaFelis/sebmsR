@@ -618,8 +618,13 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Region = "
                   pull(interval) %>%
                   length()) /2 +0.5 # Produce the correct number of tick marks
 
-  tri_y <- max(df$site_count) * 1.1  #maxlim-(steps*1.8)
-  text_y <- max(df$site_count) * 1.165 #maxlim-steps*1.4
+#  tri_y <- case_when(maxlim < 200 ~ maxlim-steps*3.52,
+                     #TRUE ~ maxlim-steps*4) #max(df$site_count) * 1.1  #maxlim-(steps*1.8)
+ # text_y <- case_when(maxlim < 200 ~ maxlim-steps*2.8,
+                      #TRUE ~ maxlim-steps*3.1) #max(df$site_count) * 1.17 #maxlim-steps*1.4
+
+  tri_y <- max(df$site_count) + steps
+  text_y <- max(df$site_count) + steps*1.7
 
   p <- df  %>%
     mutate(interval = fct_reorder(interval, sortorder)) %>%

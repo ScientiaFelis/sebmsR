@@ -1,6 +1,6 @@
 Package: sebmsR
 Title: Swedish Butterfly Monitoring Programme Tools
-Version: 2.6.8
+Version: 2.6.9
 Authors@R: c(
     person(given="Markus", family="Skyttner",
       email="markus.skyttner@nrm.se",

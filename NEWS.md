@@ -6,6 +6,13 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.6.9
+
+* Fix names on `sebms_weather_png()` to only include city name
+* Fix bug where user defined indicator was not respected
+* Simplified some code
+* Fixed package badges
+
 # v 2.6.8
 
 * Removed the ellipsis argument (`...`) from functions. This will be more correctly implemented in later versions.

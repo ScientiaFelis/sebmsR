@@ -333,6 +333,10 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubrid
 #' @param trimIndex a trim index object from [get_trimindex()]
 #' @param indicator_layout logical; whether to use the indicator species and add
 #'   nr of sites statistics. If TRUE this overrides `Art`
+#' @param indicators optional; you can add a concatenated list of indicator
+#'   species uids for a new indicator
+#' @param indicatorname the name of the new indicator. If indicators is given
+#'   but without setting name the indicator will be named 'NewInd'
 #' @param write logical; if index should be written to csv
 # @param ... extra filter parameters passed to the [trimInfile()] function
 #' @importFrom lubridate year today
@@ -672,10 +676,6 @@ get_trimComparedPlots <- function(years = 2010:(lubridate::year(lubridate::today
 #' @param write logical; if you want to write result to csv files, default TRUE.
 #' @param print logical; if you want to print result to output, default FALSE
 #' @param lastyear number of years to do a trend comparison with
-#' @param indicators optional; you can add a concatenated list of indicator
-#'   species uids for a new indicator
-#' @param indicatorname the name of the new indicator. If indicators is given
-#'   but without setting name the indicator will be named 'NewInd'
 #' @importFrom BRCindicators msi
 #' @import dplyr
 #' @importFrom glue glue

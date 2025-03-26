@@ -15,6 +15,8 @@ get_imputedList(
   filepath = getwd(),
   tag = NULL,
   indicator_layout = FALSE,
+  indicators = NULL,
+  indicatorname = NULL,
   verification = c(109, 110, 111),
   source = c(54, 55, 56, 63, 64, 66, 67, 84),
   write = FALSE
@@ -38,6 +40,12 @@ get_imputedList(
 
 \item{indicator_layout}{logical; whether to use the indicator species and add
 nr of sites statistics. If TRUE this overrides `Art`}
+
+\item{indicators}{optional; you can add a concatenated list of indicator
+species uids for a new indicator}
+
+\item{indicatorname}{the name of the new indicator. If indicators is given
+but without setting name the indicator will be named 'NewInd'}
 
 \item{verification}{a verification code that filter out verified occurenses of species,
 default to 109.}

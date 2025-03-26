@@ -1,11 +1,13 @@
 <!--[![Build Status](https://scientiafelis/sebmsr.svg?branch=master)](https://scientiafelis/sebmsr)-->
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-![](https://img.shields.io/github/r-package/v/scientiafelis/sebmsr?style=plastic&logo=R&logoColor=%276DC3&label=sebmsR&labelColor=green)
-![](https://img.shields.io/github/license/scientiafelis/sebmsr?label=Licence&labelColor=blue)
+![](https://img.shields.io/github/r-package/v/scientiafelis/sebmsr?style=plastic&logo=R&logoColor=%23276DC3&logoSize=auto&label=sebmsR&labelColor=green)
 ![](https://img.shields.io/github/issues/scientiafelis/sebmsr?style=plastic&logo=github)
-![](https://img.shields.io/github/commits-since/scientiafelis/sebmsr/latest?sort=date&style=plastic&logo=git&logoColor=%F05032)
-![](https://img.shields.io/github/repo-size/scientiafelis/sebmsr)
+![](https://img.shields.io/github/license/scientiafelis/sebmsr?style=plastic&label=License&labelColor=blue)
+
+<!--![](https://img.shields.io/github/commits-since/scientiafelis/sebmsr/latest?style=plastic&sort=date&logo=git&logoColor=%F05032) -->
+
+![](https://img.shields.io/github/repo-size/scientiafelis/sebmsr?style=plastic&logo=github)
 
 `sebmsR` is an R package for SeBMS - the Swedish Butterfly Monitoring
 Scheme - offering tools for accessing data, making plots and a Shiny
@@ -161,7 +163,7 @@ default:
     uid: 'my_db_username'
     pwd: 'my_db_password'
     port: 5432
-    database: 'test74'
+    database: 'test77'
 ```
 
 If you prefer to use environment variables for the credentials and

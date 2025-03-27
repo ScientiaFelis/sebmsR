@@ -279,7 +279,8 @@ sebms_distribution_map <- function(year = lubridate::year(lubridate::today())-1,
     filepath <- normalizePath(filepath)
 
 
-    map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), width = width, height = height, weathervar = glue("{yearname}{tag}")), .progress = "Saving plots:")
+    map2(ggs$plots, ggs$art, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), width = width, height = height, weathervar = glue("{yearname}{tag}")), .progress = "Saving plots:") %>%
+      suppressWarnings()
 
   }
 

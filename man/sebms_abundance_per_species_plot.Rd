@@ -5,7 +5,8 @@
 \title{Individuals per Species Plots}
 \usage{
 sebms_abundance_per_species_plot(
-  year = 2021,
+  year = 2024,
+  df,
   Län = ".",
   Region = ".",
   Landskap = ".",
@@ -19,6 +20,8 @@ sebms_abundance_per_species_plot(
 }
 \arguments{
 \item{year}{year or years to use for plot}
+
+\item{df}{optional; a data frame that contain `speuid`, `art`, `antal`, `datum`}
 
 \item{Län}{character or regular expression; which county you want the data from}
 

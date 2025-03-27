@@ -316,7 +316,7 @@ sebms_precipplot <- function(precip, colours = sebms_palette) {
     ungroup() %>%
     mutate(plots = map(data, plotfunc, .progress = "Create precip figures")) # Iterate over the station names and make a plot for each
 
-  p$plots
+  return(p$plots)
 }
 
 
@@ -352,7 +352,7 @@ sebms_tempplot <- function(temp, colours = sebms_palette){
     nest() %>%
     mutate(plots = map(data, plotfunct, .progress = "Creating temp figures"))
 
-  g$plots
+  return(g$plots)
 
 }
 
@@ -392,13 +392,21 @@ sebms_weather_png <- function(year = lubridate::year(lubridate::today())-1, my_p
   plotsp <- sebms_precip_data(year = year, my_place = my_place) %>%
     sebms_precipplot(colours = colours)
 
-  if(savepng) {
+  if (savepng) {
 
-    if(unique(is.na(my_place))) # This is the default station names
-      my_place <- c("Lund","Visby","Stockholm", "Umeå")
+    if (is.na(my_place)) {
+      my_place <- sebms_default_station(tempstat = FALSE) %>% pull(name)
+    }
 
-    try(map2(plotst, my_place, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), weathervar = glue("Temp_{year}{tag}")), .progress = "Saving temp figure"), silent = T) # This iterates over plot + name and save it to file
-    try(map2(plotsp, my_place, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), weathervar = glue("Precip_{year}{tag}")), .progress = "Saving precip figure"), silent = T)
+    if (is.null(tag)) {
+      tag = ""
+    }
+    yeartag <- glue("Temp_{year}{tag}")
+    yeartagp <- glue("Precip_{year}{tag}")
+    filepath <- normalizePath(filepath)
+
+    map2(plotst, my_place, ~sebms_ggsave(.x, filename = glue("{filepath}/{.y}"), weathervar = yeartag), .progress = "Saving temp figure") # This iterates over plot + name and save it to file
+    map2(plotsp, my_place, possibly(~sebms_ggsave(.x, glue("{filepath}/{.y}"), weathervar = yeartagp)), .progress = "Saving precip figure")
   }
 
   list(plotst, plotsp)

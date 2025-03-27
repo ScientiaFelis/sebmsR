@@ -30,17 +30,24 @@
 #'   below the median for that year and one for species above median.
 #' @export
 #'
-sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), print = FALSE) {
+sebms_abundance_per_species_plot <- function(year = 2024, df, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), print = FALSE) {
 
-  sp <- sebms_species_count_filtered(year = year, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
-    filter(!speuid %in% c(131,132,133,139,135)) %>%
-    group_by(art) %>%
-    summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
+  if (missing(df)) {
 
+    df <- sebms_species_count_filtered(year = year, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
+      filter(!speuid %in% c(131,132,133,139,135)) %>%
+      group_by(art) %>%
+      summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
+  } else {
+    df <- df %>%
+      filter(!speuid %in% c(131,132,133,139,135)) %>%
+      group_by(art) %>%
+      summarise(count = as.double(sum(antal, na.rm = T)), .groups = "drop")
+  }
   # Split data on the median to get to pngs that can be inserted in the report
-  s1 <- sp %>%
+  s1 <- df %>%
     filter(count >= median(count))
-  s2 <- sp %>%
+  s2 <- df %>%
     filter(count < median(count), !str_detect(art, "[Nn]oll"))
 
   # Modify theme
@@ -83,10 +90,10 @@ sebms_abundance_per_species_plot <- function(year = 2021, Län = ".", Region = "
   }
 
   # Make accurate distances between x-axis numbers based on max counts
-  acc <- case_when(max(sp$count) >4000 ~ 2000,
-                   between(max(sp$count), 1000,4000) ~ 500,
+  acc <- case_when(max(df$count) >4000 ~ 2000,
+                   between(max(df$count), 1000,4000) ~ 500,
                    TRUE ~ 100)
-  maxlim <- round_any(max(sp$count), accuracy = acc, ceiling)
+  maxlim <- round_any(max(df$count), accuracy = acc, ceiling)
 
   # To make tickmarks between the species on y-axis by using geom_segment().
   tickmarks1 <- length(unique(s1$art))-0.5
@@ -338,9 +345,15 @@ sebms_abundance_year_compare_plot <- function(year = 2021:2022, Art = 1:200, Lä
 #' @return A png per species showing the number of individuals per week.
 #' @export
 #'
-sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", plotname = FALSE, filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), print = FALSE) {
+sebms_species_abundance_plot <- function(year = 2024, df, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", plotname = FALSE, filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), print = FALSE) {
 
-  df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
+  if (missing(df)) {
+
+    df <- sebms_species_count_filtered(year = year, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
+
+  }
+
+  df <- df %>%
     filter(!str_detect(art, "[Nn]oll"), speuid != 132) %>%
     mutate(antal = as.double(antal)) %>%
     group_by(art, vecka = isoweek(datum)) %>%
@@ -466,11 +479,11 @@ sebms_species_abundance_plot <- function(year = 2021, Art = 1:200, Län = ".", R
     yearname <- year
   }
 
-   if (all(Län == ".", Region == ".", Landskap == ".",Kommun == ".")) {
-        origin = "Sweden" # If no region was selected use Sweden
-      }else {
-        origin <- glue("{Län}{Region}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
-      }
+  if (all(Län == ".", Region == ".", Landskap == ".",Kommun == ".")) {
+    origin = "Sweden" # If no region was selected use Sweden
+  }else {
+    origin <- glue("{Län}{Region}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
+  }
 
   if (is.null(tag)) {
     tag = ""
@@ -618,10 +631,10 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Region = "
                   pull(interval) %>%
                   length()) /2 +0.5 # Produce the correct number of tick marks
 
-#  tri_y <- case_when(maxlim < 200 ~ maxlim-steps*3.52,
-                     #TRUE ~ maxlim-steps*4) #max(df$site_count) * 1.1  #maxlim-(steps*1.8)
- # text_y <- case_when(maxlim < 200 ~ maxlim-steps*2.8,
-                      #TRUE ~ maxlim-steps*3.1) #max(df$site_count) * 1.17 #maxlim-steps*1.4
+  #  tri_y <- case_when(maxlim < 200 ~ maxlim-steps*3.52,
+  #TRUE ~ maxlim-steps*4) #max(df$site_count) * 1.1  #maxlim-(steps*1.8)
+  # text_y <- case_when(maxlim < 200 ~ maxlim-steps*2.8,
+  #TRUE ~ maxlim-steps*3.1) #max(df$site_count) * 1.17 #maxlim-steps*1.4
 
   tri_y <- max(df$site_count) + steps
   text_y <- max(df$site_count) + steps*1.7
@@ -668,11 +681,11 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Region = "
     yearname <- year
   }
 
-   if (all(Län == ".", Region == ".", Landskap == ".",Kommun == ".")) {
-        origin = "Sweden" # If no region was selected use Sweden
-      }else {
-        origin <- glue("{Län}{Region}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
-      }
+  if (all(Län == ".", Region == ".", Landskap == ".",Kommun == ".")) {
+    origin = "Sweden" # If no region was selected use Sweden
+  }else {
+    origin <- glue("{Län}{Region}{Landskap}{Kommun}") %>% str_remove_all("\\.") %>% str_replace_all(" ", "-") # If any region was chosen, add that to origin
+  }
 
   if (is.null(tag)) {
     tag = ""
@@ -680,7 +693,7 @@ sebms_species_per_sitetype_plot <- function(year = 2021,  Län = ".", Region = "
   }
   yearname <- glue("{origin}_{yearname}{tag}")
 
-   # fix filepath
+  # fix filepath
   filepath <- normalizePath(filepath)
   filepath <- glue("{filepath}/Species_per_site")
 

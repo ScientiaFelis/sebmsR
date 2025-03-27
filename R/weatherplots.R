@@ -87,7 +87,7 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
     return()
   }
 
-  if(unique(is.na(my_place))){
+  if (is.na(my_place)) {
     stations <- sebms_default_station(tempstat = FALSE)
   }else{
     stations <- sebms_user_station(my_place)
@@ -116,9 +116,8 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
     mutate(month = str_to_lower(month))
 
   patt <- paste0(my_place, collapse = "|")
-  filt_precip <- all_precip  %>%
-    #mutate(name = str_remove(name, " .*|-.*")) %>%
-  #  mutate(name = str_replace(name, glue(".*({patt}).*"), "\\1")) %>%
+
+  filt_precip <- all_precip %>%
     group_by(name) %>%
     distinct(id) %>%
     slice(1) %>%
@@ -126,50 +125,51 @@ sebms_precip_data <- function(year = lubridate::year(lubridate::today())-1, my_p
     select(-name)
 
 
-    if(year == lubridate::year(lubridate::today())) { # If this year chosen add in the latest months from other database
+  if(year == lubridate::year(lubridate::today())) { # If this year chosen add in the latest months from other database
 
-      all_precip_latest <- stations %>%
-        pull(id) %>%
-        set_names() %>% # To keep the id-names of the list
-        map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/23/station/",.x,"/period/latest-months/data.csv")), skip = 9, header = F, na.strings = c("NA", ""))), .progress = "Downloading precipitation") %>%
-        compact() %>%
-        map(possibly(~rename_with(.x, ~c("FrDate", "ToDate", "month", "nb", "Delete", "Delete2", "Delete3")))) %>% # Set column names
-        bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
-        as_tibble() %>%
-        select(!starts_with("Delete")) %>% # Remove the columns we do not need
-        filter(lubridate::year(ymd_hms(FrDate)) == year,
-               month(ymd_hms(FrDate)) %in% 4:9,
-               !str_detect(nb, "[Nn]eder"),
-               !is.na(nb)) %>%
-        suppressWarnings() %>%
-        left_join(stations, by = "id") %>%
-        transmute(name,
-                  id = as.numeric(id),
-                  latitud = latitude,
-                  longitud = longitude,
-                  month = month(ymd_hms(FrDate), label = T, abbr = T, locale = "sv_SE.UTF-8"),
-                  nb = as.numeric(nb),
-                  monthnr = month(ymd_hms(FrDate)),
-                  period = "2") %>%
-        mutate(month = str_to_lower(month))
+    all_precip_latest <- stations %>%
+      pull(id) %>%
+      set_names() %>% # To keep the id-names of the list
+      map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/23/station/",.x,"/period/latest-months/data.csv")), skip = 9, header = F, na.strings = c("NA", ""))), .progress = "Downloading precipitation") %>%
+      compact() %>%
+      map(possibly(~rename_with(.x, ~c("FrDate", "ToDate", "month", "nb", "Delete", "Delete2", "Delete3")))) %>% # Set column names
+      bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
+      as_tibble() %>%
+      select(!starts_with("Delete")) %>% # Remove the columns we do not need
+      filter(lubridate::year(ymd_hms(FrDate)) == year,
+             month(ymd_hms(FrDate)) %in% 4:9,
+             !str_detect(nb, "[Nn]eder"),
+             !is.na(nb)) %>%
+      suppressWarnings() %>%
+      left_join(stations, by = "id") %>%
+      transmute(name,
+                id = as.numeric(id),
+                latitud = latitude,
+                longitud = longitude,
+                month = month(ymd_hms(FrDate), label = T, abbr = T, locale = "sv_SE.UTF-8"),
+                nb = as.numeric(nb),
+                monthnr = month(ymd_hms(FrDate)),
+                period = "2") %>%
+      mutate(month = str_to_lower(month))
 
-      all_precip <- all_precip %>%
-        bind_rows(all_precip_latest) %>% # Add latest month
-        distinct() # Remove potential doublets
+    all_precip <- all_precip %>%
+      bind_rows(all_precip_latest) %>% # Add latest month
+      distinct() # Remove potential doublets
 
   }
 
   precip <- filt_precip %>%
     left_join(all_precip, by = "id") %>%
     bind_rows(norm_precip %>% filter(id %in% c(filt_precip %>% pull(id)))) %>%
-    mutate(name = if_else(period == "1", NA_character_, name),
+    mutate(name = if_else(period == "1", NA_character_, name)
            #name = str_remove(name, " .*|-.*")
-           name = str_replace(name, glue(".*({patt}).*"), "\\1")
-           ) %>%
+           #name = str_replace(name, glue(".*({patt}).*"), "\\1")
+    ) %>%
     arrange(id, desc(period)) %>%
     fill(name) %>%
     complete(id, monthnr, period, fill = list(nb = 0)) %>%
-    fill(c(name,latitud, longitud, month), .direction = "down")
+    fill(c(name,latitud, longitud, month), .direction = "down") %>%
+    arrange(name, desc(period))
 
   return(precip)
 }
@@ -189,7 +189,7 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
     return()
   }
 
-  if(unique(is.na(my_place))){
+  if(is.na(my_place)) {
     stations <- sebms_default_station(tempstat = TRUE)
   }else{
     stations <- sebms_user_station(my_place)
@@ -215,7 +215,7 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
               temp = as.numeric(temp),
               monthnr = month(ymd_hms(FrDate)),
               period = "2") %>%  # Change name and variables I want to keep/have
-  mutate(month = str_to_lower(month))
+    mutate(month = str_to_lower(month))
 
   patt <- paste0(my_place, collapse = "|")
   filt_temp <- all_temp  %>%
@@ -227,51 +227,52 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
     ungroup() %>%
     select(-name)
 
-    if(year == lubridate::year(lubridate::today())) { # If this year chosen add in the latest months from other database
+  if(year == lubridate::year(lubridate::today())) { # If this year chosen add in the latest months from other database
 
-     all_temp_latest <- stations %>%
-        pull(id) %>%
-        set_names() %>% # To keep the id-names of the list
-        map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",.x,"/period/latest-months/data.csv")), skip = 9, header = F, na.strings = c("NA", ""))), .progress = "Downloading temperatures") %>%
-       compact() %>%
-        map(possibly(~rename_with(.x, ~c("FrDate", "ToDate", "month", "temp", "Delete", "Delete2", "Delete3")))) %>% # Set column names
+    all_temp_latest <- stations %>%
+      pull(id) %>%
+      set_names() %>% # To keep the id-names of the list
+      map(possibly(~read.csv2(str_squish(paste0("https://opendata-download-metobs.smhi.se/api/version/latest/parameter/22/station/",.x,"/period/latest-months/data.csv")), skip = 9, header = F, na.strings = c("NA", ""))), .progress = "Downloading temperatures") %>%
+      compact() %>%
+      map(possibly(~rename_with(.x, ~c("FrDate", "ToDate", "month", "temp", "Delete", "Delete2", "Delete3")))) %>% # Set column names
 
-        bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
-        as_tibble() %>%
-        select(!starts_with("Delete")) %>% # Remove the columns we do not need
-        filter(lubridate::year(ymd_hms(FrDate)) == year,
-               month(ymd_hms(FrDate)) %in% 4:9,
-               !str_detect(temp, "[Ll]uft"),
-               !is.na(temp)) %>%
-       suppressWarnings() %>%
-        left_join(stations, by = "id") %>% # Join in the names
-        transmute(name,
-                  id = as.numeric(id),
-                  latitud = latitude,
-                  longitud = longitude,
-                  month = month(ymd_hms(FrDate), label = T, abbr = T, locale = "sv_SE.UTF-8"),
-                  temp = as.numeric(temp),
-                  monthnr = month(ymd_hms(FrDate)),
-                  period = "2") %>%  # Change name and variables I want to keep/have
-        mutate(month = str_to_lower(month))
+      bind_rows(.id = "id") %>% # .id = "id" keep the id of the station in the dataframe
+      as_tibble() %>%
+      select(!starts_with("Delete")) %>% # Remove the columns we do not need
+      filter(lubridate::year(ymd_hms(FrDate)) == year,
+             month(ymd_hms(FrDate)) %in% 4:9,
+             !str_detect(temp, "[Ll]uft"),
+             !is.na(temp)) %>%
+      suppressWarnings() %>%
+      left_join(stations, by = "id") %>% # Join in the names
+      transmute(name,
+                id = as.numeric(id),
+                latitud = latitude,
+                longitud = longitude,
+                month = month(ymd_hms(FrDate), label = T, abbr = T, locale = "sv_SE.UTF-8"),
+                temp = as.numeric(temp),
+                monthnr = month(ymd_hms(FrDate)),
+                period = "2") %>%  # Change name and variables I want to keep/have
+      mutate(month = str_to_lower(month))
 
-     all_temp <- all_temp %>%
-       bind_rows(all_temp_latest) %>% # add the latest month
-       distinct() # Remove potential doublets
-    }
+    all_temp <- all_temp %>%
+      bind_rows(all_temp_latest) %>% # add the latest month
+      distinct() # Remove potential doublets
+  }
 
 
   temp <- filt_temp  %>%
     left_join(all_temp, by = "id") %>% # Join in the data from the chosen station
     bind_rows(norm_temp %>% filter(id %in% c(filt_temp %>% pull(id)))) %>% # add in the normal temperatures from the internal data for the chosen stations
-    mutate(name = if_else(period == "1", NA_character_, name),
+    mutate(name = if_else(period == "1", NA_character_, name)
            #name = str_remove(name, " .*|-.*")
-           name = str_replace(name, glue(".*({patt}).*"), "\\1")
-           ) %>%
+          # name = str_replace(name, glue(".*({patt}).*"), "\\1")
+    ) %>%
     arrange(id, desc(period)) %>%
     fill(name) %>%
     complete(id, monthnr, period, fill = list(temp = 0)) %>%
-    fill(c(name,latitud, longitud, month), .direction = "down")
+    fill(c(name,latitud, longitud, month), .direction = "down") %>%
+    arrange(name, desc(period))
 
   return(temp)
 }

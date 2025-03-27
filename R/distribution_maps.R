@@ -36,8 +36,8 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
   }
 
 
-  SweLandGrid <- st_read(system.file("extdata", "SweLandGrid.shp", package = "sebmsR"), quiet = TRUE) %>%
-    st_set_crs(3021)
+  # SweLandGrid <- st_read(system.file("extdata", "SweLandGrid.shp", package = "sebmsR"), quiet = TRUE) %>%
+  #   st_set_crs(3021)
 
   ## Sweden map
   tiff1 <- terra::rast(system.file("extdata", "MapSweden_RGB.png",

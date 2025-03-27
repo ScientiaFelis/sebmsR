@@ -5,7 +5,8 @@
 \title{Species Histogram Plot}
 \usage{
 sebms_species_abundance_plot(
-  year = 2021,
+  year = 2024,
+  df,
   Art = 1:200,
   Län = ".",
   Region = ".",
@@ -21,6 +22,8 @@ sebms_species_abundance_plot(
 }
 \arguments{
 \item{year}{year or years to use for plot}
+
+\item{df}{optional; a data frame that contain `speuid`, `art`, `antal`, `datum`}
 
 \item{Art}{integer; the species id of interest}
 

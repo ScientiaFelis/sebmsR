@@ -4,6 +4,7 @@
 #' Produce a plot with number of individuals per species a given year
 #'
 #' @param year year or years to use for plot
+#' @param df optional; a data frame that contain `speuid`, `art`, `antal`, `datum`
 #' @param Län character or regular expression; which county you want the data from
 #' @param Region character or reg ex; which region do you want. Possible values are:
 #'   'SGot', 'OGot', 'VGotSve', 'OSve', 'NSveNor', 'NNor'.

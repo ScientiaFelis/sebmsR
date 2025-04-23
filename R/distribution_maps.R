@@ -352,31 +352,6 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
 
   # Picking out the borders
   #Län <- paste0(Län, collapse = "|")
-  if (!str_detect(Län, "[.]")) {
-    border <- Counties %>%
-      filter(str_detect(NAME_1, Län)) #Filter out the right borders
-
-    if (showgrid) {
-      if (str_detect(gridtype, "5")) {
-        segrid <- sebms_5_grid %>% st_intersection(border) # crop the grid to just the actual area
-
-      } else if (str_detect(gridtype, "10")) {
-        segrid <- sebms_10_grid %>% st_intersection(border) # crop the grid to just the actual area
-
-      } else if (str_detect(gridtype, "h")) {
-        segrid <- sebms_hex_grid %>% st_intersection(border) # crop the grid to just the actual area
-
-      }
-
-    }
-
-    CPK <- centerPL %>%
-      filter(str_detect(LNNAMN, Län)) # This loads in the center point and automatic zoom level.
-
-    Region <- Län # to use when setting name for the saved png
-
-
-  }
 
   if (Region != ".") {
     border <- Regions %>%
@@ -402,6 +377,31 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
       filter(str_detect(RegionName, Region)) # This loads in the center point and automatic zoom level.
 
     Region <- Region
+
+  }
+ if (Län != ".") {
+    border <- Counties %>%
+      filter(str_detect(NAME_1, Län)) #Filter out the right borders
+
+    if (showgrid) {
+      if (str_detect(gridtype, "5")) {
+        segrid <- sebms_5_grid %>% st_intersection(border) # crop the grid to just the actual area
+
+      } else if (str_detect(gridtype, "10")) {
+        segrid <- sebms_10_grid %>% st_intersection(border) # crop the grid to just the actual area
+
+      } else if (str_detect(gridtype, "h")) {
+        segrid <- sebms_hex_grid %>% st_intersection(border) # crop the grid to just the actual area
+
+      }
+
+    }
+
+    CPK <- centerPL %>%
+      filter(str_detect(LNNAMN, Län)) # This loads in the center point and automatic zoom level.
+
+    Region <- Län # to use when setting name for the saved png
+
 
   }
 

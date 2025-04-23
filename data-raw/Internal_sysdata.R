@@ -17,7 +17,7 @@ Counties <- st_read("data-raw/Internal_data_rawfiles/hiresborder/highres_lan_SWE
   group_by(ID_1, NAME_1, TYPE_1) %>%
   nest() %>%
   ungroup() %>%
-  mutate(simp = map(data, possibly(~st_simplify(.x, dTolerance = 5000)))) %>%
+  mutate(simp = map(data, possibly(~st_simplify(.x, dTolerance = 1000)))) %>%
   unnest(simp) %>%
   select(-data) %>%
   st_as_sf()
@@ -32,14 +32,14 @@ Regions <- st_read("data-raw/Internal_data_rawfiles/hiresborder/highres_regioner
 
 Kommuner <- st_read("data-raw/Internal_data_rawfiles/hiresborder/highres_kommuner_SWEREF99TM_clean.shp") %>%
   st_transform(4326) %>%
-  select(ID_1, ID_2, NAME_2, TYPE_2) %>%
-  group_by(ID_1, ID_2, NAME_2, TYPE_2) %>%
-  nest() %>%
-  ungroup() %>%
-  mutate(simp = map(data, possibly(~st_simplify(.x, dTolerance = 5000)))) %>%
-  unnest(simp) %>%
-  select(-data) %>%
-  st_as_sf()
+  select(ID_1, ID_2, NAME_2, TYPE_2)# %>%
+  # group_by(ID_1, ID_2, NAME_2, TYPE_2) %>%
+  # nest() %>%
+  # ungroup() %>%
+  # mutate(simp = map(data, possibly(~st_simplify(.x, dTolerance = 5000)))) %>%
+  # unnest(simp) %>%
+  # select(-data) %>%
+  # st_as_sf()
 
 Landskapen <- st_read("data-raw/Internal_data_rawfiles/hiresborder/biogeografiska_landskap_SWEREF99TM_clean.shp") %>%
   st_transform(4326) %>%
@@ -141,4 +141,4 @@ indicatorlist <- list(
 
 
 ## Saving the data objecs as internal data
-use_data(Bioreg, centerPK, centerPL, centerPR, centerPLsk, Day, DayHour, indicatorlist, Counties, Regions, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, regID2, SE, SweLandGrid, sebms_swe_grid, sebms_hex_grid, sebms_10_grid, sebms_5_grid, internal = T, overwrite = T, compress = "xz", version = 3)
+usethis::use_data(Bioreg, centerPK, centerPL, centerPR, centerPLsk, Day, DayHour, indicatorlist, Counties, Regions, Kommuner, Landskapen, meansunH, meansunH_M, norm_precip, norm_temp, regID, regID2, SE, SweLandGrid, sebms_swe_grid, sebms_hex_grid, sebms_10_grid, sebms_5_grid, internal = T, overwrite = T, compress = "xz", version = 3)

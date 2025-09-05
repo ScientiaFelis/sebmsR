@@ -6,6 +6,15 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.7.0
+
+* Add df argument to `sebms_species_abundance_plot()` and `sebms_abundance_per_species_plot()` to allow to add a data frame directly
+* Fix a bug where `st_read()` tried to find a shp-file which is now an internal object
+* Fix bug with plots not saved to png
+* Fix bug with name of plot is different than file name
+* Fix bug where Län did not work in `sebms_regional_site_map()`
+* Fix small text and alignment
+
 # v 2.6.9
 
 * Fix names on `sebms_weather_png()` to only include city name

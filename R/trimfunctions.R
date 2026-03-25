@@ -215,7 +215,7 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubrid
           str_replace_all("/", "_") #replacing escape characters in species name
         #print(m2)
 
-        yAxisAdjusted <- yAxisModifier(max(Index$imputed + 1.96*Index$se_imp))
+        yAxisAdjusted <- yAxisModifier(max(Index$imputed + 1.96*Index$se_imp, na.rm = T))
 
         gcomma <- function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = FALSE) #Called later, enables commas instead of points for decimal indication
 

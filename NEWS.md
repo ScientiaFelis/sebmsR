@@ -6,6 +6,11 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.7.1
+
+* Fix a bug where the y-axis was set to the defaults (500) in `getTrimPlots()` when a se-value were NaN
+* Fix a bug in `sebms_species_per_sitetype_plot()` where the y-axis was set to small to fi the mean values
+
 # v 2.7.0
 
 * Add df argument to `sebms_species_abundance_plot()` and `sebms_abundance_per_species_plot()` to allow to add a data frame directly

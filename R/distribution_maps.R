@@ -60,7 +60,7 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
     filter(Red != 0)
 
   # Creating the plotting function
-  speplot <- function(spda, spid) {
+  speplot <- function(spda, spid, col = rgb(255,0,0,maxColorValue = 255)) {
 
     # Create a grid for all the visited survey grids the given year and site type
     bf <- apply(st_intersects(SweLandGrid, occ_sp %>% filter(sitetype %in% spid) %>% distinct(lokalnamn, .keep_all = T), sparse = FALSE), 2, function(col) { SweLandGrid[which(col), ]}) %>%
@@ -73,7 +73,7 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
       geom_raster(data = tiff, aes(x = x, y = y,fill = rgb(r = Red, g = Green, b = Blue, maxColorValue = 255)), show.legend = FALSE) + # The Swedish map
       scale_fill_identity() + # This keep the correct original colours of map
       geom_sf(data = bf, alpha = 0, linewidth = 0.3, colour = rgb(128,128,128, maxColorValue = 255), inherit.aes = F) + # Visited survey grids the given year
-      geom_sf(data = spda, colour = rgb(255,0,0,maxColorValue = 255), size = 0.1, inherit.aes = F) + # Species occurrences
+      geom_sf(data = spda, colour = col, size = 0.1, inherit.aes = F) + # Species occurrences
       coord_sf(expand = F) +
       theme_void() +
       theme(plot.background = element_rect(fill = "white", colour = "white"),
@@ -86,25 +86,45 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
 
   }
 
-  if (str_detect(maptype, "[Pp][ou]i?nk?t|[Pp]$")) {
-    occ_sp <- occ_sp %>%
-      filter(sitetype == "P")
+  if (combined) {
+
+    ggs <- occ_sp %>%
+      distinct(sitetype, lokalnamn, .keep_all = T) %>%
+      #    nest() %>% # Nest per species to save one png per species
+      #   ungroup() %>%
+      speplot(spid = c("T", "P"))
+
+
+  }else{
+    if (str_detect(maptype, "[Ee]mpty")) {
+      ggs <- occ_sp %>%
+        distinct(sitetype, lokalnamn, .keep_all = T) %>%
+        #    nest() %>% # Nest per species to save one png per species
+        #   ungroup() %>%
+        speplot(spid = c("T", "P"), col = rgb(0,0,0,0, maxColorValue = 255))
+
+
+    }else{ # If maptype is not "empty"
+
+      if (str_detect(maptype, "[Pp][ou]i?nk?t|[Pp]$")) {
+        occ_sp <- occ_sp %>%
+          filter(sitetype == "P")
+      }
+
+      if (str_detect(maptype, "[Tt]ranse[ck]t|[Tt]$")) {
+        occ_sp <- occ_sp %>%
+          filter(sitetype == "T")
+      }
+
+
+      ggs <- occ_sp %>%
+        distinct(sitetype, lokalnamn, .keep_all = T) %>%
+        group_by(sitetype) %>%
+        nest() %>% # Nest per species to save one png per species
+        ungroup() %>%
+        mutate(plots = map2(data, sitetype, speplot, .progress = "Making plots:"))
+    }
   }
-
-  if (str_detect(maptype, "[Tt]ranse[ck]t|[Tt]$")) {
-    occ_sp <- occ_sp %>%
-      filter(sitetype == "T")
-  }
-
-
-  ggs <- occ_sp %>%
-    distinct(sitetype, lokalnamn, .keep_all = T) %>%
-    group_by(sitetype) %>%
-    nest() %>% # Nest per species to save one png per species
-    ungroup() %>%
-    mutate(plots = map2(data, sitetype, speplot, .progress = "Making plots:"))
-
-
   #Set year name
   if (length(year)>1) {
     yearname <- paste0(min(year),"-",max(year))
@@ -122,13 +142,21 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
   filepath <- normalizePath(filepath)
 
   if (write) {
-    map2(ggs$plots, ggs$sitetype, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), width = width, height = height, weathervar = glue("{yearname}{tag}")), .progress = "Saving plots:")
-  }
 
+    if (!is.list(ggs)) {
+      sebms_ggsave(ggs, glue("{filepath}/{maptype}"), width = width, height = height, weathervar = glue("{yearname}{tag}"))
+
+    }else {
+      map2(ggs$plots, ggs$sitetype, ~sebms_ggsave(.x, glue("{filepath}/{.y}"), width = width, height = height, weathervar = glue("{yearname}{tag}")), .progress = "Saving plots:")
+    }
+  }
   if (print) {
-    return(ggs$plots)
+    if (!is.listt(ggs)) {
+      return(ggs)
+    }else{
+      return(ggs$plots)
+    }
   }
-
 }
 
 
@@ -385,7 +413,7 @@ sebms_regional_site_map <- function(year = lubridate::year(lubridate::today())-1
     Region <- Region
 
   }
- if (Län != ".") {
+  if (Län != ".") {
     border <- Counties %>%
       filter(str_detect(NAME_1, Län)) #Filter out the right borders
 

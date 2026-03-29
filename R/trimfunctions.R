@@ -14,7 +14,7 @@
 #' Create a tibble with species ID and name together with the total number of observations of each species and the frequency (1 / #visits)
 #'
 #' @inheritParams sebms_abundance_per_species_plot
-#' @param years the year span of interest, set as 'firstyear:lastyear'.
+#' @param year the year span of interest, set as 'firstyear:lastyear'.
 #' @param Art the species of interest
 #' @param filterPattern a regex pattern to filter SQL query
 #' @param topList logical; whether the top list of species should be used
@@ -29,9 +29,9 @@
 #' @return a tibble with site, year, as well as the number of individuals
 #'   observed and the observation frequency for that year, species, and site.
 #' @export
-get_trimInfile <- function(years=2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filterPattern=NULL, topList=FALSE, topNumber=200, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)){
+get_trimInfile <- function(year=2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filterPattern=NULL, topList=FALSE, topNumber=200, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)){
 
-  trimSpecies <- sebms_trimSpecies(year = years, Art = Art, topList = topList, source = source) %>%
+  trimSpecies <- sebms_trimSpecies(year = year, Art = Art, topList = topList, source = source) %>%
     distinct(speuid, art, .keep_all = T) %>%
     slice_head(n=topNumber)
 
@@ -42,18 +42,18 @@ get_trimInfile <- function(years=2010:(lubridate::year(lubridate::today())-1), A
     minW <- df %>% pull(min) # first posible week of observation
     maxW <- df %>% pull(max) # last possible week of observation
 
-    obses <- sebms_trimobs(year = years, Art = speuid, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, filterPattern = filterPattern, minmax = minW:maxW, verification = verification, source = source) %>%
+    obses <- sebms_trimobs(year = year, Art = speuid, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, filterPattern = filterPattern, minmax = minW:maxW, verification = verification, source = source) %>%
       mutate(total_number = as.numeric(total_number)) %>%
       summarise(total_number = sum(total_number, na.rm = T), .by = c(siteuid, year, län, region, landskap, kommun))
 
-    visits <- sebms_trimvisits(year = years, minmax = minW:maxW, source = source) %>%
+    visits <- sebms_trimvisits(year = year, minmax = minW:maxW, source = source) %>%
       mutate(visit = as.numeric(visit))
 
     if(nrow(obses) > 0) { #Precondition to skip species with zero observations
 
       ## TRIM infile generation (If species have been seen any year in 'year' all site with a visit get 'total_number' of 0. Non-visited sites any year gets a NA)
       obsTidy <- obses %>%
-        complete(siteuid, year = seq(min(years), max(years), by = 1), fill = list(total_number = 0)) %>%
+        complete(siteuid, year = seq(min(year), max(year), by = 1), fill = list(total_number = 0)) %>%
         left_join(visits, by = c("siteuid", "year")) %>%
         mutate(total_number = if_else(is.na(visit), NA, total_number),
                visit = if_else(is.na(visit), 1, visit),
@@ -64,7 +64,7 @@ get_trimInfile <- function(years=2010:(lubridate::year(lubridate::today())-1), A
       ## Lars code that works now
       # obsTidyLP <- obses %>%
       #   complete(siteuid,
-      #            year = seq(min(years), max(years), by = 1),
+      #            year = seq(min(year), max(year), by = 1),
       #            fill = list(total_number = 99999)) %>%
       #   left_join(visits, by = c("siteuid", "year")) %>%
       #   mutate(total_number = ifelse(is.na(visit), NA, total_number)) %>%
@@ -73,7 +73,7 @@ get_trimInfile <- function(years=2010:(lubridate::year(lubridate::today())-1), A
       #   mutate(freq = 1 / visit) %>%
       #   select(-visit) %>%
       #   mutate(total_number = as.numeric(total_number)) %>%
-      #   filter(year %in% years) #This is in order to avoid a wrong number of sites by counting sites monitored after the year of the report
+      #   filter(year %in% year) #This is in order to avoid a wrong number of sites by counting sites monitored after the year of the report
 
     }else{
       message(paste("Species with ID ",speuid," skipped, no observations!"))
@@ -112,17 +112,17 @@ get_trimInfile <- function(years=2010:(lubridate::year(lubridate::today())-1), A
 #'
 #' @return a trim file with yearly changes of each species.
 #' @export
-get_trimIndex <- function(infile=NULL, years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
+get_trimIndex <- function(infile=NULL, year = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
 
   if(is.null(infile)) {
     # arglist <- list(...)
     #
     # if(!is.null(arglist$filterPattern)) { #If a filterpattern have been given
     #   fp <- arglist$filterPattern
-    #   infile <- get_trimInfile(filterPattern = fp, years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
+    #   infile <- get_trimInfile(filterPattern = fp, year = year, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
     #
     # }else{ # If there is no filterpattern
-    infile <- get_trimInfile(years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
+    infile <- get_trimInfile(year = year, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
 
     #}
   }
@@ -166,7 +166,7 @@ get_trimIndex <- function(infile=NULL, years = 2010:(lubridate::year(lubridate::
 #'
 #' @inheritParams get_trimInfile
 #' @param trimIndex optional; a trimIndex object from the [get_trimIndex()]
-#' @param years the years to calculate trim index on, ignored if a trimIndex file is given
+#' @param year the years to calculate trim index on, ignored if a trimIndex file is given
 #' @param Art the species of interest, ignored if trimIndex is not NULL
 #' @param write logical; if you want to write result to csv files, default TRUE
 #' @param print logical; if you want to print result to output, default FALSE
@@ -181,7 +181,7 @@ get_trimIndex <- function(infile=NULL, years = 2010:(lubridate::year(lubridate::
 #'
 #' @return figures in png format of the species trends with confidence interval
 #' @export
-get_trimPlots <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, xaxis_sep = 5, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = TRUE, print = TRUE) {
+get_trimPlots <- function(trimIndex = NULL, year = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, xaxis_sep = 5, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = TRUE, print = TRUE) {
 
   # This creates a trimIndex file if none is provided
   if(is.null(trimIndex)) {
@@ -192,11 +192,11 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubrid
     #
     #     fp <- arglist$filterPattern
     #
-    #     trimIndex <- get_trimInfile(years = years, Art = Art, filterPattern = fp, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
+    #     trimIndex <- get_trimInfile(year = year, Art = Art, filterPattern = fp, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
     #       get_trimIndex()
     #
     #   }else{ # If you want to use the defaults
-    trimIndex <- get_trimIndex(years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
+    trimIndex <- get_trimIndex(year = year, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
     #    }
   }
 
@@ -268,12 +268,12 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubrid
                     linetype = "longdash",
                     linewidth = 1.6) + #interval line 2
           # + xlim(startyear, endyear) #x-axis sectioning
-          expand_limits(x = min(years), y = c(0,yAxisAdjusted[1])) +
+          expand_limits(x = min(year), y = c(0,yAxisAdjusted[1])) +
           # geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2])) +#Horizontal background lines #from=yAxisAdjusted[2]
           scale_y_continuous(labels = gcomma,
                              breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
                              expand = c(0,0)) +#y-axis sectioning & comma labelling #from=yAxisAdjusted[2]
-          scale_x_continuous(breaks = seq(min(years),max(years), by = xaxis_sep)) +
+          scale_x_continuous(breaks = seq(min(year),max(year), by = xaxis_sep)) +
           labs(title = titles) +#Chart title text
           theme(text = element_text(family = "Arial"),
                 plot.title = element_text(hjust = 0.5, # Centered
@@ -347,7 +347,7 @@ get_trimPlots <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubrid
 #'
 #' @return a data frame with trim indices per species
 #' @export
-get_imputedList <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, indicator_layout = FALSE, indicators = NULL, indicatorname = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE) {
+get_imputedList <- function(trimIndex = NULL, year = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, indicator_layout = FALSE, indicators = NULL, indicatorname = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE) {
 
 
   if(is.null(trimIndex)) { # If there is no trimIndex
@@ -356,13 +356,13 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubr
     #     if(!is.null(arglist$filterPattern)) { # If you have used filterPattern
     #
     #       fp <- arglist$filterPattern
-    #       infiletrimIndex = get_trimInfile(years = years, filterPattern = fp, verification = verification, source = source) %>%
+    #       infiletrimIndex = get_trimInfile(year = year, filterPattern = fp, verification = verification, source = source) %>%
     #         get_trimIndex()
     #
     #      }else { # If no filterPattern is used in ...
 
-    trimIndex <- get_trimInfile(years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
-      get_trimIndex(years = years)
+    trimIndex <- get_trimInfile(year = year, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
+      get_trimIndex(year = year)
     #}
 
   } # If there were a trimIndex file supplied, use that
@@ -445,7 +445,7 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubr
     #set filepath
     filepath <- normalizePath(filepath)
 
-    Year <- glue("{min(years)}-{max(years)}")
+    Year <- glue("{min(year)}-{max(year)}")
     write_csv2(imputedList, glue("{filepath}/Index_{Year}{tag}.csv"))
   }
   return(imputedList) # Called Index.csv in LP code
@@ -471,7 +471,7 @@ get_imputedList <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubr
 #'
 #' @return trendindex per species with the number of sites used
 #' @export
-get_trendIndex <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, indicators = TRUE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE) {
+get_trendIndex <- function(trimIndex = NULL, year = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, indicators = TRUE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = FALSE) {
 
   if(is.null(trimIndex)) { # If there is no trimIndex
 
@@ -480,12 +480,12 @@ get_trendIndex <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubri
       speid <- unlist(indicatorlist, use.names = F) %>%  # 'indicatorlist' is loaded by package
         unique()
 
-      trimIndex <- get_trimInfile(years = years, Art = speid, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
-        get_trimIndex(years = years)
+      trimIndex <- get_trimInfile(year = year, Art = speid, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
+        get_trimIndex(year = year)
 
     }else { # if your own selection of species should be used
-      trimIndex <- get_trimInfile(years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
-        get_trimIndex(years = years)
+      trimIndex <- get_trimInfile(year = year, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
+        get_trimIndex(year = year)
 
     }
   } # If there were a trimIndex file supplied, use that
@@ -538,7 +538,7 @@ get_trendIndex <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubri
     #set filepath
     filepath <- normalizePath(filepath)
 
-    Year <- glue("{min(years)}-{max(years)}")
+    Year <- glue("{min(year)}-{max(year)}")
     #write_csv2(imputedList, glue("Index_{Year}.csv"))
     write_csv2(trendList, glue("{filepath}/Trendindex_{Year}{tag}.csv"))
   }
@@ -561,19 +561,19 @@ get_trendIndex <- function(trimIndex = NULL, years = 2010:(lubridate::year(lubri
 #'
 #' @return figures saved as png comparing national and local trim indices
 #' @export
-get_trimComparedPlots <- function(years = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath= getwd(), tag = NULL, trimmedImputedSwedishList=NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = TRUE, print = TRUE) {
+get_trimComparedPlots <- function(year = 2010:(lubridate::year(lubridate::today())-1), Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath= getwd(), tag = NULL, trimmedImputedSwedishList=NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = TRUE, print = TRUE) {
 
   #1 Run trim index on species with local data
   #2 Of the local species not all may be possible to run
   #3 For the remaining species that did run through thte local trim calc run those species on Swedish data for Sweden.
 
-  imputedLocalList <- get_imputedList(years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
+  imputedLocalList <- get_imputedList(year = year, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source)
 
   if (is.null(trimmedImputedSwedishList)) {
 
     speuid <- imputedLocalList %>% distinct(speuid) %>% pull(speuid)
 
-    trimmedImputedSwedishList <- get_imputedList(years = years, Art = c(speuid), indicator_layout = FALSE, verification = verification, source = source)
+    trimmedImputedSwedishList <- get_imputedList(year = year, Art = c(speuid), indicator_layout = FALSE, verification = verification, source = source)
   }
 
   plotcomp <- function(df, species) {
@@ -612,12 +612,12 @@ get_trimComparedPlots <- function(years = 2010:(lubridate::year(lubridate::today
       geom_line(aes(y = imputed_local), linetype = "solid", colour = sebms_palette[2], linewidth = 2.8) + #interval line 1
       geom_line(aes(y = imputed_sweden), linetype = "longdash", linewidth = 1.6) + #central line #colour=rgb(155,187,89,max=255)
       # + xlim(startyear, endyear) #x-axis sectioning
-      expand_limits(x = min(years), y = c(0, yAxisAdjusted[1])) +
+      expand_limits(x = min(year), y = c(0, yAxisAdjusted[1])) +
       #geom_hline(yintercept = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2])) + #Horizontal background lines #from=yAxisAdjusted[2]
       scale_y_continuous(labels = gcomma,
                          breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
                          expand = c(0,0)) + #y-axis sectioning & comma labelling #from=yAxisAdjusted[2]
-      scale_x_continuous(breaks = seq(min(years), max(years), by = 5)) +
+      scale_x_continuous(breaks = seq(min(year), max(year), by = 5)) +
       #enable axis titles #axis.title.x=element_blank()
       labs(title = fname, x = NULL, y = NULL) + #Chart title text
       theme(text = element_text(family = "Arial"),
@@ -685,7 +685,7 @@ get_trimComparedPlots <- function(years = 2010:(lubridate::year(lubridate::today
 #' @return two csv files for each indicator groups. One with indicator index and
 #'   changes and one with trend data.
 #' @export
-get_indicatorAnalyses <- function(infile = NULL, years = 2010:(lubridate::year(lubridate::today())-1), lastyear = 7, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = TRUE, print = FALSE, indicators = NULL, indicatorname = NULL) {
+get_indicatorAnalyses <- function(infile = NULL, year = 2010:(lubridate::year(lubridate::today())-1), lastyear = 7, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = TRUE, print = FALSE, indicators = NULL, indicatorname = NULL) {
 
   if(!is.null(indicators)) { # If a new indicator is added
     # If no new name is added
@@ -711,7 +711,7 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:(lubridate::year(l
     unique()
 
   if(is.null(infile)) { # If no infile is given
-    infile <- get_imputedList(Art = c(speid), years = years, indicator_layout = TRUE, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source, indicators = indicators, indicatorname = indicatorname)
+    infile <- get_imputedList(Art = c(speid), year = year, indicator_layout = TRUE, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source, indicators = indicators, indicatorname = indicatorname)
   }
 
   indata <- infile %>%
@@ -742,9 +742,9 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:(lubridate::year(l
       pull()
 
     msi_out <- msi(dat,
-                   plotbaseyear = min(years), SEbaseyear = min(years),
+                   plotbaseyear = min(year), SEbaseyear = min(year),
                    index_smooth = 'INDEX',
-                   lastyears = lastyear,
+                   lastyear = lastyear,
                    jobname = glue("{indn}:{origin}"))
 
     result <- msi_out$results[1:8] %>%
@@ -796,7 +796,7 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:(lubridate::year(l
 #'
 #' @usage get_indicatorPlots(
 #'    msi_out = NULL,
-#'    years = 2010:2023,
+#'    year = 2010:2023,
 #'    Län = ".",
 #'    Landskap = ".",
 #'    Kommun = ".",
@@ -806,10 +806,10 @@ get_indicatorAnalyses <- function(infile = NULL, years = 2010:(lubridate::year(l
 #' @return trend plots with confidence interval for the indicator groups, saved
 #'   as png files.
 #' @export
-get_indicatorPlots <- function(msi_out = NULL, years = 2010:(lubridate::year(lubridate::today())-1), Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = TRUE, print = FALSE) {
+get_indicatorPlots <- function(msi_out = NULL, year = 2010:(lubridate::year(lubridate::today())-1), Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), write = TRUE, print = FALSE) {
 
   if (is.null(msi_out)) {
-    msi_out <- get_indicatorAnalyses(years = years, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source, write = FALSE, print = TRUE)
+    msi_out <- get_indicatorAnalyses(year = year, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source, write = FALSE, print = TRUE)
   }
 
   trimplots <- function(df, indicator) {
@@ -856,7 +856,7 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:(lubridate::year(lub
     #Index %>%
     df$results %>%
       ggplot(aes(x = year)) +
-      #geom_vline(xintercept = min(years), colour = "grey50") +
+      #geom_vline(xintercept = min(year), colour = "grey50") +
       geom_line(aes(y = Trend), linetype = paste(lt),
                 colour = paste(col),
                 linewidth = 2.8) + #central line #colour=rgb(155,187,89,max=255)
@@ -870,12 +870,12 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:(lubridate::year(lub
       geom_segment(aes(x = year,
                        xend = year,
                        y = -2, yend = 0), colour = "grey50", linewidth = 1) +
-      expand_limits(x = min(years), y = c(0,yAxisAdjusted[1])) +
+      expand_limits(x = min(year), y = c(0,yAxisAdjusted[1])) +
       coord_cartesian(clip = "off") + # Make sure the points can be drawn beyond the smallest and largest x value on panel
       scale_y_continuous(labels = gcomma,
                          breaks = seq(from = 0, to = yAxisAdjusted[1], by = yAxisAdjusted[2]),
                          expand = c(0,0)) +#y-axis sectioning & comma labelling #from=yAxisAdjusted[2]
-      scale_x_continuous(breaks = seq(min(years),max(years), by = 2), expand = c(0,0), limits = c(NA, maxlim+0.13)) +
+      scale_x_continuous(breaks = seq(min(year),max(year), by = 2), expand = c(0,0), limits = c(NA, maxlim+0.13)) +
       labs(title = titles) + #Chart title text
       theme(text = element_text(family = "Arial"),
             plot.title = element_text(hjust = 0.5, # Centered
@@ -953,7 +953,7 @@ get_indicatorPlots <- function(msi_out = NULL, years = 2010:(lubridate::year(lub
 #'   scale. Saved as a png-file, printed or both.
 #' @export
 #'
-get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010:(lubridate::year(lubridate::today())-1), logscale = FALSE, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), legend_english = FALSE, write = FALSE, print = TRUE, indicators = FALSE) {
+get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, year = 2010:(lubridate::year(lubridate::today())-1), logscale = FALSE, Art = 1:200, Län = ".", Region = ".", Landskap = ".", Kommun = ".", filepath = getwd(), tag = NULL, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84), legend_english = FALSE, write = FALSE, print = TRUE, indicators = FALSE) {
 
 
   ## ----------------------------------------------------------------------------- ##
@@ -966,16 +966,16 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
   ## ------------------------------------------------------------------------------- ##
   if(is.null(trendIndex)) {
 
-    trendIndex <- get_trendIndex(trimIndex = trimIndex, years = years, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source, indicators = indicators, write = write)
+    trendIndex <- get_trendIndex(trimIndex = trimIndex, year = year, Art = Art, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source, indicators = indicators, write = write)
 
   }
 
   trendChange <- trendIndex %>%
     filter(!is.na(speuid), !speuid %in% c(131:135, 139, 180, 181)) %>%
     mutate(trend = mul - 1,
-           nrY = length(years),
+           nrY = length(year),
            leftY = mul^nrY, #
-           change = (leftY - 1)*100, # Calculate change in percent over all years
+           change = (leftY - 1)*100, # Calculate change in percent over all year
            logchange = log10(abs(change))*sign(change), # Calculating the change in log10 scale
            sig = if_else(p<=0.05, TRUE, FALSE)) %>%
     filter(change < 500)
@@ -1046,7 +1046,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
                          expand = expansion(mult = c(0, .08))) +
       scale_fill_manual(values = labcol) +
       scale_alpha_manual(values = alphas) +
-      labs(x = glue("{xlab}{min(years)}-{max(years)}"),
+      labs(x = glue("{xlab}{min(year)}-{max(year)}"),
            y = glue("{ylab}"),
            fill = NULL, alpha = NULL) +
       theme_bw() +
@@ -1082,7 +1082,7 @@ get_trendHistogram <- function(trendIndex = NULL, trimIndex = NULL, years = 2010
                          expand = expansion(mult = c(0, .08))) +
       scale_fill_manual(values = labcol) +
       scale_alpha_manual(values = alphas) +
-      labs(x = glue("{xlab}{min(years)}-{max(years)}"),
+      labs(x = glue("{xlab}{min(year)}-{max(year)}"),
            y = glue("{ylab}"),
            fill = NULL, alpha = NULL) +
       theme_bw() +

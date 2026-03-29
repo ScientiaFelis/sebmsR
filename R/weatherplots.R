@@ -205,7 +205,7 @@ sebms_temp_data <- function(year = lubridate::year(lubridate::today())-1, my_pla
     as_tibble() %>%
     #select(!starts_with("Delete")) %>% # Remove the columns we do not need
     filter(lubridate::year(ymd_hms(FrDate)) == year, # Filter in the year we want
-           month(ymd_hms(FrDate)) %in% 4:9) %>% # Filter in the months of A pril to September
+           month(ymd_hms(FrDate)) %in% 4:9) %>% # Filter in the months of April to September
     left_join(stations, by = "id") %>% # Join in the names
     transmute(name,
               id = as.numeric(id),

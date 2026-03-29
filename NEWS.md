@@ -6,6 +6,14 @@ For more fine-grained list of changes or to report a bug, consult
 * [The issues log](https://github.com/scientiafelis/sebmsr/issues)
 * [The commit log](https://github.com/scientiafelis/sebmsr/commits/main)
 
+# v 2.8.0
+
+* New functionality in `sebms_sites_map()` let you print all occurrences of both Transects and points in one map.
+* New functionality in `sebms_sites_map()` let you print only the squares in the map without the occurrences.
+* Change `years` to `year` in all trim-functions for consistency compared to other functions in the package.
+* You can now add your own occurrence file to the `sebms_sites_map()` without making it to a SpatialObject (with sf) first.
+  It can hence be imported directly from the `sebms_occurency_distribution()` function
+
 # v 2.7.1
 
 * Fix a bug where the y-axis was set to the defaults (500) in `getTrimPlots()` when a se-value were NaN

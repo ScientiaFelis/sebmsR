@@ -33,6 +33,12 @@ sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp
       st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>%
       st_set_crs(3006) %>%
       st_transform(3021)
+  }else{
+    occ_sp <- occ_sp %>%
+      transmute(sitetype, speuid, lokalnamn, lat, lon) %>%
+      st_as_sf(coords = c("lon", "lat"), crs = "espg:3006") %>%
+      st_set_crs(3006) %>%
+      st_transform(3021)
   }
 
 

@@ -1,7 +1,6 @@
 #' Swedish Map of SeBMS Sites
 #'
-#' Producing map for all visited sites on Swedish grid separating transects and
-#' points.
+#' Producing map for all visited sites on Swedish grid separating transects and points.
 #'
 #' @import ggplot2
 #' @import sf
@@ -14,18 +13,21 @@
 #' @importFrom glue glue
 #'
 #' @inheritParams sebms_abundance_per_species_plot
-#' @param occ_sp SpatialPoints with occurrence data
+#' @param occ_sp Object with occurrence data and coordinates from e.g. the
+#'   `sebms_occurances_distribution` function
 #' @param width the plot width, default 12 inches
 #' @param height the plot height, default 18 inches
-#' @param maptype what survey type to produce map on, can be 'Transect', 'Point', 'Transekt', 'Punkt',
-#'   or 'both' (default). The 'Transect' and 'Point' can be
-#'   abbreviated to 'T' and 'P'.
+#' @param maptype what survey type to produce map on, can be 'Transect', 'Point',
+#'   'Transekt', 'Punkt', 'Both' (default), or 'Empty'. The 'Transect' and 'Point' can be
+#'   abbreviated to 'T' and 'P'. Empty map only the squares not the occurrences.
+#' @param combined logical; whether to show all occurrences of both transects and points
+#'   together, default FALSE.
 #' @param print logical; should the plots be printed in window, default FALSE
 #' @param write logical; should the file be written to a png, default to TRUE
 #'
 #' @return Figures in png for points, and transects the given year
 #' @export
-sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Region = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "both", filepath = getwd(), tag = NULL, print = FALSE, write = TRUE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
+sebms_sites_map <- function(year = lubridate::year(lubridate::today())-1, occ_sp, Län = ".", Region = ".", Landskap = ".", Kommun = ".", width = 12, height = 18, maptype = "Both", combined = FALSE, filepath = getwd(), tag = NULL, print = FALSE, write = TRUE, verification = c(109,110,111), source = c(54,55,56,63,64,66,67,84)) {
 
   if (missing(occ_sp)) { #Load in data for all species from given year
     occ_sp <- sebms_occurances_distribution(year = year, Län = Län, Region = Region, Landskap = Landskap, Kommun = Kommun, verification = verification, source = source) %>%
